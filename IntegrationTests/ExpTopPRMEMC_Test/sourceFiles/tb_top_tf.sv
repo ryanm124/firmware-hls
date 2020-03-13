@@ -35,12 +35,12 @@ module tb_top_tf();
   logic AS_L3PHICn4_dataarray_nentries_V_we [0:7];
   logic [6:0] AS_L3PHICn4_dataarray_nentries_V_din [0:7];
 // MC outputs
-  logic FM_L1L2XX_L3PHIC_dataarray_data_V_enb;
-  logic [7:0] FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr;
+  logic FM_L1L2XX_L3PHIC_dataarray_data_V_enb            = 1'b0;
+  logic [7:0] FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr = '{default:0};
   logic [44:0] FM_L1L2XX_L3PHIC_dataarray_data_V_dout;
   logic [6:0] FM_L1L2XX_L3PHIC_nentries_0_V_dout [0:1];
-  logic FM_L5L6XX_L3PHIC_dataarray_data_V_enb;
-  logic [7:0] FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr;
+  logic FM_L5L6XX_L3PHIC_dataarray_data_V_enb            = 1'b0;
+  logic [7:0] FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr = '{default:0};
   logic [44:0] FM_L5L6XX_L3PHIC_dataarray_data_V_dout;
   logic [6:0] FM_L5L6XX_L3PHIC_nentries_0_V_dout [0:1];
 // More control signals
@@ -94,8 +94,9 @@ top_tf top_tf_inst (
 initial  begin
  $dumpfile ("top_tf.vcd"); // Waveform
  $dumpvars; 
- f = $fopen("output.txt","w");
- $fwrite(f,"  time clk_cnt reset\n");
+ f = $fopen("../../../../../output.txt","w");
+ $fwrite(f,"  time clk_cnt reset   enb readaddr FM_L1L2XX_L3PHIC_*_dout" ,
+                               "   enb readaddr FM_L1L2XX_L3PHIC_*_dout\n");
  clk   = 1'b0;
  reset = 1'b1;
 end 
@@ -104,17 +105,21 @@ end
 always begin
   #(c_CLK/2) clk = !clk; 
   if (clk==1'b1) begin // Writing the file
-    $fwrite(f,"%6d %7d     %b\n",
-             $time,clk_cnt,reset);
+    $fwrite(f,"%6d %7d     %b     %b       %h            %h     %b       %h            %h\n",
+             $time,clk_cnt,reset,FM_L1L2XX_L3PHIC_dataarray_data_V_enb, FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr, FM_L1L2XX_L3PHIC_dataarray_data_V_dout,
+                                 FM_L5L6XX_L3PHIC_dataarray_data_V_enb, FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr, FM_L5L6XX_L3PHIC_dataarray_data_V_dout);
     clk_cnt = clk_cnt+1;
   end
 end
 
 // Print to stdout
 `define DEBUG 1
-`define DISP "\t\ttime,\tclk_cnt,\treset"
-`define MON  "   %d, \t%d, \t%b,", \
-              $time, clk_cnt, reset
+`define DISP "\ttime, clk_cnt, reset, \
+FM_L1L2XX_L3PHIC_dataarray_data_V_enb, FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr, FM_L1L2XX_L3PHIC_dataarray_data_V_dout, \
+FM_L5L6XX_L3PHIC_dataarray_data_V_enb, FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr, FM_L5L6XX_L3PHIC_dataarray_data_V_dout"
+`define MON  "%d, %d, %b,   %b, %h, %h,   %b, %h, %h", \
+              $time, clk_cnt, reset, FM_L1L2XX_L3PHIC_dataarray_data_V_enb, FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr, FM_L1L2XX_L3PHIC_dataarray_data_V_dout, \
+                                     FM_L5L6XX_L3PHIC_dataarray_data_V_enb, FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr, FM_L5L6XX_L3PHIC_dataarray_data_V_dout
 generate
 if (`DEBUG==1) begin
   initial  begin
@@ -136,14 +141,27 @@ else begin
 end
 endgenerate
    
+// Periodic test patterns
+always begin
+  #(c_CLK/2)  if (FM_L1L2XX_L3PHIC_dataarray_data_V_enb==1'b1) begin // Writing the file
+                FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr = FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr+1;
+                FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr = FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr+1;
+              end
+              if (FM_L5L6XX_L3PHIC_dataarray_data_V_enb==1'b1) begin // Writing the file
+                FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr = FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr+1;
+              end
+end
 //Rest of testbench code after this line 
 initial begin
   #(c_CLK/2)
-  #(c_CLK*9)   reset = 1'b0;
-  #(c_CLK*10)
+  #(c_CLK*9)    reset = 1'b0;
+  #(c_CLK*10)   FM_L1L2XX_L3PHIC_dataarray_data_V_enb = 1'b1;
+                FM_L5L6XX_L3PHIC_dataarray_data_V_enb = 1'b1;
 
   #(c_CLK*100) $fclose(f); $finish;
 end
+
+
 
 
 endmodule

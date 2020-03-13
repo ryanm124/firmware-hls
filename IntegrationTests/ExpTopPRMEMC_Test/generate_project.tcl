@@ -87,3 +87,5 @@ puts "INFO: Project created:${_xil_proj_name_}"
 
 # Launch Simulation
 launch_simulation
+
+exit
