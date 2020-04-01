@@ -11,3 +11,4 @@ cd ../IntegrationTests/ExpTopPRMEMC_Test/emData
 # Open the Vivado GUI and initialize the project
 cd ../
 vivado -mode tcl -source generate_project.tcl
+vivado -mode tcl -source synth.tcl
