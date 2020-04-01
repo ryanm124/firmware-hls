@@ -25,11 +25,18 @@ jobs: # A workflow run is made up of one or more jobs that can run sequentially 
     - name: Upload results # ------------------------------------------------
       uses: actions/upload-artifact@v1
       with:
-        name: HLS-Build
-        path: |
-          project/match_calc/solution1/syn/report/MatchCalculatorTop_csynth.rpt
-          project/matchengine/solution1/syn/report/MatchEngineTopL3_csynth.rpt
-          project/projrouter/solution1/syn/report/ProjectionRouterTop_csynth.rpt
+        name: HLS-Build-MC
+        path: project/match_calc/solution1/syn/report/MatchCalculatorTop_csynth.rpt
+    - name: Upload results # ------------------------------------------------
+      uses: actions/upload-artifact@v1
+      with:
+        name: HLS-Build-ME
+        path: project/matchengine/solution1/syn/report/MatchEngineTopL3_csynth.rpt
+    - name: Upload results # ------------------------------------------------
+      uses: actions/upload-artifact@v1
+      with:
+        name: HLS-Build-PR
+        path: project/projrouter/solution1/syn/report/ProjectionRouterTop_csynth.rpt
     - name: Download # Script name ---------------------------------------------------------------------------
       run: | # Download needed data files to populate initial memories and compare final memories
         cd IntegrationTests/ExpTopPRMEMC_Test/emData
@@ -43,8 +50,7 @@ jobs: # A workflow run is made up of one or more jobs that can run sequentially 
       uses: actions/upload-artifact@v1
       with:
         name: Vivado prj&sim
-        path: |
-          IntegrationTests/ExpTopPRMEMC_Test/output.txt
+        path: IntegrationTests/ExpTopPRMEMC_Test/output.txt
     - name: Vivado synth # Script name ---------------------------------------------------------------------------
       run: |
         cd IntegrationTests/ExpTopPRMEMC_Test
@@ -54,5 +60,4 @@ jobs: # A workflow run is made up of one or more jobs that can run sequentially 
       uses: actions/upload-artifact@v1
       with:
         name: Vivado synth
-        path: |
-          IntegrationTests/ExpTopPRMEMC_Test/ExpTopPRMEMC_Test/ExpTopPRMEMC_Test.runs/synth_1/top_tf_utilization_synth.rpt
+        path: IntegrationTests/ExpTopPRMEMC_Test/ExpTopPRMEMC_Test/ExpTopPRMEMC_Test.runs/synth_1/top_tf_utilization_synth.rpt
