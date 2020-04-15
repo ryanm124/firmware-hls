@@ -64,7 +64,7 @@ add_files -norecurse -fileset $obj $files
 
 # Create .xci file
 create_ip -name MatchCalculatorTop -vendor xilinx.com -library hls -version 1.0 -module_name MC_L3PHIC
-create_ip -name MatchEngineTopL3 -vendor xilinx.com -library hls -version 1.0 -module_name MatchEngineTopL3_0
+create_ip -name MatchEngineTop -vendor xilinx.com -library hls -version 1.0 -module_name MatchEngineTopL3_0
 create_ip -name ProjectionRouterTop -vendor xilinx.com -library hls -version 1.0 -module_name PR_L3PHIC
 
 # Make sourcefiles SystemVerilog
