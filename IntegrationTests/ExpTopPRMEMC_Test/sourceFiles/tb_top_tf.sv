@@ -7,14 +7,14 @@
 module tb_top_tf();
 
 // Simulation constants and signals /////////////////////////////////
-  time    c_CLK = 4;   // Clock periode
+  time    c_CLK = 4ns;   // Clock periode
   integer f;           // File handle
   integer clk_cnt = 0; // Clock counter
-// Signals to connect the DUT ///////////////////////////////////////
+// Signals to connect the DUT /////////////////
 // Control signals
   logic clk;
   logic reset;
-  logic en_proc;
+  logic en_proc = 1'b0;
   logic [2:0] bx_in_ProjectionRouter;
 // PR inputs
   logic TPROJ_L3PHIC_dataarray_data_V_wea [7:0];
@@ -43,12 +43,484 @@ module tb_top_tf();
   logic [7:0] FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr = '{default:0};
   logic [44:0] FM_L5L6XX_L3PHIC_dataarray_data_V_dout;
   logic [6:0] FM_L5L6XX_L3PHIC_nentries_0_V_dout [0:1];
-// More control signals
+// Signals to connect the other modules ///////////
   logic [2:0] bx_out_MatchCalculator;
   logic MatchCalculator_done;
+  // All stubs
+  //logic AS_L3PHICn4_dataarray_data_V_wea;
+  //logic [9:0] AS_L3PHICn4_dataarray_data_V_writeaddr;
+  //logic [35:0] AS_L3PHICn4_dataarray_data_V_din;
+  logic AS_L3PHICn4_nentries_V_we [7:0]               = '{default:1};
+  logic [0:7][7:0] AS_L3PHICn4_nentries_V_din         = '{ 8'b00111110, 8'b00111010, 8'b00000000, 8'b00000000,
+                                                           8'b00000000, 8'b00000000, 8'b00000000, 8'b00000000 };  
+  logic AS_L3PHICn4_dataarray_data_V_enb;
+  logic [9:0] AS_L3PHICn4_dataarray_data_V_readaddr;
+  logic [35:0] AS_L3PHICn4_dataarray_data_V_dout;
+  logic [7:0][7:0] AS_L3PHICn4_nentries_V_dout;
+  //
+  logic TPROJ_L1L2XXH_L3PHIC_dataarray_data_V_wea;
+  logic [7:0] TPROJ_L1L2XXH_L3PHIC_dataarray_data_V_writeaddr;
+  logic [59:0] TPROJ_L1L2XXH_L3PHIC_dataarray_data_V_din;
+  logic [0:1] TPROJ_L1L2XXH_L3PHIC_nentries_V_we                = '{default:1};
+  logic [0:1][7:0] TPROJ_L1L2XXH_L3PHIC_nentries_V_din          = '{ 8'b00000110, 8'b00001000}; // 6 8
+  logic TPROJ_L1L2XXH_L3PHIC_dataarray_data_V_enb;
+  logic [7:0] TPROJ_L1L2XXH_L3PHIC_dataarray_data_V_readaddr;
+  logic [59:0] TPROJ_L1L2XXH_L3PHIC_dataarray_data_V_dout;
+  logic [0:1][7:0] TPROJ_L1L2XXH_L3PHIC_nentries_V_dout;
+  //
+  logic TPROJ_L5L6XXC_L3PHIC_dataarray_data_V_wea;
+  logic [7:0] TPROJ_L5L6XXC_L3PHIC_dataarray_data_V_writeaddr;
+  logic [59:0] TPROJ_L5L6XXC_L3PHIC_dataarray_data_V_din;
+  logic [0:1]TPROJ_L5L6XXC_L3PHIC_nentries_V_we                 = '{default:1};
+  logic [0:1][7:0] TPROJ_L5L6XXC_L3PHIC_nentries_V_din          = '{ 8'b00001010, 8'b00000010}; // 10 2
+  logic TPROJ_L5L6XXC_L3PHIC_dataarray_data_V_enb;
+  logic [7:0] TPROJ_L5L6XXC_L3PHIC_dataarray_data_V_readaddr;
+  logic [59:0] TPROJ_L5L6XXC_L3PHIC_dataarray_data_V_dout;
+  logic [0:1][7:0] TPROJ_L5L6XXC_L3PHIC_nentries_V_dout;
+  //
+  logic TPROJ_L1L2XXI_L3PHIC_dataarray_data_V_wea;
+  logic [7:0] TPROJ_L1L2XXI_L3PHIC_dataarray_data_V_writeaddr;
+  logic [59:0] TPROJ_L1L2XXI_L3PHIC_dataarray_data_V_din;
+  logic [0:1]TPROJ_L1L2XXI_L3PHIC_nentries_V_we                 = '{default:1};
+  logic [0:1][7:0] TPROJ_L1L2XXI_L3PHIC_nentries_V_din          = '{ 8'b00001010, 8'b00001011}; // 10 11
+  logic TPROJ_L1L2XXI_L3PHIC_dataarray_data_V_enb;
+  logic [7:0] TPROJ_L1L2XXI_L3PHIC_dataarray_data_V_readaddr;
+  logic [59:0] TPROJ_L1L2XXI_L3PHIC_dataarray_data_V_dout;
+  logic [0:1][7:0] TPROJ_L1L2XXI_L3PHIC_nentries_V_dout;
+  //
+  logic TPROJ_L5L6XXB_L3PHIC_dataarray_data_V_wea;
+  logic [7:0] TPROJ_L5L6XXB_L3PHIC_dataarray_data_V_writeaddr;
+  logic [59:0] TPROJ_L5L6XXB_L3PHIC_dataarray_data_V_din;
+  logic [0:1]TPROJ_L5L6XXB_L3PHIC_nentries_V_we                 = '{default:1};
+  logic [0:1][7:0] TPROJ_L5L6XXB_L3PHIC_nentries_V_din          = '{ 8'b00000000, 8'b00000000}; // 0 0
+  logic TPROJ_L5L6XXB_L3PHIC_dataarray_data_V_enb;
+  logic [7:0] TPROJ_L5L6XXB_L3PHIC_dataarray_data_V_readaddr;
+  logic [59:0] TPROJ_L5L6XXB_L3PHIC_dataarray_data_V_dout;
+  logic [0:1][7:0] TPROJ_L5L6XXB_L3PHIC_nentries_V_dout;
+  //
+  logic TPROJ_L5L6XXD_L3PHIC_dataarray_data_V_wea;
+  logic [7:0] TPROJ_L5L6XXD_L3PHIC_dataarray_data_V_writeaddr;
+  logic [59:0] TPROJ_L5L6XXD_L3PHIC_dataarray_data_V_din;
+  logic [0:1]TPROJ_L5L6XXD_L3PHIC_nentries_V_we                 = '{default:1};
+  logic [0:1][7:0] TPROJ_L5L6XXD_L3PHIC_nentries_V_din          = '{ 8'b00000001, 8'b00000100}; // 1 4
+  logic TPROJ_L5L6XXD_L3PHIC_dataarray_data_V_enb;
+  logic [7:0] TPROJ_L5L6XXD_L3PHIC_dataarray_data_V_readaddr;
+  logic [59:0] TPROJ_L5L6XXD_L3PHIC_dataarray_data_V_dout;
+  logic [0:1][7:0] TPROJ_L5L6XXD_L3PHIC_nentries_V_dout;
+  //
+  logic TPROJ_L1L2XXJ_L3PHIC_dataarray_data_V_wea;
+  logic [7:0] TPROJ_L1L2XXJ_L3PHIC_dataarray_data_V_writeaddr;
+  logic [59:0] TPROJ_L1L2XXJ_L3PHIC_dataarray_data_V_din;
+  logic [0:1]TPROJ_L1L2XXJ_L3PHIC_nentries_V_we                 = '{default:1};
+  logic [0:1][7:0] TPROJ_L1L2XXJ_L3PHIC_nentries_V_din          = '{ 8'b00000100, 8'b00001111}; // 4 15
+  logic TPROJ_L1L2XXJ_L3PHIC_dataarray_data_V_enb;
+  logic [7:0] TPROJ_L1L2XXJ_L3PHIC_dataarray_data_V_readaddr;
+  logic [59:0] TPROJ_L1L2XXJ_L3PHIC_dataarray_data_V_dout;
+  logic [0:1][7:0] TPROJ_L1L2XXJ_L3PHIC_nentries_V_dout;
+  //
+  logic TPROJ_L1L2XXG_L3PHIC_dataarray_data_V_wea;
+  logic [7:0] TPROJ_L1L2XXG_L3PHIC_dataarray_data_V_writeaddr;
+  logic [59:0] TPROJ_L1L2XXG_L3PHIC_dataarray_data_V_din;
+  logic [0:1]TPROJ_L1L2XXG_L3PHIC_nentries_V_we                 = '{default:1};
+  logic [0:1][7:0] TPROJ_L1L2XXG_L3PHIC_nentries_V_din          = '{ 8'b00010111, 8'b00001111}; // 23 15
+  logic TPROJ_L1L2XXG_L3PHIC_dataarray_data_V_enb;
+  logic [7:0] TPROJ_L1L2XXG_L3PHIC_dataarray_data_V_readaddr;
+  logic [59:0] TPROJ_L1L2XXG_L3PHIC_dataarray_data_V_dout;
+  logic [0:1][7:0] TPROJ_L1L2XXG_L3PHIC_nentries_V_dout;
+  //
+  logic TPROJ_L1L2XXF_L3PHIC_dataarray_data_V_wea;
+  logic [7:0] TPROJ_L1L2XXF_L3PHIC_dataarray_data_V_writeaddr;
+  logic [59:0] TPROJ_L1L2XXF_L3PHIC_dataarray_data_V_din;
+  logic [0:1]TPROJ_L1L2XXF_L3PHIC_nentries_V_we                 = '{default:1};
+  logic [0:1][7:0] TPROJ_L1L2XXF_L3PHIC_nentries_V_din          = '{ 8'b00000001, 8'b00000000}; // 1 0
+  logic  TPROJ_L1L2XXF_L3PHIC_dataarray_data_V_enb;
+  logic [7:0] TPROJ_L1L2XXF_L3PHIC_dataarray_data_V_readaddr;
+  logic [59:0] TPROJ_L1L2XXF_L3PHIC_dataarray_data_V_dout;
+  logic [0:1][7:0] TPROJ_L1L2XXF_L3PHIC_nentries_V_dout;
+  // ME Inputs
+  // logic VMSME_L3PHIC17to24n1_dataarray_data_V_wea [7:0];
+  // logic [7:0] VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr [7:0];
+  // logic [13:0] VMSME_L3PHIC17to24n1_dataarray_data_V_din [7:0];
+  // logic [0:3][0:7]VMSME_L3PHIC17to24n1_nentries_V_we [7:0]              = '{default:1};
+  // logic [0:3][0:7][3:0] VMSME_L3PHIC17to24n1_nentries_V_din [7:0]       = {{{4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0010, 4'b0101, 4'b0000, 4'b0010, 4'b0100, 4'b0001, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0001, 4'b0010, 4'b0010, 4'b0010, 4'b0001, 4'b0000, 4'b0000},
+  //                                                                           {4'b0001, 4'b0001, 4'b0011, 4'b0001, 4'b0011, 4'b0100, 4'b0100, 4'b0011},
+  //                                                                           {4'b0010, 4'b0010, 4'b0011, 4'b0000, 4'b0000, 4'b0100, 4'b0011, 4'b0001},
+  //                                                                           {4'b0001, 4'b0001, 4'b0110, 4'b0010, 4'b0010, 4'b0001, 4'b0010, 4'b0001},
+  //                                                                           {4'b0000, 4'b0001, 4'b0000, 4'b0000, 4'b0010, 4'b0011, 4'b0000, 4'b0000},
+  //                                                                           {4'b0010, 4'b0011, 4'b0001, 4'b0000, 4'b0000, 4'b0001, 4'b0000, 4'b0001}},
+  //                                                                          {{4'b0010, 4'b0001, 4'b0001, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0000, 4'b0001, 4'b0000, 4'b0000, 4'b0001, 4'b0010, 4'b0001},
+  //                                                                           {4'b0000, 4'b0001, 4'b0010, 4'b0010, 4'b0000, 4'b0001, 4'b0001, 4'b0010},
+  //                                                                           {4'b0011, 4'b0100, 4'b0001, 4'b0000, 4'b0010, 4'b0100, 4'b0010, 4'b0010},
+  //                                                                           {4'b0100, 4'b0011, 4'b0010, 4'b0001, 4'b0010, 4'b0010, 4'b0010, 4'b0100},
+  //                                                                           {4'b0000, 4'b0000, 4'b0000, 4'b0010, 4'b0001, 4'b0001, 4'b0010, 4'b0100},
+  //                                                                           {4'b0011, 4'b0001, 4'b0010, 4'b0001, 4'b0000, 4'b0000, 4'b0001, 4'b0001},
+  //                                                                           {4'b0000, 4'b0000, 4'b0001, 4'b0001, 4'b0000, 4'b0100, 4'b0101, 4'b0000}},
+  //                                                                          {{4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000}},
+  //                                                                          {{4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000},
+  //                                                                           {4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000, 4'b0000}}};
+  // logic VMSME_L3PHIC17to24n1_dataarray_data_V_enb [7:0];
+  // logic [8:0] VMSME_L3PHIC17to24n1_dataarray_data_V_readaddr [7:0];
+  // logic [13:0] VMSME_L3PHIC17to24n1_dataarray_data_V_dout [7:0];
+  // logic [0:3][0:7][3:0] VMSME_L3PHIC17to24n1_nentries_0_0_V_dout [7:0];
 
-
-// Connect the DUT ////////////////////////////////////////////////////
+// Instantiate and connect modules //////////////////////////////////////
+// Memory modules //////////////////////////////////////
+Memory #(
+  .RAM_WIDTH(36),
+  .RAM_DEPTH(1024),
+  .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
+  .HEX(0),
+  .INIT_FILE("AS_L3PHICn4.dat")
+) AS_L3PHICn4 (
+  .clka(clk),
+  .clkb(clk),
+  .wea(AS_L3PHICn4_dataarray_data_V_wea),
+  .addra(AS_L3PHICn4_dataarray_data_V_writeaddr),
+  .dina(AS_L3PHICn4_dataarray_data_V_din),
+  .nent_we0(AS_L3PHICn4_nentries_V_we[0]),
+  .nent_i0(AS_L3PHICn4_nentries_V_din[0]),
+  .nent_we1(AS_L3PHICn4_nentries_V_we[1]),
+  .nent_i1(AS_L3PHICn4_nentries_V_din[1]),
+  .nent_we2(AS_L3PHICn4_nentries_V_we[2]),
+  .nent_i2(AS_L3PHICn4_nentries_V_din[2]),
+  .nent_we3(AS_L3PHICn4_nentries_V_we[3]),
+  .nent_i3(AS_L3PHICn4_nentries_V_din[3]),
+  .nent_we4(AS_L3PHICn4_nentries_V_we[4]),
+  .nent_i4(AS_L3PHICn4_nentries_V_din[4]),
+  .nent_we5(AS_L3PHICn4_nentries_V_we[5]),
+  .nent_i5(AS_L3PHICn4_nentries_V_din[5]),
+  .nent_we6(AS_L3PHICn4_nentries_V_we[6]),
+  .nent_i6(AS_L3PHICn4_nentries_V_din[6]),
+  .nent_we7(AS_L3PHICn4_nentries_V_we[7]),
+  .nent_i7(AS_L3PHICn4_nentries_V_din[7]),
+  .enb(AS_L3PHICn4_dataarray_data_V_enb),
+  .addrb(AS_L3PHICn4_dataarray_data_V_readaddr),
+  .doutb(AS_L3PHICn4_dataarray_data_V_dout),
+  .nent_o0(AS_L3PHICn4_nentries_V_dout[0]),
+  .nent_o1(AS_L3PHICn4_nentries_V_dout[1]),
+  .nent_o2(AS_L3PHICn4_nentries_V_dout[2]),
+  .nent_o3(AS_L3PHICn4_nentries_V_dout[3]),
+  .nent_o4(AS_L3PHICn4_nentries_V_dout[4]),
+  .nent_o5(AS_L3PHICn4_nentries_V_dout[5]),
+  .nent_o6(AS_L3PHICn4_nentries_V_dout[6]),
+  .nent_o7(AS_L3PHICn4_nentries_V_dout[7]),
+  .regceb(1'b1)
+);
+Memory #(
+  .RAM_WIDTH(60),
+  .RAM_DEPTH(256),
+  .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
+  .HEX(1),
+  .INIT_FILE("TrackletProjections_TPROJ_L1L2H_L3PHIC_04MOD.dat")
+) TPROJ_L1L2XXH_L3PHIC (
+  .clka(clk),
+  .clkb(clk),
+  .wea(TPROJ_L1L2XXH_L3PHIC_dataarray_data_V_wea),
+  .addra(TPROJ_L1L2XXH_L3PHIC_dataarray_data_V_writeaddr),
+  .dina(TPROJ_L1L2XXH_L3PHIC_dataarray_data_V_din),
+  .nent_we0(TPROJ_L1L2XXH_L3PHIC_nentries_V_we[0]),
+  .nent_i0(TPROJ_L1L2XXH_L3PHIC_nentries_V_din[0]),
+  .nent_we1(TPROJ_L1L2XXH_L3PHIC_nentries_V_we[1]),
+  .nent_i1(TPROJ_L1L2XXH_L3PHIC_nentries_V_din[1]),
+  .enb(TPROJ_L1L2XXH_L3PHIC_dataarray_data_V_enb),
+  .addrb(TPROJ_L1L2XXH_L3PHIC_dataarray_data_V_readaddr),
+  .doutb(TPROJ_L1L2XXH_L3PHIC_dataarray_data_V_dout),
+  .nent_o0(TPROJ_L1L2XXH_L3PHIC_nentries_V_dout[0]),
+  .nent_o1(TPROJ_L1L2XXH_L3PHIC_nentries_V_dout[1]),
+  .regceb(1'b1)
+);
+Memory #(
+  .RAM_WIDTH(60),
+  .RAM_DEPTH(256),
+  .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
+  .HEX(1),
+  .INIT_FILE("TrackletProjections_TPROJ_L5L6C_L3PHIC_04MOD.dat")
+) TPROJ_L5L6XXC_L3PHIC (
+  .clka(clk),
+  .clkb(clk),
+  .wea(TPROJ_L5L6XXC_L3PHIC_dataarray_data_V_wea),
+  .addra(TPROJ_L5L6XXC_L3PHIC_dataarray_data_V_writeaddr),
+  .dina(TPROJ_L5L6XXC_L3PHIC_dataarray_data_V_din),
+  .nent_we0(TPROJ_L5L6XXC_L3PHIC_nentries_V_we[0]),
+  .nent_i0(TPROJ_L5L6XXC_L3PHIC_nentries_V_din[0]),
+  .nent_we1(TPROJ_L5L6XXC_L3PHIC_nentries_V_we[1]),
+  .nent_i1(TPROJ_L5L6XXC_L3PHIC_nentries_V_din[1]),
+  .enb(TPROJ_L5L6XXC_L3PHIC_dataarray_data_V_enb),
+  .addrb(TPROJ_L5L6XXC_L3PHIC_dataarray_data_V_readaddr),
+  .doutb(TPROJ_L5L6XXC_L3PHIC_dataarray_data_V_dout),
+  .nent_o0(TPROJ_L5L6XXC_L3PHIC_nentries_V_dout[0]),
+  .nent_o1(TPROJ_L5L6XXC_L3PHIC_nentries_V_dout[1]),
+  .regceb(1'b1)
+);
+Memory #(
+  .RAM_WIDTH(60),
+  .RAM_DEPTH(256),
+  .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
+  .HEX(1),
+  .INIT_FILE("TrackletProjections_TPROJ_L1L2I_L3PHIC_04MOD.dat")
+) TPROJ_L1L2XXI_L3PHIC (
+  .clka(clk),
+  .clkb(clk),
+  .wea(TPROJ_L1L2XXI_L3PHIC_dataarray_data_V_wea),
+  .addra(TPROJ_L1L2XXI_L3PHIC_dataarray_data_V_writeaddr),
+  .dina(TPROJ_L1L2XXI_L3PHIC_dataarray_data_V_din),
+  .nent_we0(TPROJ_L1L2XXI_L3PHIC_nentries_V_we[0]),
+  .nent_i0(TPROJ_L1L2XXI_L3PHIC_nentries_V_din[0]),
+  .nent_we1(TPROJ_L1L2XXI_L3PHIC_nentries_V_we[1]),
+  .nent_i1(TPROJ_L1L2XXI_L3PHIC_nentries_V_din[1]),
+  .enb(TPROJ_L1L2XXI_L3PHIC_dataarray_data_V_enb),
+  .addrb(TPROJ_L1L2XXI_L3PHIC_dataarray_data_V_readaddr),
+  .doutb(TPROJ_L1L2XXI_L3PHIC_dataarray_data_V_dout),
+  .nent_o0(TPROJ_L1L2XXI_L3PHIC_nentries_V_dout[0]),
+  .nent_o1(TPROJ_L1L2XXI_L3PHIC_nentries_V_dout[1]),
+  .regceb(1'b1)
+);
+Memory #(
+  .RAM_WIDTH(60),
+  .RAM_DEPTH(256),
+  .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
+  .HEX(1),
+  .INIT_FILE("TrackletProjections_TPROJ_L5L6B_L3PHIC_04MOD.dat")
+) TPROJ_L5L6XXB_L3PHIC (
+  .clka(clk),
+  .clkb(clk),
+  .wea(TPROJ_L5L6XXB_L3PHIC_dataarray_data_V_wea),
+  .addra(TPROJ_L5L6XXB_L3PHIC_dataarray_data_V_writeaddr),
+  .dina(TPROJ_L5L6XXB_L3PHIC_dataarray_data_V_din),
+  .nent_we0(TPROJ_L5L6XXB_L3PHIC_nentries_V_we[0]),
+  .nent_i0(TPROJ_L5L6XXB_L3PHIC_nentries_V_din[0]),
+  .nent_we1(TPROJ_L5L6XXB_L3PHIC_nentries_V_we[1]),
+  .nent_i1(TPROJ_L5L6XXB_L3PHIC_nentries_V_din[1]),
+  .enb(TPROJ_L5L6XXB_L3PHIC_dataarray_data_V_enb),
+  .addrb(TPROJ_L5L6XXB_L3PHIC_dataarray_data_V_readaddr),
+  .doutb(TPROJ_L5L6XXB_L3PHIC_dataarray_data_V_dout),
+  .nent_o0(TPROJ_L5L6XXB_L3PHIC_nentries_V_dout[0]),
+  .nent_o1(TPROJ_L5L6XXB_L3PHIC_nentries_V_dout[1]),
+  .regceb(1'b1)
+);
+Memory #(
+  .RAM_WIDTH(60),
+  .RAM_DEPTH(256),
+  .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
+  .HEX(1),
+  .INIT_FILE("TrackletProjections_TPROJ_L5L6D_L3PHIC_04MOD.dat")
+) TPROJ_L5L6XXD_L3PHIC (
+  .clka(clk),
+  .clkb(clk),
+  .wea(TPROJ_L5L6XXD_L3PHIC_dataarray_data_V_wea),
+  .addra(TPROJ_L5L6XXD_L3PHIC_dataarray_data_V_writeaddr),
+  .dina(TPROJ_L5L6XXD_L3PHIC_dataarray_data_V_din),
+  .nent_we0(TPROJ_L5L6XXD_L3PHIC_nentries_V_we[0]),
+  .nent_i0(TPROJ_L5L6XXD_L3PHIC_nentries_V_din[0]),
+  .nent_we1(TPROJ_L5L6XXD_L3PHIC_nentries_V_we[1]),
+  .nent_i1(TPROJ_L5L6XXD_L3PHIC_nentries_V_din[1]),
+  .enb(TPROJ_L5L6XXD_L3PHIC_dataarray_data_V_enb),
+  .addrb(TPROJ_L5L6XXD_L3PHIC_dataarray_data_V_readaddr),
+  .doutb(TPROJ_L5L6XXD_L3PHIC_dataarray_data_V_dout),
+  .nent_o0(TPROJ_L5L6XXD_L3PHIC_nentries_V_dout[0]),
+  .nent_o1(TPROJ_L5L6XXD_L3PHIC_nentries_V_dout[1]),
+  .regceb(1'b1)
+);
+Memory #(
+  .RAM_WIDTH(60),
+  .RAM_DEPTH(256),
+  .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
+  .HEX(1),
+  .INIT_FILE("TrackletProjections_TPROJ_L1L2J_L3PHIC_04MOD.dat")
+) TPROJ_L1L2XXJ_L3PHIC (
+  .clka(clk),
+  .clkb(clk),
+  .wea(TPROJ_L1L2XXJ_L3PHIC_dataarray_data_V_wea),
+  .addra(TPROJ_L1L2XXJ_L3PHIC_dataarray_data_V_writeaddr),
+  .dina(TPROJ_L1L2XXJ_L3PHIC_dataarray_data_V_din),
+  .nent_we0(TPROJ_L1L2XXJ_L3PHIC_nentries_V_we[0]),
+  .nent_i0(TPROJ_L1L2XXJ_L3PHIC_nentries_V_din[0]),
+  .nent_we1(TPROJ_L1L2XXJ_L3PHIC_nentries_V_we[1]),
+  .nent_i1(TPROJ_L1L2XXJ_L3PHIC_nentries_V_din[1]),
+  .enb(TPROJ_L1L2XXJ_L3PHIC_dataarray_data_V_enb),
+  .addrb(TPROJ_L1L2XXJ_L3PHIC_dataarray_data_V_readaddr),
+  .doutb(TPROJ_L1L2XXJ_L3PHIC_dataarray_data_V_dout),
+  .nent_o0(TPROJ_L1L2XXJ_L3PHIC_nentries_V_dout[0]),
+  .nent_o1(TPROJ_L1L2XXJ_L3PHIC_nentries_V_dout[1]),
+  .regceb(1'b1)
+);
+Memory #(
+  .RAM_WIDTH(60),
+  .RAM_DEPTH(256),
+  .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
+  .HEX(1),
+  .INIT_FILE("TrackletProjections_TPROJ_L1L2G_L3PHIC_04MOD.dat")
+) TPROJ_L1L2XXG_L3PHIC (
+  .clka(clk),
+  .clkb(clk),
+  .wea(TPROJ_L1L2XXG_L3PHIC_dataarray_data_V_wea),
+  .addra(TPROJ_L1L2XXG_L3PHIC_dataarray_data_V_writeaddr),
+  .dina(TPROJ_L1L2XXG_L3PHIC_dataarray_data_V_din),
+  .nent_we0(TPROJ_L1L2XXG_L3PHIC_nentries_V_we[0]),
+  .nent_i0(TPROJ_L1L2XXG_L3PHIC_nentries_V_din[0]),
+  .nent_we1(TPROJ_L1L2XXG_L3PHIC_nentries_V_we[1]),
+  .nent_i1(TPROJ_L1L2XXG_L3PHIC_nentries_V_din[1]),
+  .enb(TPROJ_L1L2XXG_L3PHIC_dataarray_data_V_enb),
+  .addrb(TPROJ_L1L2XXG_L3PHIC_dataarray_data_V_readaddr),
+  .doutb(TPROJ_L1L2XXG_L3PHIC_dataarray_data_V_dout),
+  .nent_o0(TPROJ_L1L2XXG_L3PHIC_nentries_V_dout[0]),
+  .nent_o1(TPROJ_L1L2XXG_L3PHIC_nentries_V_dout[1]),
+  .regceb(1'b1)
+);
+Memory #(
+  .RAM_WIDTH(60),
+  .RAM_DEPTH(256),
+  .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
+  .HEX(1),
+  .INIT_FILE("TrackletProjections_TPROJ_L1L2F_L3PHIC_04MOD.dat")
+) TPROJ_L1L2XXF_L3PHIC (
+  .clka(clk),
+  .clkb(clk),
+  .wea(TPROJ_L1L2XXF_L3PHIC_dataarray_data_V_wea),
+  .addra(TPROJ_L1L2XXF_L3PHIC_dataarray_data_V_writeaddr),
+  .dina(TPROJ_L1L2XXF_L3PHIC_dataarray_data_V_din),
+  .nent_we0(TPROJ_L1L2XXF_L3PHIC_nentries_V_we[0]),
+  .nent_i0(TPROJ_L1L2XXF_L3PHIC_nentries_V_din[0]),
+  .nent_we1(TPROJ_L1L2XXF_L3PHIC_nentries_V_we[1]),
+  .nent_i1(TPROJ_L1L2XXF_L3PHIC_nentries_V_din[1]),
+  .enb(TPROJ_L1L2XXF_L3PHIC_dataarray_data_V_enb),
+  .addrb(TPROJ_L1L2XXF_L3PHIC_dataarray_data_V_readaddr),
+  .doutb(TPROJ_L1L2XXF_L3PHIC_dataarray_data_V_dout),
+  .nent_o0(TPROJ_L1L2XXF_L3PHIC_nentries_V_dout[0]),
+  .nent_o1(TPROJ_L1L2XXF_L3PHIC_nentries_V_dout[1]),
+  .regceb(1'b1)
+);
+// MemoryBinned #(
+//   .RAM_WIDTH(14),
+//   .RAM_DEPTH(256),
+//   .RAM_PERFORMANCE("LOW_LATENCY"),
+//   .HEX(1),
+//   .INIT_FILE("VMStubs_VMSME_L3PHIC17n1_04MOD.dat")
+// ) VMSME_L3PHIC17n1 (
+//   .clka(clk),
+//   .clkb(clk),
+//   .rstb(1'b0),
+//   .wea(VMSME_L3PHIC17to24n1_dataarray_data_V_wea[0]),
+//   .addra(VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr[0]),
+//   .dina(VMSME_L3PHIC17to24n1_dataarray_data_V_din[0]),
+//   .nent_0_we0(VMSME_L3PHIC17to24n1_nentries_V_we[0][0][0]),
+//   .nent_0_i0(VMSME_L3PHIC17to24n1_nentries_V_din[0][0][0]),
+//   .nent_0_we1(VMSME_L3PHIC17to24n1_nentries_V_we[0][1][0]),
+//   .nent_0_i1(VMSME_L3PHIC17to24n1_nentries_V_din[0][1][0]),
+//   .nent_0_we2(VMSME_L3PHIC17to24n1_nentries_V_we[0][2][0]),
+//   .nent_0_i2(VMSME_L3PHIC17to24n1_nentries_V_din[0][2][0]),
+//   .nent_0_we3(VMSME_L3PHIC17to24n1_nentries_V_we[0][3][0]),
+//   .nent_0_i3(VMSME_L3PHIC17to24n1_nentries_V_din[0][3][0]),
+//   .nent_0_we4(VMSME_L3PHIC17to24n1_nentries_V_we[0][4][0]),
+//   .nent_0_i4(VMSME_L3PHIC17to24n1_nentries_V_din[0][4][0]),
+//   .nent_0_we5(VMSME_L3PHIC17to24n1_nentries_V_we[0][5][0]),
+//   .nent_0_i5(VMSME_L3PHIC17to24n1_nentries_V_din[0][5][0]),
+//   .nent_0_we6(VMSME_L3PHIC17to24n1_nentries_V_we[0][6][0]),
+//   .nent_0_i6(VMSME_L3PHIC17to24n1_nentries_V_din[0][6][0]),
+//   .nent_0_we7(VMSME_L3PHIC17to24n1_nentries_V_we[0][7][0]),
+//   .nent_0_i7(VMSME_L3PHIC17to24n1_nentries_V_din[0][7][0]),
+//   .nent_1_we0(VMSME_L3PHIC17to24n1_nentries_V_we[1][0][0]),
+//   .nent_1_i0(VMSME_L3PHIC17to24n1_nentries_V_din[1][0][0]),
+//   .nent_1_we1(VMSME_L3PHIC17to24n1_nentries_V_we[1][1][0]),
+//   .nent_1_i1(VMSME_L3PHIC17to24n1_nentries_V_din[1][1][0]),
+//   .nent_1_we2(VMSME_L3PHIC17to24n1_nentries_V_we[1][2][0]),
+//   .nent_1_i2(VMSME_L3PHIC17to24n1_nentries_V_din[1][2][0]),
+//   .nent_1_we3(VMSME_L3PHIC17to24n1_nentries_V_we[1][3][0]),
+//   .nent_1_i3(VMSME_L3PHIC17to24n1_nentries_V_din[1][3][0]),
+//   .nent_1_we4(VMSME_L3PHIC17to24n1_nentries_V_we[1][4][0]),
+//   .nent_1_i4(VMSME_L3PHIC17to24n1_nentries_V_din[1][4][0]),
+//   .nent_1_we5(VMSME_L3PHIC17to24n1_nentries_V_we[1][5][0]),
+//   .nent_1_i5(VMSME_L3PHIC17to24n1_nentries_V_din[1][5][0]),
+//   .nent_1_we6(VMSME_L3PHIC17to24n1_nentries_V_we[1][6][0]),
+//   .nent_1_i6(VMSME_L3PHIC17to24n1_nentries_V_din[1][6][0]),
+//   .nent_1_we7(VMSME_L3PHIC17to24n1_nentries_V_we[1][7][0]),
+//   .nent_1_i7(VMSME_L3PHIC17to24n1_nentries_V_din[1][7][0]),
+//   .nent_2_we0(VMSME_L3PHIC17to24n1_nentries_V_we[2][0][0]),
+//   .nent_2_i0(VMSME_L3PHIC17to24n1_nentries_V_din[2][0][0]),
+//   .nent_2_we1(VMSME_L3PHIC17to24n1_nentries_V_we[2][1][0]),
+//   .nent_2_i1(VMSME_L3PHIC17to24n1_nentries_V_din[2][1][0]),
+//   .nent_2_we2(VMSME_L3PHIC17to24n1_nentries_V_we[2][2][0]),
+//   .nent_2_i2(VMSME_L3PHIC17to24n1_nentries_V_din[2][2][0]),
+//   .nent_2_we3(VMSME_L3PHIC17to24n1_nentries_V_we[2][3][0]),
+//   .nent_2_i3(VMSME_L3PHIC17to24n1_nentries_V_din[2][3][0]),
+//   .nent_2_we4(VMSME_L3PHIC17to24n1_nentries_V_we[2][4][0]),
+//   .nent_2_i4(VMSME_L3PHIC17to24n1_nentries_V_din[2][4][0]),
+//   .nent_2_we5(VMSME_L3PHIC17to24n1_nentries_V_we[2][5][0]),
+//   .nent_2_i5(VMSME_L3PHIC17to24n1_nentries_V_din[2][5][0]),
+//   .nent_2_we6(VMSME_L3PHIC17to24n1_nentries_V_we[2][6][0]),
+//   .nent_2_i6(VMSME_L3PHIC17to24n1_nentries_V_din[2][6][0]),
+//   .nent_2_we7(VMSME_L3PHIC17to24n1_nentries_V_we[2][7][0]),
+//   .nent_2_i7(VMSME_L3PHIC17to24n1_nentries_V_din[2][7][0]),
+//   .nent_3_we0(VMSME_L3PHIC17to24n1_nentries_V_we[3][0][0]),
+//   .nent_3_i0(VMSME_L3PHIC17to24n1_nentries_V_din[3][0][0]),
+//   .nent_3_we1(VMSME_L3PHIC17to24n1_nentries_V_we[3][1][0]),
+//   .nent_3_i1(VMSME_L3PHIC17to24n1_nentries_V_din[3][1][0]),
+//   .nent_3_we2(VMSME_L3PHIC17to24n1_nentries_V_we[3][2][0]),
+//   .nent_3_i2(VMSME_L3PHIC17to24n1_nentries_V_din[3][2][0]),
+//   .nent_3_we3(VMSME_L3PHIC17to24n1_nentries_V_we[3][3][0]),
+//   .nent_3_i3(VMSME_L3PHIC17to24n1_nentries_V_din[3][3][0]),
+//   .nent_3_we4(VMSME_L3PHIC17to24n1_nentries_V_we[3][4][0]),
+//   .nent_3_i4(VMSME_L3PHIC17to24n1_nentries_V_din[3][4][0]),
+//   .nent_3_we5(VMSME_L3PHIC17to24n1_nentries_V_we[3][5][0]),
+//   .nent_3_i5(VMSME_L3PHIC17to24n1_nentries_V_din[3][5][0]),
+//   .nent_3_we6(VMSME_L3PHIC17to24n1_nentries_V_we[3][6][0]),
+//   .nent_3_i6(VMSME_L3PHIC17to24n1_nentries_V_din[3][6][0]),
+//   .nent_3_we7(VMSME_L3PHIC17to24n1_nentries_V_we[3][7][0]),
+//   .nent_3_i7(VMSME_L3PHIC17to24n1_nentries_V_din[3][7][0]),       
+//   .enb(VMSME_L3PHIC17to24n1_dataarray_data_V_enb[0]),
+//   .addrb(VMSME_L3PHIC17to24n1_dataarray_data_V_readaddr[0][7:0]),
+//   .doutb(VMSME_L3PHIC17to24n1_dataarray_data_V_dout[0]),
+//   .nent_0_o0(VMSME_L3PHIC17to24n1_nentries_V_dout[0][0][0]),
+//   .nent_0_o1(VMSME_L3PHIC17to24n1_nentries_V_dout[0][1][0]),
+//   .nent_0_o2(VMSME_L3PHIC17to24n1_nentries_V_dout[0][2][0]),
+//   .nent_0_o3(VMSME_L3PHIC17to24n1_nentries_V_dout[0][3][0]),
+//   .nent_0_o4(VMSME_L3PHIC17to24n1_nentries_V_dout[0][4][0]),
+//   .nent_0_o5(VMSME_L3PHIC17to24n1_nentries_V_dout[0][5][0]),
+//   .nent_0_o6(VMSME_L3PHIC17to24n1_nentries_V_dout[0][6][0]),
+//   .nent_0_o7(VMSME_L3PHIC17to24n1_nentries_V_dout[0][7][0]),
+//   .nent_1_o0(VMSME_L3PHIC17to24n1_nentries_V_dout[1][0][0]),
+//   .nent_1_o1(VMSME_L3PHIC17to24n1_nentries_V_dout[1][1][0]),
+//   .nent_1_o2(VMSME_L3PHIC17to24n1_nentries_V_dout[1][2][0]),
+//   .nent_1_o3(VMSME_L3PHIC17to24n1_nentries_V_dout[1][3][0]),
+//   .nent_1_o4(VMSME_L3PHIC17to24n1_nentries_V_dout[1][4][0]),
+//   .nent_1_o5(VMSME_L3PHIC17to24n1_nentries_V_dout[1][5][0]),
+//   .nent_1_o6(VMSME_L3PHIC17to24n1_nentries_V_dout[1][6][0]),
+//   .nent_1_o7(VMSME_L3PHIC17to24n1_nentries_V_dout[1][7][0]),
+//   .nent_2_o0(VMSME_L3PHIC17to24n1_nentries_V_dout[2][0][0]),
+//   .nent_2_o1(VMSME_L3PHIC17to24n1_nentries_V_dout[2][1][0]),
+//   .nent_2_o2(VMSME_L3PHIC17to24n1_nentries_V_dout[2][2][0]),
+//   .nent_2_o3(VMSME_L3PHIC17to24n1_nentries_V_dout[2][3][0]),
+//   .nent_2_o4(VMSME_L3PHIC17to24n1_nentries_V_dout[2][4][0]),
+//   .nent_2_o5(VMSME_L3PHIC17to24n1_nentries_V_dout[2][5][0]),
+//   .nent_2_o6(VMSME_L3PHIC17to24n1_nentries_V_dout[2][6][0]),
+//   .nent_2_o7(VMSME_L3PHIC17to24n1_nentries_V_dout[2][7][0]),
+//   .nent_3_o0(VMSME_L3PHIC17to24n1_nentries_V_dout[3][0][0]),
+//   .nent_3_o1(VMSME_L3PHIC17to24n1_nentries_V_dout[3][1][0]),
+//   .nent_3_o2(VMSME_L3PHIC17to24n1_nentries_V_dout[3][2][0]),
+//   .nent_3_o3(VMSME_L3PHIC17to24n1_nentries_V_dout[3][3][0]),
+//   .nent_3_o4(VMSME_L3PHIC17to24n1_nentries_V_dout[3][4][0]),
+//   .nent_3_o5(VMSME_L3PHIC17to24n1_nentries_V_dout[3][5][0]),
+//   .nent_3_o6(VMSME_L3PHIC17to24n1_nentries_V_dout[3][6][0]),
+//   .nent_3_o7(VMSME_L3PHIC17to24n1_nentries_V_dout[3][7][0]),        
+//   .regceb(1'b1)
+// );
+// Top module //////////////////////////////////////
 top_tf top_tf_inst (
 // Control signals
   .clk(clk),
@@ -97,8 +569,6 @@ initial  begin
  f = $fopen("../../../../../output.txt","w");
  $fwrite(f,"  time clk_cnt reset   enb readaddr FM_L1L2XX_L3PHIC_*_dout" ,
                                "   enb readaddr FM_L1L2XX_L3PHIC_*_dout\n");
- clk   = 1'b0;
- reset = 1'b1;
 end 
 
 // Clock generation and file writing
@@ -143,22 +613,30 @@ endgenerate
    
 // Periodic test patterns
 always begin
-  #(c_CLK/2)  if (FM_L1L2XX_L3PHIC_dataarray_data_V_enb==1'b1) begin // Writing the file
+  #(c_CLK/2)  if (clk==1'b1 & FM_L1L2XX_L3PHIC_dataarray_data_V_enb==1'b1) begin // Writing the file
                 FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr = FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr+1;
-                FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr = FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr+1;
               end
-              if (FM_L5L6XX_L3PHIC_dataarray_data_V_enb==1'b1) begin // Writing the file
+              if (clk==1'b1 & FM_L5L6XX_L3PHIC_dataarray_data_V_enb==1'b1) begin // Writing the file
                 FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr = FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr+1;
               end
 end
+// Periodic events rising edge
+always @(posedge clk) begin
+  if (reset) en_proc = 1'b0;
+  else       en_proc = 1'b1;
+end
 //Rest of testbench code after this line 
 initial begin
+  clk   = 1'b0;
+  reset = 1'b1;
+  en_proc = 1'b1;
+  bx_in_ProjectionRouter = 3'b110;
   #(c_CLK/2)
   #(c_CLK*9)    reset = 1'b0;
   #(c_CLK*10)   FM_L1L2XX_L3PHIC_dataarray_data_V_enb = 1'b1;
                 FM_L5L6XX_L3PHIC_dataarray_data_V_enb = 1'b1;
-
-  #(c_CLK*100) $fclose(f); $finish;
+  #(c_CLK*125)  bx_in_ProjectionRouter <= bx_in_ProjectionRouter + 1'b1;
+  #(c_CLK*50)   $fclose(f); $finish;
 end
 
 
