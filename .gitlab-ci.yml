@@ -84,7 +84,7 @@ Testdata-download: # Download needed data files to populate initial memories and
     - xilinx-tools # To make it run on lnxserver327
   script:
     - cd IntegrationTests/ExpTopPRMEMC_Test/emData
-    - ./download.sh
+    - source download.sh
   artifacts:
     when: on_success
     name: "$CI_JOB_NAME-$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
