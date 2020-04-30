@@ -8,7 +8,8 @@ variables:
 stages: # ---------------------------------------------------------------------
   - quality-check
   - hls-build
-#  - topTF-build
+  - download
+  - topTF-build
 
 # Job templates ---------------------------------------------------------------
 .job_template: &template_base
@@ -45,49 +46,23 @@ stages: # ---------------------------------------------------------------------
     paths:
       - ./project/
     expire_in: 1 week
+
+.job_template: &template_topTF-build
+  <<: *template_base
+  stage: topTF-build
+  script:
+    - cd IntegrationTests/ExpTopPRMEMC_Test
+    - pwd; ls -la; #debug
+    - vivado -mode tcl -source generate_project.tcl
+    - vivado -mode tcl -source synth.tcl
+  artifacts:
+    when: on_success
+    name: "$CI_JOB_NAME-$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
+    paths:
+      - ./IntegrationTests/ExpTopPRMEMC_Test/output.txt
+      - ./IntegrationTests/ExpTopPRMEMC_Test/ExpTopPRMEMC_Test/ExpTopPRMEMC_Test.runs/synth_1/top_tf_utilization_synth.rpt
+    expire_in: 1 week
 # Jobs ------------------------------------------------------------------------
-# Quality checks ------------
-VMR-quality-check:
-  <<: *template_quality-check
-  variables:
-    CLANG_TIDY_FILES: '../TestBenches/VMRouter_test.cpp ../TrackletAlgorithm/VMRouterTop.cc'
-TE-quality-check:
-  <<: *template_quality-check
-  variables:
-    CLANG_TIDY_FILES: '../TestBenches/TrackletEngine_test.cpp ../TrackletAlgorithm/TrackletEngineTop.cc'
-TC-quality-check:
-  <<: *template_quality-check
-  variables:
-    CLANG_TIDY_FILES: '../TestBenches/TrackletCalculator_* ../TrackletAlgorithm/TrackletCalculator.cc'
-PR-quality-check:
-  <<: *template_quality-check
-  variables:
-    CLANG_TIDY_FILES: '../TestBenches/ProjectionRouter_test.cpp ../TrackletAlgorithm/ProjectionRouterTop.cc'
-ME-quality-check:
-  <<: *template_quality-check
-  variables:
-    CLANG_TIDY_FILES: '../TestBenches/MatchEngine_test.cpp ../TrackletAlgorithm/MatchEngine.cc'
-MC-quality-check:
-  <<: *template_quality-check
-  variables:
-    CLANG_TIDY_FILES: '../TestBenches/MatchCalculator_test.cpp ../TrackletAlgorithm/MatchCalculatorTop.cc'
-# HLS builds ---------------
-VMR-hls-build:
-  <<: *template_hls-build
-  variables:
-    VIVADO_VERSION: "2019.2"
-    PROJ_NAME: "VMR"
-  allow_failure: true
-TE-hls-build:
-  <<: *template_hls-build
-  variables:
-    VIVADO_VERSION: "2019.2"
-    PROJ_NAME: "TE"
-TC-hls-build:
-  <<: *template_hls-build
-  variables:
-    VIVADO_VERSION: "2019.2"
-    PROJ_NAME: "TC"
 PR-hls-build:
   <<: *template_hls-build
   variables:
@@ -103,3 +78,18 @@ MC-hls-build:
   variables:
     VIVADO_VERSION: "2019.2"
     PROJ_NAME: "MC"
+Testdata-download: # Download needed data files to populate initial memories and compare final memories
+  stage: download
+  script:
+    - cd IntegrationTests/ExpTopPRMEMC_Test/emData
+    - ./download.sh
+  artifacts:
+    when: on_success
+    name: "$CI_JOB_NAME-$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
+    paths:
+      - ./IntegrationTests/ExpTopPRMEMC_Test/emData
+    expire_in: 1 week
+topPRMEMC-build:
+  <<: *template_topTF-build
+  variables:
+    VIVADO_VERSION: "2019.2"
