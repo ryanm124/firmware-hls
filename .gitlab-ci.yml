@@ -80,6 +80,8 @@ MC-hls-build:
     PROJ_NAME: "MC"
 Testdata-download: # Download needed data files to populate initial memories and compare final memories
   stage: download
+  tags:
+    - xilinx-tools # To make it run on lnxserver327
   script:
     - cd IntegrationTests/ExpTopPRMEMC_Test/emData
     - ./download.sh
