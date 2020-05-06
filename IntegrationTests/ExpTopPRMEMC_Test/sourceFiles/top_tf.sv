@@ -11,7 +11,7 @@ module top_tf(
   input [7:0] TPROJ_L3PHIC_dataarray_data_V_writeaddr [7:0],
   input [59:0] TPROJ_L3PHIC_dataarray_data_V_din [7:0],
   input TPROJ_L3PHIC_nentries_V_we [0:1][7:0],
-  input [6:0] TPROJ_L3PHIC_nentries_V_din [0:1][7:0],
+  input [7:0] TPROJ_L3PHIC_nentries_V_din [0:1][7:0],
 // ME inputs
   input VMSME_L3PHIC17to24n1_dataarray_data_V_wea [7:0],
   input [9:0] VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr [7:0],
@@ -45,7 +45,7 @@ module top_tf(
 wire TPROJ_L3PHIC_dataarray_data_V_enb [7:0];
 wire [7:0] TPROJ_L3PHIC_dataarray_data_V_readaddr [7:0];
 wire [59:0] TPROJ_L3PHIC_dataarray_data_V_dout [7:0];
-wire [6:0] TPROJ_L3PHIC_nentries_V_dout [0:1][7:0];
+wire [7:0] TPROJ_L3PHIC_nentries_V_dout [0:1][7:0];
 
 genvar tpidx;
 generate
@@ -78,18 +78,18 @@ endgenerate
 
 //PR output
    
-wire[2:0] bx_out_ProjectionRouter;
+wire [2:0] bx_out_ProjectionRouter;
 wire VMPROJ_L3PHIC17to24_dataarray_data_V_wea [7:0];
-wire[7:0] VMPROJ_L3PHIC17to24_dataarray_data_V_writeaddr [7:0];
-wire[20:0] VMPROJ_L3PHIC17to24_dataarray_data_V_din [7:0];
+wire [7:0] VMPROJ_L3PHIC17to24_dataarray_data_V_writeaddr [7:0];
+wire [20:0] VMPROJ_L3PHIC17to24_dataarray_data_V_din [7:0];
 wire VMPROJ_L3PHIC17to24_nentries_V_we [0:1][7:0];
-wire[6:0] VMPROJ_L3PHIC17to24_nentries_V_din [0:1][7:0];
+wire [7:0] VMPROJ_L3PHIC17to24_nentries_V_din [0:1][7:0];
 wire ProjectionRouter_done;
 wire AP_L3PHIC_dataarray_data_V_wea;
-wire[9:0] AP_L3PHIC_dataarray_data_V_writeaddr;
-wire[59:0] AP_L3PHIC_dataarray_data_V_din;
+wire [9:0] AP_L3PHIC_dataarray_data_V_writeaddr;
+wire [59:0] AP_L3PHIC_dataarray_data_V_din;
 wire AP_L3PHIC_nentries_0_V_we [0:7];
-wire[6:0] AP_L3PHIC_nentries_0_V_din [0:7];
+wire [6:0] AP_L3PHIC_nentries_0_V_din [0:7];
    
 PR_L3PHIC PR_L3PHIC(
   .ap_clk(clk),
@@ -228,9 +228,9 @@ end
 wire AS_L3PHICn4_dataarray_data_V_enb;
 wire [9:0] AS_L3PHICn4_dataarray_data_V_readaddr;
 wire [35:0] AS_L3PHICn4_dataarray_data_V_dout;
-wire [6:0] AS_L3PHICn4_nentries_V_dout [0:7];
+wire [7:0] AS_L3PHICn4_nentries_V_dout [0:7];
 wire AS_L3PHICn4_nentries_V_we [0:7];
-wire AS_L3PHICn4_nentries_V_din [0:7];
+wire [7:0] AS_L3PHICn4_nentries_V_din [0:7];
 
 Memory #(
   .RAM_WIDTH(36),
@@ -278,7 +278,7 @@ Memory #(
 wire VMPROJ_L3PHIC17to24_dataarray_data_V_enb [7:0];
 wire [7:0] VMPROJ_L3PHIC17to24_dataarray_data_V_readaddr [7:0];
 wire [20:0] VMPROJ_L3PHIC17to24_dataarray_data_V_dout [7:0];
-wire [6:0]  VMPROJ_L3PHIC17to24_nentries_V_dout [0:1][7:0];
+wire [7:0]  VMPROJ_L3PHIC17to24_nentries_V_dout [0:1][7:0];
    
 genvar vmpidx;
 generate
@@ -311,11 +311,11 @@ endgenerate
 
 // PR Output MC Input
 wire AP_L3PHIC_dataarray_data_V_enb;
-wire[9:0] AP_L3PHIC_dataarray_data_V_readaddr;
-wire[59:0] AP_L3PHIC_dataarray_data_V_dout;
-wire[7:0] AP_L3PHIC_nentries_V_dout [0:7];
+wire [9:0] AP_L3PHIC_dataarray_data_V_readaddr;
+wire [59:0] AP_L3PHIC_dataarray_data_V_dout;
+wire [7:0] AP_L3PHIC_nentries_V_dout [0:7];
 wire AP_L3PHIC_nentries_V_we [0:7];
-wire AP_L3PHIC_nentries_V_din [0:7];
+wire [7:0] AP_L3PHIC_nentries_V_din [0:7];
 
 Memory #(
   .RAM_WIDTH(60),
@@ -362,15 +362,15 @@ Memory #(
 // ME output
 wire [2:0] bx_out_MatchEngine [7:0];
 wire CM_L3PHIC17to24_dataarray_data_V_wea [7:0];
-wire[7:0] CM_L3PHIC17to24_dataarray_data_V_writeaddr [7:0];
-wire[13:0] CM_L3PHIC17to24_dataarray_data_V_din [7:0];
+wire [7:0] CM_L3PHIC17to24_dataarray_data_V_writeaddr [7:0];
+wire [13:0] CM_L3PHIC17to24_dataarray_data_V_din [7:0];
 wire CM_L3PHIC17to24_nentries_V_we [0:1][7:0];
-wire[6:0] CM_L3PHIC17to24_nentries_V_din [0:1][7:0];
+wire [7:0] CM_L3PHIC17to24_nentries_V_din [0:1][7:0];
 wire MatchEngine_done [7:0];
 wire VMSME_L3PHIC17to24n1_dataarray_data_V_enb [7:0];
-wire VMSME_L3PHIC17to24n1_dataarray_data_V_readaddr [7:0];
-wire VMSME_L3PHIC17to24n1_dataarray_data_V_dout [7:0];
-wire[7:0] VMSME_L3PHIC17to24n1_nentries_V_dout [0:3][7:0];
+wire [8:0] VMSME_L3PHIC17to24n1_dataarray_data_V_readaddr [7:0];
+wire [13:0] VMSME_L3PHIC17to24n1_dataarray_data_V_dout [7:0];
+wire [7:0][4:0] VMSME_L3PHIC17to24n1_nentries_V_dout [0:3][7:0];
 
 genvar meidx;
 generate
@@ -447,9 +447,9 @@ end
 
 // MC input
 wire CM_L3PHIC17to24_dataarray_data_V_enb [7:0];
-wire[7:0] CM_L3PHIC17to24_dataarray_data_V_readaddr [7:0];
-wire[13:0] CM_L3PHIC17to24_dataarray_data_V_dout [7:0];
-wire[6:0] CM_L3PHIC17to24_nentries_V_dout [0:1][7:0];
+wire [7:0] CM_L3PHIC17to24_dataarray_data_V_readaddr [7:0];
+wire [13:0] CM_L3PHIC17to24_dataarray_data_V_dout [7:0];
+wire [7:0] CM_L3PHIC17to24_nentries_V_dout [0:1][7:0];
 
 
 genvar cmidx;
@@ -488,12 +488,12 @@ wire FM_L1L2XX_L3PHIC_dataarray_data_V_wea;
 wire [7:0] FM_L1L2XX_L3PHIC_dataarray_data_V_writeaddr;
 wire [44:0] FM_L1L2XX_L3PHIC_dataarray_data_V_din;
 wire FM_L1L2XX_L3PHIC_nentries_V_we [0:1];
-wire [6:0] FM_L1L2XX_L3PHIC_nentries_V_din [0:1];
+wire [7:0] FM_L1L2XX_L3PHIC_nentries_V_din [0:1];
 wire FM_L5L6XX_L3PHIC_dataarray_data_V_wea;
 wire [7:0] FM_L5L6XX_L3PHIC_dataarray_data_V_writeaddr;
 wire [44:0] FM_L5L6XX_L3PHIC_dataarray_data_V_din;
 wire FM_L5L6XX_L3PHIC_nentries_V_we [0:1];
-wire [6:0] FM_L5L6XX_L3PHIC_nentries_V_din [0:1];
+wire [7:0] FM_L5L6XX_L3PHIC_nentries_V_din [0:1];
 //wire MatchCalculator_done;
 
 MC_L3PHIC MC_L3PHIC(
@@ -582,7 +582,7 @@ MC_L3PHIC MC_L3PHIC(
 );
 
 // FM memories
-wire FM_L1L2XX_L3PHIC_nentries_V_dout [0:1];
+wire [7:0] FM_L1L2XX_L3PHIC_nentries_V_dout [0:1];
 Memory #(
   .RAM_WIDTH(45),
   .RAM_DEPTH(256),
@@ -607,7 +607,7 @@ Memory #(
   .regceb(1'b1)
 );
 
-wire FM_L5L6XX_L3PHIC_nentries_V_dout [0:1];
+wire [7:0] FM_L5L6XX_L3PHIC_nentries_V_dout [0:1];
 Memory #(
   .RAM_WIDTH(45),
   .RAM_DEPTH(256),
