@@ -25,7 +25,7 @@ module tb_top_tf();
   integer f_i [0:7];   // File handle
   string FILE_OUT = "../../../../../output.txt";
   integer f_o;         // File handle
-  integer fgets_rtn;
+  integer fscanf_rtn;
 // Signals to connect the DUT /////////////////
 // Control signals
   logic clk     = 1'b0;
@@ -169,7 +169,7 @@ endgenerate
 always begin
   #(c_CLK/2)  if (clk==1'b1) begin // Reading the file
     for (int i = 0; i <= 7; i++) begin
-      fgets_rtn = $fscanf(f_i[i], "%h\n", TPROJ_L3PHIC_dataarray_data_V_din[i]);
+      fscanf_rtn = $fscanf(f_i[i], "%h\n", TPROJ_L3PHIC_dataarray_data_V_din[i]);
       TPROJ_L3PHIC_dataarray_data_V_wea [7:0] = '{default:1};
       if (clk_cnt > 1) begin // Wait one clk
         TPROJ_L3PHIC_dataarray_data_V_writeaddr[i] = TPROJ_L3PHIC_dataarray_data_V_writeaddr[i] + 1;
