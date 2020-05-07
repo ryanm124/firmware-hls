@@ -23,13 +23,14 @@ module tb_top_tf();
                          "TrackletProjections_TPROJ_L1L2G_L3PHIC_04MOD.dat",
                          "TrackletProjections_TPROJ_L1L2F_L3PHIC_04MOD.dat" };
   integer f_i [0:7];   // File handle
-  string FILE_OUT = "../../../../../output.txt";
+  logic read_begin = 1'b0; // Signals when the read process has started
+  string FILE_OUT  = "../../../../../output.txt";
   integer f_o;         // File handle
   integer fscanf_rtn;
 // Signals to connect the DUT /////////////////
 // Control signals
   logic clk     = 1'b0;
-  logic reset   = 1'b0;
+  logic reset   = 1'b1;
   logic en_proc = 1'b0;
   logic [2:0] bx_in_ProjectionRouter;
 // PR inputs
@@ -107,7 +108,7 @@ top_tf top_tf_inst (
 );
 
 
-// Write output to file
+// Open files
 initial  begin
  $dumpfile ("top_tf.vcd"); // Waveform
  $dumpvars; 
@@ -167,15 +168,19 @@ endgenerate
 
 // File read for inputs (from memory .dat files)
 always begin
-  #(c_CLK/2)  if (clk==1'b1) begin // Reading the file
+  #(c_CLK/2)  if (clk==1'b1 & reset==1'b0) begin // Reading the file
     for (int i = 0; i <= 7; i++) begin
       fscanf_rtn = $fscanf(f_i[i], "%h\n", TPROJ_L3PHIC_dataarray_data_V_din[i]);
-      TPROJ_L3PHIC_dataarray_data_V_wea [7:0] = '{default:1};
-      if (clk_cnt > 1) begin // Wait one clk
+      TPROJ_L3PHIC_dataarray_data_V_wea = '{default:1};
+      if (read_begin == 1'b1) begin // Wait one clk
         TPROJ_L3PHIC_dataarray_data_V_writeaddr[i] = TPROJ_L3PHIC_dataarray_data_V_writeaddr[i] + 1;
       end
+      if (TPROJ_L3PHIC_dataarray_data_V_writeaddr[i] == 8'hFF) begin // Reopen file when counter is full
+        $fclose(f_i[i]);
+        f_i[i] = $fopen(FILE_IN[i],"r");
+      end
     end
-    
+    read_begin = 1'b1;
   end
 end
 // Periodic test patterns
@@ -188,22 +193,22 @@ always begin
               end
 end
 // Periodic events rising edge
-always @(posedge clk) begin
-  if (reset) en_proc = 1'b0;
-  else       en_proc = 1'b1;
-end
+// always @(posedge clk) begin
+//   if (reset) en_proc = 1'b0;
+//   else       en_proc = 1'b1;
+// end
 //Rest of testbench code after this line 
 initial begin
   clk   = 1'b0;
   reset = 1'b1;
-  en_proc = 1'b1;
   bx_in_ProjectionRouter = 3'b110;
   #(c_CLK/2)
-  #(c_CLK*9)    reset = 1'b0;
+  #(c_CLK*9)    reset   = 1'b0;
+                en_proc = 1'b1;
   #(c_CLK*10)   FM_L1L2XX_L3PHIC_dataarray_data_V_enb = 1'b1;
                 FM_L5L6XX_L3PHIC_dataarray_data_V_enb = 1'b1;
   #(c_CLK*125)  bx_in_ProjectionRouter <= bx_in_ProjectionRouter + 1'b1;
-  #(c_CLK*50)   for (int i = 0; i <= 7; i++) begin
+  #(c_CLK*500)   for (int i = 0; i <= 7; i++) begin
                   $fclose(f_i[i]);
                 end
                 $fclose(f_o); 
