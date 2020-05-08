@@ -9,24 +9,34 @@ module tb_top_tf();
 // Defines
 `define DEBUG 1
 
-// Simulation constants and signals /////////////////////////////////
+// Simulation signals /////////////////////////////////
   time    c_CLK = 4ns; // Clock periode
   integer clk_cnt = 0; // Clock counter
-  string line;     // String value read from the file
-  string line_sel; // Selected string value read from the file
-  string FILE_IN[0:7] = {"TrackletProjections_TPROJ_L1L2H_L3PHIC_04MOD.dat",
-                         "TrackletProjections_TPROJ_L5L6C_L3PHIC_04MOD.dat",
-                         "TrackletProjections_TPROJ_L1L2I_L3PHIC_04MOD.dat",
-                         "TrackletProjections_TPROJ_L5L6B_L3PHIC_04MOD.dat",
-                         "TrackletProjections_TPROJ_L5L6D_L3PHIC_04MOD.dat",
-                         "TrackletProjections_TPROJ_L1L2J_L3PHIC_04MOD.dat",
-                         "TrackletProjections_TPROJ_L1L2G_L3PHIC_04MOD.dat",
-                         "TrackletProjections_TPROJ_L1L2F_L3PHIC_04MOD.dat" };
-  integer f_i [0:7];   // File handle
-  logic read_begin = 1'b0; // Signals when the read process has started
-  string FILE_OUT  = "../../../../../output.txt";
-  integer f_o;         // File handle
-  integer fscanf_rtn;
+  string  FILE_IN_TPROJ[0:7] = {"TrackletProjections_TPROJ_L1L2H_L3PHIC_04MOD.dat",
+                                "TrackletProjections_TPROJ_L5L6C_L3PHIC_04MOD.dat",
+                                "TrackletProjections_TPROJ_L1L2I_L3PHIC_04MOD.dat",
+                                "TrackletProjections_TPROJ_L5L6B_L3PHIC_04MOD.dat",
+                                "TrackletProjections_TPROJ_L5L6D_L3PHIC_04MOD.dat",
+                                "TrackletProjections_TPROJ_L1L2J_L3PHIC_04MOD.dat",
+                                "TrackletProjections_TPROJ_L1L2G_L3PHIC_04MOD.dat",
+                                "TrackletProjections_TPROJ_L1L2F_L3PHIC_04MOD.dat" };
+  string  FILE_IN_VMSME[0:7] = {"VMStubs_VMSME_L3PHIC17n1_04MOD.dat",
+                                "VMStubs_VMSME_L3PHIC18n1_04MOD.dat",
+                                "VMStubs_VMSME_L3PHIC19n1_04MOD.dat",
+                                "VMStubs_VMSME_L3PHIC20n1_04MOD.dat",
+                                "VMStubs_VMSME_L3PHIC21n1_04MOD.dat",
+                                "VMStubs_VMSME_L3PHIC22n1_04MOD.dat",
+                                "VMStubs_VMSME_L3PHIC23n1_04MOD.dat",
+                                "VMStubs_VMSME_L3PHIC24n1_04MOD.dat" };
+  string  FILE_IN_AS         = "AS_L3PHICn4.dat";
+  string  FILE_OUT           =  "../../../../../output.txt";
+  integer f_i_tproj [0:7];   // File handle
+  integer f_i_vmsme [0:7];   // File handle
+  integer f_i_as;            // File handle
+  string  line;              // String value read from the file
+  logic   read_begin = 1'b0; // Signals when the read process has started
+  integer f_o;               // File handle
+  integer fscanf_rtn;        // Return value
 // Signals to connect the DUT /////////////////
 // Control signals
   logic clk     = 1'b0;
@@ -35,21 +45,28 @@ module tb_top_tf();
   logic [2:0] bx_in_ProjectionRouter;
 // PR inputs
   logic TPROJ_L3PHIC_dataarray_data_V_wea [7:0]             = '{default:0};
-  logic [7:0] TPROJ_L3PHIC_dataarray_data_V_writeaddr [7:0] = '{default:'{default:0} };;
+  logic [7:0] TPROJ_L3PHIC_dataarray_data_V_writeaddr [7:0] = '{default:'{default:0}};
   logic [59:0] TPROJ_L3PHIC_dataarray_data_V_din [7:0];
   logic TPROJ_L3PHIC_nentries_V_we [0:1][7:0]               = '{default:1};
   logic [7:0] TPROJ_L3PHIC_nentries_V_din [0:1][7:0]        = { {8'b00000001, 8'b00010111, 8'b00000100, 8'b00000001, 8'b00000000, 8'b00001010, 8'b00001010, 8'b00000110},
                                                                 {8'b00000000, 8'b00001111, 8'b00001111, 8'b00000100, 8'b00000000, 8'b00001011, 8'b00000010, 8'b00001000} };
-                                                                   //  1, 0,     23, 15,      4, 15,       1, 4,       0, 0,     10, 11,      10, 2,       6, 8
+                                                                    //  1, 0,      23, 15,       4, 15,        1, 4,        0, 0,      10, 11,       10, 2,        6, 8
 // ME inputs
-  logic VMSME_L3PHIC17to24n1_dataarray_data_V_wea [7:0];
-  logic [9:0] VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr [7:0];
+  logic VMSME_L3PHIC17to24n1_dataarray_data_V_wea [7:0]             = '{default:0};
+  logic [9:0] VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr [7:0] = '{default:'{default:0}};
   logic [13:0] VMSME_L3PHIC17to24n1_dataarray_data_V_din [7:0]; 
-  logic VMSME_L3PHIC17to24n1_nentries_V_we [0:7][7:0];
-  logic [6:0] VMSME_L3PHIC17to24n1_nentries_V_din [0:7][7:0];
+  logic VMSME_L3PHIC17to24n1_nentries_V_we [0:7][7:0]               = '{default:1};
+  logic [6:0] VMSME_L3PHIC17to24n1_nentries_V_din [0:7][7:0]        = { {7'b0000000, 7'b0000000, 7'b0000000, 7'b0000000, 7'b0000000, 7'b0000000, 7'b0000000, 7'b0000000},
+                                                                        {7'b0000010, 7'b0000101, 7'b0000000, 7'b0000010, 7'b0000100, 7'b0000001, 7'b0000000, 7'b0000000},
+                                                                        {7'b0000000, 7'b0000001, 7'b0000010, 7'b0000010, 7'b0000010, 7'b0000001, 7'b0000000, 7'b0000000},
+                                                                        {7'b0000001, 7'b0000001, 7'b0000011, 7'b0000001, 7'b0000011, 7'b0000100, 7'b0000100, 7'b0000011},
+                                                                        {7'b0000010, 7'b0000010, 7'b0000011, 7'b0000000, 7'b0000000, 7'b0000100, 7'b0000011, 7'b0000001},
+                                                                        {7'b0000001, 7'b0000001, 7'b0000110, 7'b0000010, 7'b0000010, 7'b0000001, 7'b0000010, 7'b0000001},
+                                                                        {7'b0000000, 7'b0000001, 7'b0000000, 7'b0000000, 7'b0000010, 7'b0000011, 7'b0000000, 7'b0000000},
+                                                                        {7'b0000010, 7'b0000011, 7'b0000001, 7'b0000000, 7'b0000000, 7'b0000001, 7'b0000000, 7'b0000001} };
 // MC inputs
-  logic AS_L3PHICn4_dataarray_data_V_wea;
-  logic [9:0] AS_L3PHICn4_dataarray_data_V_writeaddr;
+  logic AS_L3PHICn4_dataarray_data_V_wea                 = 1'b0;
+  logic [9:0] AS_L3PHICn4_dataarray_data_V_writeaddr     = '{default:0};
   logic [35:0] AS_L3PHICn4_dataarray_data_V_din;
   logic AS_L3PHICn4_dataarray_nentries_V_we [0:7];
   logic [6:0] AS_L3PHICn4_dataarray_nentries_V_din [0:7];
@@ -65,7 +82,6 @@ module tb_top_tf();
 // More control signals
   logic [2:0] bx_out_MatchCalculator;
   logic MatchCalculator_done;
-// Other signals ///////////
 
 
 // Top module //////////////////////////////////////
@@ -113,10 +129,12 @@ initial  begin
  $dumpfile ("top_tf.vcd"); // Waveform
  $dumpvars; 
  for (int i = 0; i <= 7; i++) begin
-   f_i[i] = $fopen(FILE_IN[i],"r");
+   f_i_tproj[i] = $fopen(FILE_IN_TPROJ[i],"r");
+   f_i_vmsme[i] = $fopen(FILE_IN_VMSME[i],"r");
  end
+ f_i_as = $fopen(FILE_IN_AS,"r");
  f_o = $fopen(FILE_OUT,"w");
- $fwrite(f_o,"  time clk_cnt reset   enb readaddr FM_L1L2XX_L3PHIC_*_dout" ,
+ $fwrite(f_o,"  time clk_cnt reset   enb readaddr FM_L1L2XX_L3PHIC_*_dout" , // Write header
                                "   enb readaddr FM_L1L2XX_L3PHIC_*_dout\n");
 end 
 
@@ -132,11 +150,16 @@ always begin
 end
 
 // Print to stdout
-`define DISP0 "\ttime, clk_cnt, reset, TPROJ_L3PHIC_dataarray_data_V_wea, TPROJ_L3PHIC_dataarray_data_V_writeaddr[0], TPROJ_L3PHIC_dataarray_data_V_din[0]"
-`define MON0  "%d, %d, %b,   %h,   %h,   %h", \
+`define DISP0 "\ttime, clk_cnt, reset, TPROJ_L3PHIC_dataarray_data_V_wea, TPROJ_L3PHIC_dataarray_data_V_writeaddr[0], TPROJ_L3PHIC_dataarray_data_V_din[0], \
+VMSME_L3PHIC17to24n1_dataarray_data_V_wea, VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr[0], VMSME_L3PHIC17to24n1_dataarray_data_V_din[0], \
+AS_L3PHICn4_dataarray_data_V_wea, AS_L3PHICn4_dataarray_data_V_writeaddr, AS_L3PHICn4_dataarray_data_V_din"
+`define MON0  "%d, %d, %b,   %h,   %h,   %h,   %h,   %h,   %h,   %h,   %h,   %h", \
               $time, clk_cnt, reset, \
               {TPROJ_L3PHIC_dataarray_data_V_wea[7], TPROJ_L3PHIC_dataarray_data_V_wea[6], TPROJ_L3PHIC_dataarray_data_V_wea[5], TPROJ_L3PHIC_dataarray_data_V_wea[4], TPROJ_L3PHIC_dataarray_data_V_wea[3], TPROJ_L3PHIC_dataarray_data_V_wea[2], TPROJ_L3PHIC_dataarray_data_V_wea[1], TPROJ_L3PHIC_dataarray_data_V_wea[0]}, \
-              TPROJ_L3PHIC_dataarray_data_V_writeaddr[0], TPROJ_L3PHIC_dataarray_data_V_din[0]
+              TPROJ_L3PHIC_dataarray_data_V_writeaddr[0], TPROJ_L3PHIC_dataarray_data_V_din[0], \
+              {VMSME_L3PHIC17to24n1_dataarray_data_V_wea[7], VMSME_L3PHIC17to24n1_dataarray_data_V_wea[6], VMSME_L3PHIC17to24n1_dataarray_data_V_wea[5], VMSME_L3PHIC17to24n1_dataarray_data_V_wea[4], VMSME_L3PHIC17to24n1_dataarray_data_V_wea[3], VMSME_L3PHIC17to24n1_dataarray_data_V_wea[2], VMSME_L3PHIC17to24n1_dataarray_data_V_wea[1], VMSME_L3PHIC17to24n1_dataarray_data_V_wea[0]}, \
+              VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr[0], VMSME_L3PHIC17to24n1_dataarray_data_V_din[0], \
+              AS_L3PHICn4_dataarray_data_V_wea, AS_L3PHICn4_dataarray_data_V_writeaddr, AS_L3PHICn4_dataarray_data_V_din
 `define DISP1 "\ttime, clk_cnt, reset, \
 FM_L1L2XX_L3PHIC_dataarray_data_V_enb, FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr, FM_L1L2XX_L3PHIC_dataarray_data_V_dout, \
 FM_L5L6XX_L3PHIC_dataarray_data_V_enb, FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr, FM_L5L6XX_L3PHIC_dataarray_data_V_dout"
@@ -146,17 +169,17 @@ FM_L5L6XX_L3PHIC_dataarray_data_V_enb, FM_L5L6XX_L3PHIC_dataarray_data_V_readadd
 generate
 if (`DEBUG==1) begin
   initial  begin
-   $display(`DISP0); 
-   $monitor(`MON0); 
-   $display(`DISP1); 
-   $monitor(`MON1); 
-   //#500   $finish; // Finish simulation after x time units
+    $display(`DISP0); 
+    $monitor(`MON0); 
+    $display(`DISP1); 
+    $monitor(`MON1); 
+    #(c_CLK*750)   $finish; // Finish simulation after x time units
   end 
 end
 else begin
   initial begin
     $display(`DISP1);
-    //#5000  $finish; // Finish simulation after x time units
+    #(c_CLK*500)  $finish; // Finish simulation after x time units
   end
   always begin
     #c_CLK  //if (vld_out) begin
@@ -168,19 +191,32 @@ endgenerate
 
 // File read for inputs (from memory .dat files)
 always begin
-  #(c_CLK/2)  if (clk==1'b1 & reset==1'b0) begin // Reading the file
+  #(c_CLK/2)  if (clk==1'b1 & reset==1'b0) begin // Reading the files
     for (int i = 0; i <= 7; i++) begin
-      fscanf_rtn = $fscanf(f_i[i], "%h\n", TPROJ_L3PHIC_dataarray_data_V_din[i]);
-      TPROJ_L3PHIC_dataarray_data_V_wea = '{default:1};
+      fscanf_rtn = $fscanf(f_i_tproj[i], "%h\n", TPROJ_L3PHIC_dataarray_data_V_din[i]);
+      fscanf_rtn = $fscanf(f_i_vmsme[i], "%h\n", VMSME_L3PHIC17to24n1_dataarray_data_V_din[i]);
+      TPROJ_L3PHIC_dataarray_data_V_wea         = '{default:1};
+      VMSME_L3PHIC17to24n1_dataarray_data_V_wea = '{default:1};
       if (read_begin == 1'b1) begin // Wait one clk
-        TPROJ_L3PHIC_dataarray_data_V_writeaddr[i] = TPROJ_L3PHIC_dataarray_data_V_writeaddr[i] + 1;
+        TPROJ_L3PHIC_dataarray_data_V_writeaddr[i]         = TPROJ_L3PHIC_dataarray_data_V_writeaddr[i] + 1;
+        VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr[i] = VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr[i] + 1;
       end
       if (TPROJ_L3PHIC_dataarray_data_V_writeaddr[i] == 8'hFF) begin // Reopen file when counter is full
-        $fclose(f_i[i]);
-        f_i[i] = $fopen(FILE_IN[i],"r");
+        $fclose(f_i_tproj[i]);
+        f_i_tproj[i] = $fopen(FILE_IN_TPROJ[i],"r");
+      end
+      if (VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr[i] == 10'b1111111111) begin // Reopen file when counter is full
+        $fclose(f_i_vmsme[i]);
+        f_i_vmsme[i] = $fopen(FILE_IN_VMSME[i],"r");
       end
     end
     read_begin = 1'b1;
+    fscanf_rtn = $fscanf(f_i_as, "%b\n", AS_L3PHICn4_dataarray_data_V_din);
+    AS_L3PHICn4_dataarray_data_V_wea = 1'b1;
+    if (AS_L3PHICn4_dataarray_data_V_writeaddr == 10'b1111111111) begin // Reopen file when counter is full
+      $fclose(f_i_as);
+      f_i_as = $fopen(FILE_IN_AS,"r");
+    end
   end
 end
 // Periodic test patterns
@@ -208,8 +244,8 @@ initial begin
   #(c_CLK*10)   FM_L1L2XX_L3PHIC_dataarray_data_V_enb = 1'b1;
                 FM_L5L6XX_L3PHIC_dataarray_data_V_enb = 1'b1;
   #(c_CLK*125)  bx_in_ProjectionRouter <= bx_in_ProjectionRouter + 1'b1;
-  #(c_CLK*500)   for (int i = 0; i <= 7; i++) begin
-                  $fclose(f_i[i]);
+  #(c_CLK*500)  for (int i = 0; i <= 7; i++) begin
+                  $fclose(f_i_tproj[i]);
                 end
                 $fclose(f_o); 
                 $finish;
