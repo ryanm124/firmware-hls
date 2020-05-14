@@ -41,23 +41,23 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
 set obj [get_filesets sim_1]
 set files [list \
 	       [file normalize "${origin_dir}/sourceFiles/tb_top_tf.sv"] \
-	       [file normalize "${origin_dir}/emData/AS_L3PHICn4.dat"] \
-	       [file normalize "${origin_dir}/emData/TrackletProjections_TPROJ_L1L2F_L3PHIC_04MOD.dat"] \
-	       [file normalize "${origin_dir}/emData/TrackletProjections_TPROJ_L1L2G_L3PHIC_04MOD.dat"] \
-	       [file normalize "${origin_dir}/emData/TrackletProjections_TPROJ_L1L2H_L3PHIC_04MOD.dat"] \
-	       [file normalize "${origin_dir}/emData/TrackletProjections_TPROJ_L1L2I_L3PHIC_04MOD.dat"] \
-	       [file normalize "${origin_dir}/emData/TrackletProjections_TPROJ_L1L2J_L3PHIC_04MOD.dat"] \
-	       [file normalize "${origin_dir}/emData/TrackletProjections_TPROJ_L5L6B_L3PHIC_04MOD.dat"] \
-	       [file normalize "${origin_dir}/emData/TrackletProjections_TPROJ_L5L6C_L3PHIC_04MOD.dat"] \
-	       [file normalize "${origin_dir}/emData/TrackletProjections_TPROJ_L5L6D_L3PHIC_04MOD.dat"] \
-	       [file normalize "${origin_dir}/emData/VMStubs_VMSME_L3PHIC17n1_04MOD.dat"] \
-	       [file normalize "${origin_dir}/emData/VMStubs_VMSME_L3PHIC18n1_04MOD.dat"] \
-	       [file normalize "${origin_dir}/emData/VMStubs_VMSME_L3PHIC19n1_04MOD.dat"] \
-	       [file normalize "${origin_dir}/emData/VMStubs_VMSME_L3PHIC20n1_04MOD.dat"] \
-	       [file normalize "${origin_dir}/emData/VMStubs_VMSME_L3PHIC21n1_04MOD.dat"] \
-	       [file normalize "${origin_dir}/emData/VMStubs_VMSME_L3PHIC22n1_04MOD.dat"] \
-	       [file normalize "${origin_dir}/emData/VMStubs_VMSME_L3PHIC23n1_04MOD.dat"] \
-	       [file normalize "${origin_dir}/emData/VMStubs_VMSME_L3PHIC24n1_04MOD.dat"] \
+	       [file normalize "${origin_dir}/../../emData/VMR/VMR_L1PHIE/AllStubs_AS_L1PHIEn4_04.dat"] ;#\
+	       # [file normalize "${origin_dir}/../../emData/TC/TC_L1L2G/TrackletProjections_TPROJ_L1L2F_L3PHIC_04.dat"] \
+	       # [file normalize "${origin_dir}/../../emData/TC/TC_L1L2G/TrackletProjections_TPROJ_L1L2G_L3PHIC_04.dat"] \
+	       # [file normalize "${origin_dir}/../../emData/TC/TC_L1L2G/TrackletProjections_TPROJ_L1L2H_L3PHIC_04.dat"] \
+	       # [file normalize "${origin_dir}/../../emData/TC/TC_L1L2G/TrackletProjections_TPROJ_L1L2I_L3PHIC_04.dat"] \
+	       # [file normalize "${origin_dir}/../../emData/TC/TC_L1L2G/TrackletProjections_TPROJ_L1L2J_L3PHIC_04.dat"] \
+	       # [file normalize "${origin_dir}/../../emData/TC/TC_L1L2G/TrackletProjections_TPROJ_L5L6B_L3PHIC_04.dat"] \
+	       # [file normalize "${origin_dir}/../../emData/TC/TC_L1L2G/TrackletProjections_TPROJ_L5L6C_L3PHIC_04.dat"] \
+	       # [file normalize "${origin_dir}/../../emData/TC/TC_L1L2G/TrackletProjections_TPROJ_L5L6D_L3PHIC_04.dat"] \
+	       # [file normalize "${origin_dir}/../../emData/VMR/VMR_L1PHIE/VMStubs_VMSME_L3PHIC17n1_04.dat"] \
+	       # [file normalize "${origin_dir}/../../emData/VMR/VMR_L1PHIE/VMStubs_VMSME_L3PHIC18n1_04.dat"] \
+	       # [file normalize "${origin_dir}/../../emData/VMR/VMR_L1PHIE/VMStubs_VMSME_L3PHIC19n1_04.dat"] \
+	       # [file normalize "${origin_dir}/../../emData/VMR/VMR_L1PHIE/VMStubs_VMSME_L3PHIC20n1_04.dat"] \
+	       # [file normalize "${origin_dir}/../../emData/VMR/VMR_L1PHIE/VMStubs_VMSME_L3PHIC21n1_04.dat"] \
+	       # [file normalize "${origin_dir}/../../emData/VMR/VMR_L1PHIE/VMStubs_VMSME_L3PHIC22n1_04.dat"] \
+	       # [file normalize "${origin_dir}/../../emData/VMR/VMR_L1PHIE/VMStubs_VMSME_L3PHIC23n1_04.dat"] \
+	       # [file normalize "${origin_dir}/../../emData/VMR/VMR_L1PHIE/VMStubs_VMSME_L3PHIC24n1_04.dat"] \
 
 ]
 add_files -norecurse -fileset $obj $files

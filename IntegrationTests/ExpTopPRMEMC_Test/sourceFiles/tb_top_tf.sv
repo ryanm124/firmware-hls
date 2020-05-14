@@ -12,31 +12,30 @@ module tb_top_tf();
 // Simulation signals /////////////////////////////////
   time    c_CLK = 4ns; // Clock periode
   integer clk_cnt = 0; // Clock counter
-  string  FILE_IN_TPROJ[0:7] = {"TrackletProjections_TPROJ_L1L2H_L3PHIC_04MOD.dat",
-                                "TrackletProjections_TPROJ_L5L6C_L3PHIC_04MOD.dat",
-                                "TrackletProjections_TPROJ_L1L2I_L3PHIC_04MOD.dat",
-                                "TrackletProjections_TPROJ_L5L6B_L3PHIC_04MOD.dat",
-                                "TrackletProjections_TPROJ_L5L6D_L3PHIC_04MOD.dat",
-                                "TrackletProjections_TPROJ_L1L2J_L3PHIC_04MOD.dat",
-                                "TrackletProjections_TPROJ_L1L2G_L3PHIC_04MOD.dat",
-                                "TrackletProjections_TPROJ_L1L2F_L3PHIC_04MOD.dat" };
-  string  FILE_IN_VMSME[0:7] = {"VMStubs_VMSME_L3PHIC17n1_04MOD.dat",
-                                "VMStubs_VMSME_L3PHIC18n1_04MOD.dat",
-                                "VMStubs_VMSME_L3PHIC19n1_04MOD.dat",
-                                "VMStubs_VMSME_L3PHIC20n1_04MOD.dat",
-                                "VMStubs_VMSME_L3PHIC21n1_04MOD.dat",
-                                "VMStubs_VMSME_L3PHIC22n1_04MOD.dat",
-                                "VMStubs_VMSME_L3PHIC23n1_04MOD.dat",
-                                "VMStubs_VMSME_L3PHIC24n1_04MOD.dat" };
-  string  FILE_IN_AS         = "AS_L3PHICn4.dat";
+  string  FILE_IN_TPROJ[0:7] = {"TrackletProjections_TPROJ_L1L2H_L3PHIC_04.dat",
+                                "TrackletProjections_TPROJ_L5L6C_L3PHIC_04.dat",
+                                "TrackletProjections_TPROJ_L1L2I_L3PHIC_04.dat",
+                                "TrackletProjections_TPROJ_L5L6B_L3PHIC_04.dat",
+                                "TrackletProjections_TPROJ_L5L6D_L3PHIC_04.dat",
+                                "TrackletProjections_TPROJ_L1L2J_L3PHIC_04.dat",
+                                "TrackletProjections_TPROJ_L1L2G_L3PHIC_04.dat",
+                                "TrackletProjections_TPROJ_L1L2F_L3PHIC_04.dat" };
+  string  FILE_IN_VMSME[0:7] = {"VMStubs_VMSME_L3PHIC17n1_04D.dat",
+                                "VMStubs_VMSME_L3PHIC18n1_04D.dat",
+                                "VMStubs_VMSME_L3PHIC19n1_04D.dat",
+                                "VMStubs_VMSME_L3PHIC20n1_04D.dat",
+                                "VMStubs_VMSME_L3PHIC21n1_04D.dat",
+                                "VMStubs_VMSME_L3PHIC22n1_04D.dat",
+                                "VMStubs_VMSME_L3PHIC23n1_04D.dat",
+                                "VMStubs_VMSME_L3PHIC24n1_04D.dat" };
+  string  FILE_IN_AS         = "AllStubs_AS_L1PHIEn4_04.dat";
   string  FILE_OUT           =  "../../../../../output.txt";
   integer f_i_tproj [0:7];   // File handle
   integer f_i_vmsme [0:7];   // File handle
   integer f_i_as;            // File handle
   string  line;              // String value read from the file
-  logic   read_begin = 1'b0; // Signals when the read process has started
   integer f_o;               // File handle
-  integer fscanf_rtn;        // Return value
+  integer rtn;               // Return value
 // Signals to connect the DUT /////////////////
 // Control signals
   logic clk     = 1'b0;
@@ -82,6 +81,8 @@ module tb_top_tf();
 // More control signals
   logic [2:0] bx_out_MatchCalculator;
   logic MatchCalculator_done;
+// Other related signals /////////////////
+  logic [9:0] AS_L3PHICn4_dataarray_data_V_writeaddr_fscanf;
 
 
 // Top module //////////////////////////////////////
@@ -129,8 +130,8 @@ initial  begin
  $dumpfile ("top_tf.vcd"); // Waveform
  $dumpvars; 
  for (int i = 0; i <= 7; i++) begin
-   f_i_tproj[i] = $fopen(FILE_IN_TPROJ[i],"r");
-   f_i_vmsme[i] = $fopen(FILE_IN_VMSME[i],"r");
+//   f_i_tproj[i] = $fopen(FILE_IN_TPROJ[i],"r");
+//   f_i_vmsme[i] = $fopen(FILE_IN_VMSME[i],"r");
  end
  f_i_as = $fopen(FILE_IN_AS,"r");
  f_o = $fopen(FILE_OUT,"w");
@@ -173,7 +174,7 @@ if (`DEBUG==1) begin
     $monitor(`MON0); 
     $display(`DISP1); 
     $monitor(`MON1); 
-    #(c_CLK*750)   $finish; // Finish simulation after x time units
+    #(c_CLK*7)   $finish; // Finish simulation after x time units
   end 
 end
 else begin
@@ -189,43 +190,73 @@ else begin
 end
 endgenerate
 
-// File read for inputs (from memory .dat files)
-always begin
-  #(c_CLK/2)  if (clk==1'b1 & reset==1'b0) begin // Reading the files
-    for (int i = 0; i <= 7; i++) begin
-      fscanf_rtn = $fscanf(f_i_tproj[i], "%h\n", TPROJ_L3PHIC_dataarray_data_V_din[i]);
-      fscanf_rtn = $fscanf(f_i_vmsme[i], "%h\n", VMSME_L3PHIC17to24n1_dataarray_data_V_din[i]);
-      TPROJ_L3PHIC_dataarray_data_V_wea         = '{default:1};
-      VMSME_L3PHIC17to24n1_dataarray_data_V_wea = '{default:1};
-      if (read_begin == 1'b1) begin // Wait one clk
-        TPROJ_L3PHIC_dataarray_data_V_writeaddr[i]         = TPROJ_L3PHIC_dataarray_data_V_writeaddr[i] + 1;
-        VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr[i] = VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr[i] + 1;
-      end
-      if (TPROJ_L3PHIC_dataarray_data_V_writeaddr[i] == 8'hFF) begin // Reopen file when counter is full
-        $fclose(f_i_tproj[i]);
-        f_i_tproj[i] = $fopen(FILE_IN_TPROJ[i],"r");
-      end
-      if (VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr[i] == 10'b1111111111) begin // Reopen file when counter is full
-        $fclose(f_i_vmsme[i]);
-        f_i_vmsme[i] = $fopen(FILE_IN_VMSME[i],"r");
-      end
+
+typedef logic dataarray_t[0:99][0:127][63:0];
+int n_entries [0:99];
+logic dataarray[0:99][0:127][63:0];
+// Function to read emulation files
+function dataarray_t read_emData(input int file_handle, n_head_col, output int n_entries []);
+  integer n_bx;      // BX number
+  integer rtn;       // Return value
+  string  line;      // String value read from the file
+  integer index;     // Read index
+  logic   dataarray [0:99][0:127][63:0]; // Array of read values
+  logic   addr [0:1024][9:0]; // Dummy read address
+  string  str;       // Dummy read string
+  
+  n_bx = -1;
+  while(! $feof(file_handle)) begin // Read until EoF
+//for (int i = 0; i < 10; i++) begin
+
+    rtn = $fgets(line, file_handle);
+    if (line.substr(0,0) != "0") begin
+      n_bx  = n_bx +1;
+      index = 0;
+      if (`DEBUG==1) begin $display("rtn=%d, header_line=%s", rtn, line); end
     end
-    read_begin = 1'b1;
-    fscanf_rtn = $fscanf(f_i_as, "%b\n", AS_L3PHICn4_dataarray_data_V_din);
-    AS_L3PHICn4_dataarray_data_V_wea = 1'b1;
-    if (AS_L3PHICn4_dataarray_data_V_writeaddr == 10'b1111111111) begin // Reopen file when counter is full
-      $fclose(f_i_as);
-      f_i_as = $fopen(FILE_IN_AS,"r");
+    else begin
+      rtn = $sscanf(line, "%x %s %x\n", addr[index], str, dataarray[n_bx][index]);
+      if (`DEBUG==1) begin $display("n_bx=%d, index=%d, rtn=%d, addr[index]=%x, str=%s, dataarray[n_bx][index]=%x", n_bx, index, rtn, addr[index], str, dataarray[n_bx][index]); end
+      index = index +1;
     end
+//if (index==3) begin break; end
   end
+
+  return dataarray;
+endfunction
+
+
+// File read for inputs (from memory .dat files)
+initial begin
+  for (int i = 0; i <= 7; i++) begin
+//      fscanf_rtn = $fscanf(f_i_tproj[i], "%h\n", TPROJ_L3PHIC_dataarray_data_V_din[i]);
+//      fscanf_rtn = $fscanf(f_i_vmsme[i], "%h\n", VMSME_L3PHIC17to24n1_dataarray_data_V_din[i]);
+  end
+//    fscanf_rtn = $fscanf(f_i_as, "%b\n", AS_L3PHICn4_dataarray_data_V_din); // AS begin -------------------
+
+  dataarray = read_emData(f_i_as, 1, n_entries);
+
 end
 // Periodic test patterns
 always begin
-  #(c_CLK/2)  if (clk==1'b1 & FM_L1L2XX_L3PHIC_dataarray_data_V_enb==1'b1) begin // Writing the file
+  #(c_CLK/2)  if (clk==1'b1 & FM_L1L2XX_L3PHIC_dataarray_data_V_enb==1'b1) begin // Increase counter for output
                 FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr = FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr+1;
               end
-              if (clk==1'b1 & FM_L5L6XX_L3PHIC_dataarray_data_V_enb==1'b1) begin // Writing the file
+              if (clk==1'b1 & FM_L5L6XX_L3PHIC_dataarray_data_V_enb==1'b1) begin // Increase counter for output
                 FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr = FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr+1;
+              end
+              if (clk==1'b1 & reset==1'b0) begin // Input pattern
+                for (int i = 0; i <= 7; i++) begin // TPROJ & VMSME begin -------------------
+//                  TPROJ_L3PHIC_dataarray_data_V_din[i]               = TPROJ_L3PHIC_dataarray_data_V_din_arr[i][TPROJ_L3PHIC_dataarray_data_V_writeaddr];
+//                  VMSME_L3PHIC17to24n1_dataarray_data_V_din[i]       = VMSME_L3PHIC17to24n1_dataarray_data_V_din[i][VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr];
+                  TPROJ_L3PHIC_dataarray_data_V_wea                  = '{default:1};
+                  VMSME_L3PHIC17to24n1_dataarray_data_V_wea          = '{default:1};
+                  TPROJ_L3PHIC_dataarray_data_V_writeaddr[i]         = TPROJ_L3PHIC_dataarray_data_V_writeaddr[i] + 1;
+                  VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr[i] = VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr[i] + 1;
+                end // TPROJ & VMSME end -------------------
+//                AS_L3PHICn4_dataarray_data_V_din       = AS_L3PHICn4_dataarray_data_V_din[AS_L3PHICn4_dataarray_data_V_writeaddr]; // AS begin -------------------
+                AS_L3PHICn4_dataarray_data_V_wea       = 1'b1;
+                AS_L3PHICn4_dataarray_data_V_writeaddr = AS_L3PHICn4_dataarray_data_V_writeaddr +1; // AS end -------------------
               end
 end
 // Periodic events rising edge
