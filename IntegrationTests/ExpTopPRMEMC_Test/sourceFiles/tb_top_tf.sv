@@ -174,7 +174,7 @@ if (`DEBUG==1) begin
     $monitor(`MON0); 
     $display(`DISP1); 
     $monitor(`MON1); 
-    #(c_CLK*7)   $finish; // Finish simulation after x time units
+    #(c_CLK*15)   $finish; // Finish simulation after x time units
   end 
 end
 else begin
@@ -191,38 +191,42 @@ end
 endgenerate
 
 
-typedef logic dataarray_t[0:99][0:127][63:0];
-int n_entries [0:99];
-logic dataarray[0:99][0:127][63:0];
+parameter int c_EVENTS       = 100; // BX events
+parameter int c_N_entries    = 108; // Number of entries: 108 = BX period with 240 MHz
+parameter int c_EMDATA_WIDTH = 68;  // Max. bit width of emData
 // Function to read emulation files
-function dataarray_t read_emData(input int file_handle, n_head_col, output int n_entries []);
+// todo: description
+// todo: n_entries
+// todo: n_head_col page
+// todo: event counter at data assigment
+// todo: print "1,   001,   f3f2107c5" should be 000
+int n_entries[0:c_N_entries-1]; // 
+logic [c_EMDATA_WIDTH-1:0]AS_L3PHICn4_dataarray[0:c_EVENTS-1][0:c_N_entries-1] = '{default:'{default:'{default:0}}};;
+function int read_emData(input int file_handle, n_head_col, output logic [c_EMDATA_WIDTH-1:0]dataarray[0:c_EVENTS-1][0:c_N_entries-1], output int n_entries [0:c_N_entries-1]);
   integer n_bx;      // BX number
   integer rtn;       // Return value
   string  line;      // String value read from the file
   integer index;     // Read index
-  logic   dataarray [0:99][0:127][63:0]; // Array of read values
-  logic   addr [0:1024][9:0]; // Dummy read address
+  logic   [9:0]addr [0:c_N_entries-1]; // Dummy read address
   string  str;       // Dummy read string
   
   n_bx = -1;
   while(! $feof(file_handle)) begin // Read until EoF
-//for (int i = 0; i < 10; i++) begin
-
-    rtn = $fgets(line, file_handle);
-    if (line.substr(0,0) != "0") begin
-      n_bx  = n_bx +1;
-      index = 0;
+    rtn = $fgets(line, file_handle); // Read line
+    if (line.substr(0,1) == "BX" || line == "") begin // Identify a header line or empty line
+      n_bx            = n_bx +1;
+      index           = 0;
+      n_entries[n_bx] = 0;
       if (`DEBUG==1) begin $display("rtn=%d, header_line=%s", rtn, line); end
     end
     else begin
       rtn = $sscanf(line, "%x %s %x\n", addr[index], str, dataarray[n_bx][index]);
-      if (`DEBUG==1) begin $display("n_bx=%d, index=%d, rtn=%d, addr[index]=%x, str=%s, dataarray[n_bx][index]=%x", n_bx, index, rtn, addr[index], str, dataarray[n_bx][index]); end
-      index = index +1;
+      if (`DEBUG==1 && index==0) begin $display("n_bx=%d, index=%d, rtn=%d, addr[index]=%x, str=%s, dataarray[n_bx][index]=%x, n_entries[n_bx]=%d", n_bx, index, rtn, addr[index], str, dataarray[n_bx][index], n_entries[n_bx]); end
+      index           = index +1;
+      n_entries[n_bx] = n_entries[n_bx] +1;
     end
-//if (index==3) begin break; end
   end
-
-  return dataarray;
+  return 0;
 endfunction
 
 
@@ -234,7 +238,7 @@ initial begin
   end
 //    fscanf_rtn = $fscanf(f_i_as, "%b\n", AS_L3PHICn4_dataarray_data_V_din); // AS begin -------------------
 
-  dataarray = read_emData(f_i_as, 1, n_entries);
+  read_emData(f_i_as, 1, AS_L3PHICn4_dataarray, n_entries);
 
 end
 // Periodic test patterns
@@ -254,7 +258,7 @@ always begin
                   TPROJ_L3PHIC_dataarray_data_V_writeaddr[i]         = TPROJ_L3PHIC_dataarray_data_V_writeaddr[i] + 1;
                   VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr[i] = VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr[i] + 1;
                 end // TPROJ & VMSME end -------------------
-//                AS_L3PHICn4_dataarray_data_V_din       = AS_L3PHICn4_dataarray_data_V_din[AS_L3PHICn4_dataarray_data_V_writeaddr]; // AS begin -------------------
+                AS_L3PHICn4_dataarray_data_V_din       = AS_L3PHICn4_dataarray[0][AS_L3PHICn4_dataarray_data_V_writeaddr][35:0]; // AS begin -------------------
                 AS_L3PHICn4_dataarray_data_V_wea       = 1'b1;
                 AS_L3PHICn4_dataarray_data_V_writeaddr = AS_L3PHICn4_dataarray_data_V_writeaddr +1; // AS end -------------------
               end
