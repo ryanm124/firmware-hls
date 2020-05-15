@@ -1,14 +1,13 @@
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   VIVADO_PATH_SH: '/nfs/data41/software/Xilinx/Vivado/${VIVADO_VERSION}/settings64.sh'
-#  CLANG_TIDY_PATH: '/opt/rh/llvm-toolset-7/root/bin/clang-tidy'
-#  CLANG_TIDY_OPTIONS: '-format-style=file' #-config='' does not work because of the quotes; -header-filter in .clang-tidy
-#  CLANG_TIDY_COMP_OPTIONS: '-std=c++11 -I../TrackletAlgorithm -I../TestBenches -I/nfs/data41/software/Xilinx/Vivado/2019.2/include'
+  CLANG_TIDY_PATH: '/opt/rh/llvm-toolset-7/root/bin/clang-tidy'
+  CLANG_TIDY_OPTIONS: '-format-style=file' #-config='' does not work because of the quotes; -header-filter in .clang-tidy
+  CLANG_TIDY_COMP_OPTIONS: '-std=c++11 -I../TrackletAlgorithm -I../TestBenches -I/nfs/data41/software/Xilinx/Vivado/2019.2/include'
 
 stages: # ---------------------------------------------------------------------
 #  - quality-check
   - hls-build
-  - download
   - topTF-build
 
 # Job templates ---------------------------------------------------------------
@@ -17,6 +16,19 @@ stages: # ---------------------------------------------------------------------
     - xilinx-tools
   before_script:
     - source $VIVADO_PATH_SH
+
+.job_template: &template_quality-check
+  tags:
+    - xilinx-tools
+  stage: quality-check
+  script:
+    - cd emData
+    - ./download.sh
+    - cd ../project
+    - pwd; ls -la; #debug
+    # Hard coded -config='' because the quotes do not work in the variable
+    - ${CLANG_TIDY_PATH} -config='' ${CLANG_TIDY_OPTIONS} ${CLANG_TIDY_FILES} -- ${CLANG_TIDY_COMP_OPTIONS} ${CLANG_TIDY_INCLUDES}
+  allow_failure: true # to proceed with errors for now
 
 .job_template: &template_hls-build
   <<: *template_base
@@ -48,6 +60,7 @@ stages: # ---------------------------------------------------------------------
       - ./IntegrationTests/ExpTopPRMEMC_Test/ExpTopPRMEMC_Test/ExpTopPRMEMC_Test.runs/synth_1/top_tf_utilization_synth.rpt
     expire_in: 1 week
 # Jobs ------------------------------------------------------------------------
+# HLS builds ---------------
 PR-hls-build:
   <<: *template_hls-build
   variables:
@@ -63,19 +76,6 @@ MC-hls-build:
   variables:
     VIVADO_VERSION: "2019.2"
     PROJ_NAME: "MC"
-Testdata-download: # Download needed data files to populate initial memories and compare final memories
-  stage: download
-  tags:
-    - xilinx-tools # To make it run on lnxserver327
-  script:
-    - cd IntegrationTests/ExpTopPRMEMC_Test/emData
-    - source download.sh
-  artifacts:
-    when: on_success
-    name: "$CI_JOB_NAME-$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
-    paths:
-      - ./IntegrationTests/ExpTopPRMEMC_Test/emData
-    expire_in: 1 week
 topPRMEMC-build:
   <<: *template_topTF-build
   variables:
