@@ -2,37 +2,37 @@
 
 module top_tf(
 // Control signals
-  input   clk,
-  input   reset,
-  input   en_proc,
-  input [2:0]   bx_in_ProjectionRouter,
+  input clk,
+  input reset,
+  input en_proc,
+  input [2:0] bx_in_ProjectionRouter,
 // PR inputs
   input TPROJ_L3PHIC_dataarray_data_V_wea [7:0],
-  input [7:0] TPROJ_L3PHIC_dataarray_data_V_writeaddr [7:0],
+  input [7:0]  TPROJ_L3PHIC_dataarray_data_V_writeaddr [7:0],
   input [59:0] TPROJ_L3PHIC_dataarray_data_V_din [7:0],
   input TPROJ_L3PHIC_nentries_V_we [0:1][7:0],
-  input [7:0] TPROJ_L3PHIC_nentries_V_din [0:1][7:0],
+  input [7:0]  TPROJ_L3PHIC_nentries_V_din [0:1][7:0],
 // ME inputs
   input VMSME_L3PHIC17to24n1_dataarray_data_V_wea [7:0],
-  input [9:0] VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr [7:0],
+  input [9:0]  VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr [7:0],
   input [13:0] VMSME_L3PHIC17to24n1_dataarray_data_V_din [7:0], 
   input VMSME_L3PHIC17to24n1_nentries_V_we [0:7][7:0],
-  input [6:0] VMSME_L3PHIC17to24n1_nentries_V_din [0:7][7:0],
+  input [6:0]  VMSME_L3PHIC17to24n1_nentries_V_din [0:7][7:0],
 // MC inputs
   input AS_L3PHICn4_dataarray_data_V_wea,
-  input [9:0] AS_L3PHICn4_dataarray_data_V_writeaddr,
+  input [9:0]  AS_L3PHICn4_dataarray_data_V_writeaddr,
   input [35:0] AS_L3PHICn4_dataarray_data_V_din,
   input AS_L3PHICn4_dataarray_nentries_V_we [0:7],
-  input [6:0] AS_L3PHICn4_dataarray_nentries_V_din [0:7],
+  input [6:0]  AS_L3PHICn4_dataarray_nentries_V_din [0:7],
 // MC outputs
-  input FM_L1L2XX_L3PHIC_dataarray_data_V_enb,
-  input [7:0] FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr,
+  input  FM_L1L2XX_L3PHIC_dataarray_data_V_enb,
+  input  [7:0]  FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr,
   output [44:0] FM_L1L2XX_L3PHIC_dataarray_data_V_dout,
-  output [6:0] FM_L1L2XX_L3PHIC_nentries_0_V_dout [0:1],
-  input FM_L5L6XX_L3PHIC_dataarray_data_V_enb,
-  input [7:0] FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr,
+  output [6:0]  FM_L1L2XX_L3PHIC_nentries_0_V_dout [0:1],
+  input  FM_L5L6XX_L3PHIC_dataarray_data_V_enb,
+  input  [7:0]  FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr,
   output [44:0] FM_L5L6XX_L3PHIC_dataarray_data_V_dout,
-  output [6:0] FM_L5L6XX_L3PHIC_nentries_0_V_dout [0:1],
+  output [6:0]  FM_L5L6XX_L3PHIC_nentries_0_V_dout [0:1],
 // More control signals
   output[2:0] bx_out_MatchCalculator,
   output MatchCalculator_done
