@@ -42,24 +42,6 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
 set obj [get_filesets sim_1]
 set files [list \
 	       [file normalize "${origin_dir}/sourceFiles/tb_top_tf.vhd"] \
-	       [file normalize "${origin_dir}/../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L1L2F_L3PHIC_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L1L2G_L3PHIC_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L1L2H_L3PHIC_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L1L2I_L3PHIC_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L1L2J_L3PHIC_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L5L6B_L3PHIC_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L5L6C_L3PHIC_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L5L6D_L3PHIC_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/ME/ME_L3PHIC20/VMStubs_VMSME_L3PHIC20n1_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/ME/ME_L3PHIC20/VMStubs_VMSME_L3PHIC20n1_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/ME/ME_L3PHIC20/VMStubs_VMSME_L3PHIC20n1_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/ME/ME_L3PHIC20/VMStubs_VMSME_L3PHIC20n1_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/ME/ME_L3PHIC20/VMStubs_VMSME_L3PHIC20n1_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/ME/ME_L3PHIC20/VMStubs_VMSME_L3PHIC20n1_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/ME/ME_L3PHIC20/VMStubs_VMSME_L3PHIC20n1_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/ME/ME_L3PHIC20/VMStubs_VMSME_L3PHIC20n1_04.dat"] \
-	       [file normalize "${origin_dir}/../../emData/MC/MC_L3PHIC/AllStubs_AS_L3PHICn6_04.dat"] \
-
 ]
 add_files -norecurse -fileset $obj $files
 
