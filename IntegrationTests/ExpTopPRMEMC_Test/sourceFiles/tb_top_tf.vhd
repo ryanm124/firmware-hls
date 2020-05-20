@@ -2,7 +2,7 @@
 -- CU Boulder
 -------------------------------------------------------------------------------
 --! @file
---! @brief Test bench for the algoTopWrapper using playback/capture BRAM pattern files. 
+--! @brief Test bench for the track finding top using TextIO. 
 --! @author Glein
 --! @date 2020-05-18
 --! @version v.1.0
@@ -38,34 +38,40 @@ end tb_top_tf;
 
 --! @brief TB
 architecture behavior of tb_top_tf is
---	-- ########################### Constant Definitions ###########################
---	-- ############ Please change the constants in this section ###################
---	--constant INPUT_FILE     : string := "../../../../../../submodules/apx-fs-alpha/algoSim/cnt_SBoff.txt"; --! Input file
---	--constant INPUT_FILE     : string := "../../../../../../submodules/apx-fs-alpha/algoSim/cnt_SBon.txt"; --! Input file
---	constant INPUT_FILE  : string := "../../../../../../top/sim/trackerRegion_alltracks_sectors_2x9_TTbar_PU200_7Events_0_plus2x18cnt.txt"; --! Input file
---	constant OUTPUT_FILE : string := "../../../../../../top/sim/result_0_plus2x18cnt.txt"; --! Output file
---	--constant INPUT_FILE  : string := "../../../../../../top/sim/trackerRegion_alltracks_sectors_2x9_TTbar_PU200_7Events_1.txt"; --! Input file
---	--constant OUTPUT_FILE : string := "../../../../../../top/sim/result_1.txt"; --! Output file
---	--constant OUTPUT_FILE    : string  := "../../../../../../submodules/apx-fs-alpha/algoSim/result.txt"; --! Output file
---	constant N_ADD_WR_LINES : integer := 250;                     --! Number of additional lines for the output file 
---	                                                              --! incl. number of header and comment lines of the input file
---	constant CLK_PERIOD        : time    := 3.125 ns;             --! 320.0 MHz
---	constant SIG_RST_HOLD      : integer := 120;             	  --! Reset hold: Long time because of the sync. rst generation in CDC and start-up of 2nd clk
---	constant SIG_START_D       : integer := 10;             	  --! Start delay after rst
---	constant DEBUG             : boolean := true;                 --! Debug off/on
---	constant N_INPUT_STREAMS   : integer := L1T_IN_STREAM_CNT_C;  --! Number of input streams
---	constant N_OUTPUT_STREAMS  : integer := L1T_OUT_STREAM_CNT_C; --! Number of output streams
---	constant MAX_LIMKSEQ_DELAY : integer := 100;                  --! Maximum possible input LinkSeq delay
---	constant LIMKSEQ_OFFSET    : integer := 8;                    --! Offset for string: #LinkSeq
+	-- ########################### Types ###########################
+	type t_str_array_32 is array(natural range <>) of string(1 to 32); --! String array
+	type t_str_array_45 is array(natural range <>) of string(1 to 45); --! String array
 
---	-- ########################### Types ###########################
---	type t_int_array       is array (natural range <>) of integer; --! Interger array type
---	type t_arr_axiStream   is array (natural range <>) of AxiStreamMasterArray(0 to N_INPUT_STREAMS-1); --! Array of AXI streams type
+	-- ########################### Constant Definitions ###########################
+	-- ############ Please change the constants in this section ###################
+	constant FILE_IN_TPROJ : t_str_array_45(0 to 7) := ("TrackletProjections_TPROJ_L1L2H_L3PHIC_04.dat", --! Input files
+                                											"TrackletProjections_TPROJ_L5L6C_L3PHIC_04.dat",
+											                                "TrackletProjections_TPROJ_L1L2I_L3PHIC_04.dat",
+											                                "TrackletProjections_TPROJ_L5L6B_L3PHIC_04.dat",
+											                                "TrackletProjections_TPROJ_L5L6D_L3PHIC_04.dat",
+											                                "TrackletProjections_TPROJ_L1L2J_L3PHIC_04.dat",
+											                                "TrackletProjections_TPROJ_L1L2G_L3PHIC_04.dat",
+											                                "TrackletProjections_TPROJ_L1L2F_L3PHIC_04.dat" );
+	constant FILE_IN_VMSME : t_str_array_32(0 to 7) := ("VMStubs_VMSME_L3PHIC17n1_04D.dat", --! Input files
+                                											"VMStubs_VMSME_L3PHIC18n1_04D.dat",
+											                                "VMStubs_VMSME_L3PHIC19n1_04D.dat",
+											                                "VMStubs_VMSME_L3PHIC20n1_04D.dat",
+											                                "VMStubs_VMSME_L3PHIC21n1_04D.dat",
+											                                "VMStubs_VMSME_L3PHIC22n1_04D.dat",
+											                                "VMStubs_VMSME_L3PHIC23n1_04D.dat",
+											                                "VMStubs_VMSME_L3PHIC24n1_04D.dat" );
+	constant FILE_IN_AS        : string := "../../../../../../../emData/MC/MC_L3PHIC/AllStubs_AS_L3PHICn6_04.dat"; --! Input file
+	constant FILE_OUT					 : string := "../../../../../output.txt"; --! Output file
+	constant N_ADD_WR_LINES 	 : integer := 250;                  --! Number of additional lines for the output file 
+	                                                              --! incl. number of header and comment lines of the input file
+	constant CLK_PERIOD        : time    := 4 ns;             		--! 250 MHz
+	constant DEBUG             : boolean := true;                 --! Debug off/on
 
 	-- ########################### Signals ###########################
-  signal clk     : std_logic;
-  signal reset   : std_logic;
-  signal en_proc : std_logic;
+	-- ### UUT signals ###
+  signal clk     : std_logic := '0';
+  signal reset   : std_logic := '1';
+  signal en_proc : std_logic := '0';
   signal bx_in_ProjectionRouter : std_logic_vector(2 downto 0);
   -- For TrackletProjections memories
   signal TPROJ_L3PHIC_dataarray_data_V_wea       : t_myarray8_1b;
@@ -98,6 +104,24 @@ architecture behavior of tb_top_tf is
   signal bx_out_MatchCalculator     : std_logic_vector(2 downto 0);
   signal bx_out_MatchCalculator_vld : std_logic;
   signal MatchCalculator_done       : std_logic;
+  -- ### Other signals ###
+
+  -- Procedure utilities
+  constant c_EVENTS       :integer := 100; -- BX events
+	constant c_N_ENTRIES    :integer := 108; -- Number of entries: 108 = BX period with 240 MHz
+	constant c_EMDATA_WIDTH :integer := 68;  -- Max. bit width of emData
+  type t_myarray_2d_slv is array(natural range <>, natural range <>) of std_logic_vector(c_EMDATA_WIDTH-1 downto 0); --! 2D array of slv
+  -- Procedure
+  procedure read_emData (
+		file_path  : in  string;
+		n_head_col : in  integer;
+		dataarray  : out t_myarray_2d_slv(0 to c_EVENTS-1,0 to c_N_ENTRIES-1);
+		n_entries  : out integer
+	) is
+	variable k : integer := 0;
+	begin
+		null;
+	end read_emData;
 
 begin
 	-- ########################### Assertion ###########################
@@ -142,31 +166,89 @@ begin
 	    bx_out_MatchCalculator_vld => bx_out_MatchCalculator_vld,
 	    MatchCalculator_done       => MatchCalculator_done );
 
---	-- ########################### Port Map ##########################
+	-- ########################### Port Map ##########################
 
---	-- ########################### Processes ###########################
---	--! @brief Clock process ---------------------------------------
---	CLK_process : process
---	begin
---		algoClk <= '0';
---		wait for CLK_PERIOD/2;
---		algoClk <= '1';
---		wait for CLK_PERIOD/2;
---	end process CLK_process;
+	-- ########################### Processes ###########################
+	--! @brief Clock process ---------------------------------------
+	CLK_process : process
+	begin
+		clk <= '0';
+		wait for CLK_PERIOD/2;
+		clk <= '1';
+		wait for CLK_PERIOD/2;
+	end process CLK_process;
 
---	--! @brief Signaling process ---------------------------------------
---	sig_proc : process
---	begin
---		-- Start-up ------------------------------------------------------------------------
---		algoRst <= '1';          -- Hold reset state
---		wait for SIG_RST_HOLD*CLK_PERIOD; -- Long time because of the sync. rst generation in CDC and start-up of 2nd clk
---		algoRst <= '0';
---		wait for SIG_START_D*CLK_PERIOD;
---		algoStart <= '1';
---		-- Add more assigments but sync. with text_proc ------------------------------------
---		-- ...
---		wait;
---	end process sig_proc;
+	--! @brief TextIO process: file read ---------------------------------------
+	text_proc_in : process
+		-- Constants 
+		
+		-- Files
+		file InF  : text open READ_MODE is FILE_IN_AS;             -- Text - a file of character strings
+		-- TextIO
+		variable ILine        : line;                              -- Line - one string from a text file
+		variable ILine_length : integer;                           -- Length of ILine
+		variable s            : string(1 to 2000);                 -- String for parsing, >= max characters per line
+		variable c            : character;                         -- Character
+		variable i_rd_row     : integer;                           -- Read row index
+		variable n_entries    : integer;			 										 -- Number of entries
+		variable AS_L3PHICn4_dataarray : t_myarray_2d_slv(0 to c_EVENTS-1,0 to c_N_ENTRIES-1);-- := (others => (others => (others => "0")));
+	begin
+		-- Read file header --------------------------------------------------------------
+		readline (InF, ILine);                                                       -- Read 1. line from input file
+		if DEBUG=true then writeline(output, ILine); end if;
+		i_rd_row := 1;                                                               -- Init row index
+--		l_header : while ILine.all(1)='#' loop                                       -- Read the header to determine the mode and link sequence
+--			ILine_length := ILine'length;                                              -- Needed for access after read()
+--			assert ILine_length < s'length report "s'length too small" severity error; -- Make sure s is big enough
+--			read(ILine, s(1 to ILine'length));                                         -- Read line as string
+--			if s(1 to ILine_length)="#Sideband ON" then                                -- Mode1: Sideband ON
+----				if DEBUG=true then assert false report "Mode: " & integer'image(mode) severity note; end if;
+--			end if;
+--			readline (InF, ILine); -- Read individual lines from input file
+--			i_rd_row := i_rd_row+1;
+--		end loop l_header;
+		-- All other reads, assigments, and writes ---------------------------------------
+		--l_rd_row : for i in 0 to 1 loop -- Debug
+
+		read_emData (FILE_IN_AS, 1, AS_L3PHICn4_dataarray, n_entries);
+
+		wait for CLK_PERIOD;
+		file_close(InF);
+		assert false report "Simulation finished!" severity FAILURE;
+--// todo: function/procedure to read emulation files
+--// todo: description
+--// todo: n_entries
+--// todo: n_head_col page
+--// todo: event counter at data assigment
+ 
+--function int read_emData(input int file_handle, n_head_col, output logic [c_EMDATA_WIDTH-1:0]dataarray[0:c_EVENTS-1][0:c_N_entries-1], output int n_entries [0:c_N_entries-1]);
+--  integer n_bx;      // BX number
+--  integer rtn;       // Return value
+--  string  line;      // String value read from the file
+--  integer index;     // Read index
+--  logic   [9:0]addr [0:c_N_entries-1]; // Dummy read address
+--  string  str;       // Dummy read string
+  
+--  n_bx = -1;
+--  while(! $feof(file_handle)) begin // Read until EoF
+--    rtn = $fgets(line, file_handle); // Read line
+--    if (line.substr(0,1) == "BX" || line == "") begin // Identify a header line or empty line
+--      n_bx            = n_bx +1;
+--      index           = 0;
+--      n_entries[n_bx] = 0;
+--      if (`DEBUG==1) begin $display("rtn=%d, header_line=%s", rtn, line); end
+--    end
+--    else begin
+--      rtn = $sscanf(line, "%x %s %x\n", addr[index], str, dataarray[n_bx][index]);
+--      if (`DEBUG==1 && index==0) begin $display("n_bx=%d, index=%d, rtn=%d, addr[index]=%x, str=%s, dataarray[n_bx][index]=%x, n_entries[n_bx]=%d", n_bx, index, rtn, addr[index], str, dataarray[n_bx][index], n_entries[n_bx]); end
+--      index           = index +1;
+--      n_entries[n_bx] = n_entries[n_bx] +1;
+--    end
+--  end
+--  return 0;
+--endfunction
+
+	end process text_proc_in;
 
 --	--! @brief TextIO process ---------------------------------------
 --	text_proc : process
