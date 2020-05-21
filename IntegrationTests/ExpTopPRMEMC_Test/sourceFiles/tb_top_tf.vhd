@@ -106,12 +106,15 @@ architecture behavior of tb_top_tf is
   signal MatchCalculator_done       : std_logic;
   -- ### Other signals ###
 
+
+
   -- Procedure utilities
   constant c_EVENTS       :integer := 100; -- BX events
 	constant c_N_ENTRIES    :integer := 108; -- Number of entries: 108 = BX period with 240 MHz
 	constant c_EMDATA_WIDTH :integer := 68;  -- Max. bit width of emData
   type t_myarray_2d_slv is array(natural range <>, natural range <>) of std_logic_vector(c_EMDATA_WIDTH-1 downto 0); --! 2D array of slv
   -- Procedure
+  --! @brief TextIO procedure to read emData
   procedure read_emData (
 		file_path  : in  string;
 		n_head_col : in  integer;
@@ -123,60 +126,9 @@ architecture behavior of tb_top_tf is
 		null;
 	end read_emData;
 
+
 begin
-	-- ########################### Assertion ###########################
 
-	-- ########################### Instantiation ###########################
-	-- Instantiate the Unit Under Test (UUT)
-	uut : entity work.top_tf
-		port map(
-	    clk     => clk,
-	    reset   => reset,
-    	en_proc => en_proc,
-	    bx_in_ProjectionRouter => bx_in_ProjectionRouter,
-	    -- For TrackletProjections memories
-	    TPROJ_L3PHIC_dataarray_data_V_wea       => TPROJ_L3PHIC_dataarray_data_V_wea,
-	    TPROJ_L3PHIC_dataarray_data_V_writeaddr => TPROJ_L3PHIC_dataarray_data_V_writeaddr,
-	    TPROJ_L3PHIC_dataarray_data_V_din       => TPROJ_L3PHIC_dataarray_data_V_din,
-	    TPROJ_L3PHIC_nentries_V_we  => TPROJ_L3PHIC_nentries_V_we,
-	    TPROJ_L3PHIC_nentries_V_din => TPROJ_L3PHIC_nentries_V_din,
-	    -- For VMStubME memories
-	    VMSME_L3PHIC17to24n1_dataarray_data_V_wea       => VMSME_L3PHIC17to24n1_dataarray_data_V_wea,
-	    VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr => VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr,
-	    VMSME_L3PHIC17to24n1_dataarray_data_V_din       => VMSME_L3PHIC17to24n1_dataarray_data_V_din,
-	    VMSME_L3PHIC17to24n1_nentries_V_we  => VMSME_L3PHIC17to24n1_nentries_V_we,
-	    VMSME_L3PHIC17to24n1_nentries_V_din => VMSME_L3PHIC17to24n1_nentries_V_din,
-	    -- For AllStubs memories
-	    AS_L3PHICn4_dataarray_data_V_wea       => AS_L3PHICn4_dataarray_data_V_wea,
-	    AS_L3PHICn4_dataarray_data_V_writeaddr => AS_L3PHICn4_dataarray_data_V_writeaddr,
-	    AS_L3PHICn4_dataarray_data_V_din       => AS_L3PHICn4_dataarray_data_V_din,
-	    AS_L3PHICn4_nentries_V_we  => AS_L3PHICn4_nentries_V_we,
-	    AS_L3PHICn4_nentries_V_din => AS_L3PHICn4_nentries_V_din,
-	    -- FullMatches output
-	    FM_L1L2XX_L3PHIC_dataarray_data_V_enb      => FM_L1L2XX_L3PHIC_dataarray_data_V_enb, 
-	    FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr => FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr,
-	    FM_L1L2XX_L3PHIC_dataarray_data_V_dout     => FM_L1L2XX_L3PHIC_dataarray_data_V_dout,
-	    FM_L1L2XX_L3PHIC_nentries_V_dout 					 => FM_L1L2XX_L3PHIC_nentries_V_dout,
-	    FM_L5L6XX_L3PHIC_dataarray_data_V_enb      => FM_L5L6XX_L3PHIC_dataarray_data_V_enb,
-	    FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr => FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr,
-	    FM_L5L6XX_L3PHIC_dataarray_data_V_dout     => FM_L5L6XX_L3PHIC_dataarray_data_V_dout,
-	    FM_L5L6XX_L3PHIC_nentries_V_dout 					 => FM_L5L6XX_L3PHIC_nentries_V_dout,
-	    -- MatchCalculator outputs
-	    bx_out_MatchCalculator     => bx_out_MatchCalculator,
-	    bx_out_MatchCalculator_vld => bx_out_MatchCalculator_vld,
-	    MatchCalculator_done       => MatchCalculator_done );
-
-	-- ########################### Port Map ##########################
-
-	-- ########################### Processes ###########################
-	--! @brief Clock process ---------------------------------------
-	CLK_process : process
-	begin
-		clk <= '0';
-		wait for CLK_PERIOD/2;
-		clk <= '1';
-		wait for CLK_PERIOD/2;
-	end process CLK_process;
 
 	--! @brief TextIO process: file read ---------------------------------------
 	text_proc_in : process
@@ -249,6 +201,64 @@ begin
 --endfunction
 
 	end process text_proc_in;
+
+
+
+	-- ########################### Assertion ###########################
+
+	-- ########################### Instantiation ###########################
+	-- Instantiate the Unit Under Test (UUT)
+	uut : entity work.top_tf
+		port map(
+	    clk     => clk,
+	    reset   => reset,
+    	en_proc => en_proc,
+	    bx_in_ProjectionRouter => bx_in_ProjectionRouter,
+	    -- For TrackletProjections memories
+	    TPROJ_L3PHIC_dataarray_data_V_wea       => TPROJ_L3PHIC_dataarray_data_V_wea,
+	    TPROJ_L3PHIC_dataarray_data_V_writeaddr => TPROJ_L3PHIC_dataarray_data_V_writeaddr,
+	    TPROJ_L3PHIC_dataarray_data_V_din       => TPROJ_L3PHIC_dataarray_data_V_din,
+	    TPROJ_L3PHIC_nentries_V_we  => TPROJ_L3PHIC_nentries_V_we,
+	    TPROJ_L3PHIC_nentries_V_din => TPROJ_L3PHIC_nentries_V_din,
+	    -- For VMStubME memories
+	    VMSME_L3PHIC17to24n1_dataarray_data_V_wea       => VMSME_L3PHIC17to24n1_dataarray_data_V_wea,
+	    VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr => VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr,
+	    VMSME_L3PHIC17to24n1_dataarray_data_V_din       => VMSME_L3PHIC17to24n1_dataarray_data_V_din,
+	    VMSME_L3PHIC17to24n1_nentries_V_we  => VMSME_L3PHIC17to24n1_nentries_V_we,
+	    VMSME_L3PHIC17to24n1_nentries_V_din => VMSME_L3PHIC17to24n1_nentries_V_din,
+	    -- For AllStubs memories
+	    AS_L3PHICn4_dataarray_data_V_wea       => AS_L3PHICn4_dataarray_data_V_wea,
+	    AS_L3PHICn4_dataarray_data_V_writeaddr => AS_L3PHICn4_dataarray_data_V_writeaddr,
+	    AS_L3PHICn4_dataarray_data_V_din       => AS_L3PHICn4_dataarray_data_V_din,
+	    AS_L3PHICn4_nentries_V_we  => AS_L3PHICn4_nentries_V_we,
+	    AS_L3PHICn4_nentries_V_din => AS_L3PHICn4_nentries_V_din,
+	    -- FullMatches output
+	    FM_L1L2XX_L3PHIC_dataarray_data_V_enb      => FM_L1L2XX_L3PHIC_dataarray_data_V_enb, 
+	    FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr => FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr,
+	    FM_L1L2XX_L3PHIC_dataarray_data_V_dout     => FM_L1L2XX_L3PHIC_dataarray_data_V_dout,
+	    FM_L1L2XX_L3PHIC_nentries_V_dout 					 => FM_L1L2XX_L3PHIC_nentries_V_dout,
+	    FM_L5L6XX_L3PHIC_dataarray_data_V_enb      => FM_L5L6XX_L3PHIC_dataarray_data_V_enb,
+	    FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr => FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr,
+	    FM_L5L6XX_L3PHIC_dataarray_data_V_dout     => FM_L5L6XX_L3PHIC_dataarray_data_V_dout,
+	    FM_L5L6XX_L3PHIC_nentries_V_dout 					 => FM_L5L6XX_L3PHIC_nentries_V_dout,
+	    -- MatchCalculator outputs
+	    bx_out_MatchCalculator     => bx_out_MatchCalculator,
+	    bx_out_MatchCalculator_vld => bx_out_MatchCalculator_vld,
+	    MatchCalculator_done       => MatchCalculator_done );
+
+	-- ########################### Port Map ##########################
+
+	-- ########################### Processes ###########################
+	--! @brief Clock process ---------------------------------------
+	CLK_process : process
+	begin
+		clk <= '0';
+		wait for CLK_PERIOD/2;
+		clk <= '1';
+		wait for CLK_PERIOD/2;
+	end process CLK_process;
+
+
 
 --	--! @brief TextIO process ---------------------------------------
 --	text_proc : process
