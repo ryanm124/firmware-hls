@@ -112,43 +112,35 @@ architecture behavior of tb_top_tf is
   constant c_EVENTS       :integer := 100; -- BX events
 	constant c_N_ENTRIES    :integer := 108; -- Number of entries: 108 = BX period with 240 MHz
 	constant c_EMDATA_WIDTH :integer := 68;  -- Max. bit width of emData
+	type t_myarray_1d_int is array(natural range <>) of integer; --! 1D array of int
   type t_myarray_2d_slv is array(natural range <>, natural range <>) of std_logic_vector(c_EMDATA_WIDTH-1 downto 0); --! 2D array of slv
   -- Procedure
   --! @brief TextIO procedure to read emData
   procedure read_emData (
-		file_path  : in  string;
-		n_head_col : in  integer;
-		dataarray  : out t_myarray_2d_slv(0 to c_EVENTS-1,0 to c_N_ENTRIES-1);
-		n_entries  : out integer
+		file_path      : in  string;  --! File path as string
+		n_head_col     : in  integer; --! Number of header columns 
+		data_arr       : out t_myarray_2d_slv(0 to c_EVENTS-1,0 to c_N_ENTRIES-1); --! Dataarray with read values
+		n_entries_arr  : out t_myarray_1d_int(0 to c_EVENTS-1) --! Number of entries per event
 	) is
-	variable k : integer := 0;
-	begin
-		null;
-	end read_emData;
+	file     InF   : text open READ_MODE is FILE_IN_AS; --! Text - a file of character strings
+	variable ILine : line;                              --! Line - one string from a text file
 
 
-begin
-
-
-	--! @brief TextIO process: file read ---------------------------------------
-	text_proc_in : process
-		-- Constants 
-		
-		-- Files
-		file InF  : text open READ_MODE is FILE_IN_AS;             -- Text - a file of character strings
-		-- TextIO
-		variable ILine        : line;                              -- Line - one string from a text file
-		variable ILine_length : integer;                           -- Length of ILine
+	variable ILine_length : integer;                           -- Length of ILine
 		variable s            : string(1 to 2000);                 -- String for parsing, >= max characters per line
 		variable c            : character;                         -- Character
 		variable i_rd_row     : integer;                           -- Read row index
-		variable n_entries    : integer;			 										 -- Number of entries
-		variable AS_L3PHICn4_dataarray : t_myarray_2d_slv(0 to c_EVENTS-1,0 to c_N_ENTRIES-1);-- := (others => (others => (others => "0")));
+
+
+
 	begin
-		-- Read file header --------------------------------------------------------------
-		readline (InF, ILine);                                                       -- Read 1. line from input file
+		--data_arr := (others => (others => (others => "0")));
+
+		readline (InF, ILine);
 		if DEBUG=true then writeline(output, ILine); end if;
-		i_rd_row := 1;                                                               -- Init row index
+
+				-- Read file header --------------------------------------------------------------
+--		i_rd_row := 1;                                                               -- Init row index
 --		l_header : while ILine.all(1)='#' loop                                       -- Read the header to determine the mode and link sequence
 --			ILine_length := ILine'length;                                              -- Needed for access after read()
 --			assert ILine_length < s'length report "s'length too small" severity error; -- Make sure s is big enough
@@ -162,10 +154,18 @@ begin
 		-- All other reads, assigments, and writes ---------------------------------------
 		--l_rd_row : for i in 0 to 1 loop -- Debug
 
-		read_emData (FILE_IN_AS, 1, AS_L3PHICn4_dataarray, n_entries);
-
-		wait for CLK_PERIOD;
 		file_close(InF);
+	end read_emData;
+
+
+begin
+
+	process
+		variable n_entries_arr : t_myarray_1d_int(0 to c_EVENTS-1);			 										 -- Number of entries
+		variable AS_L3PHICn4_data_arr : t_myarray_2d_slv(0 to c_EVENTS-1,0 to c_N_ENTRIES-1);-- := (others => (others => (others => "0")));
+	begin
+		read_emData (FILE_IN_AS, 1, AS_L3PHICn4_data_arr, n_entries_arr);
+		wait for CLK_PERIOD;
 		assert false report "Simulation finished!" severity FAILURE;
 --// todo: function/procedure to read emulation files
 --// todo: description
@@ -200,7 +200,7 @@ begin
 --  return 0;
 --endfunction
 
-	end process text_proc_in;
+	end process;
 
 
 

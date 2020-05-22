@@ -6,6 +6,7 @@ set _xil_proj_name_ "ExpTopPRMEMC_Test"
 
 # Create project
 create_project -force ${_xil_proj_name_} ./${_xil_proj_name_} -part xcvu7p-flvb2104-1-e
+set_property target_language VHDL [current_project]
 
 # Set the directory path for the new project
 set proj_dir [get_property directory [current_project]]
