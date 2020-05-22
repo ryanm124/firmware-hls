@@ -28,8 +28,14 @@ library unisim;
 --! Xilinx package
 use unisim.vcomponents.all;
 
+--! stdio library
+library C;
+--! stdio package
+use C.stdio_h.all; -- C like print and scan
+
 --! User packages
 use work.mytypes_pkg.all;
+
 
 
 --! @brief TB
@@ -109,10 +115,12 @@ architecture behavior of tb_top_tf is
 
 
   -- Procedure utilities
-  constant c_EVENTS       :integer := 100; -- BX events
-	constant c_N_ENTRIES    :integer := 108; -- Number of entries: 108 = BX period with 240 MHz
-	constant c_EMDATA_WIDTH :integer := 68;  -- Max. bit width of emData
+  constant c_EVENTS         :integer := 100; 	 -- BX events
+	constant c_N_ENTRIES      :integer := 108; 	 -- Number of entries: 108 = BX period with 240 MHz
+	constant c_EMDATA_WIDTH   :integer := 68;  	 -- Max. bit width of emData
+	constant c_MAX_STR_LENGTH :integer := 2000;  -- Max. characters per line
 	type t_myarray_1d_int is array(natural range <>) of integer; --! 1D array of int
+	type t_myarray_1d_slv is array(natural range <>) of std_logic_vector(integer(ceil(log2(real(c_N_ENTRIES)))) downto 0); --! 1D array of slv
   type t_myarray_2d_slv is array(natural range <>, natural range <>) of std_logic_vector(c_EMDATA_WIDTH-1 downto 0); --! 2D array of slv
   -- Procedure
   --! @brief TextIO procedure to read emData
@@ -122,22 +130,44 @@ architecture behavior of tb_top_tf is
 		data_arr       : out t_myarray_2d_slv(0 to c_EVENTS-1,0 to c_N_ENTRIES-1); --! Dataarray with read values
 		n_entries_arr  : out t_myarray_1d_int(0 to c_EVENTS-1) --! Number of entries per event
 	) is
-	file     InF   : text open READ_MODE is FILE_IN_AS; --! Text - a file of character strings
-	variable ILine : line;                              --! Line - one string from a text file
-
-
-	variable ILine_length : integer;                           -- Length of ILine
-		variable s            : string(1 to 2000);                 -- String for parsing, >= max characters per line
-		variable c            : character;                         -- Character
-		variable i_rd_row     : integer;                           -- Read row index
-
-
-
+	file     file_in 	 			: text open READ_MODE is FILE_IN_AS; 	 	-- Text - a file of character strings
+	variable line_in 	 			: line;    														 	-- Line - one string from a text file
+	variable n_bx      			: integer; 														 	-- BX number
+  variable rtn       			: integer; 														 	-- Return value
+  variable str_line  			: string(1 to c_MAX_STR_LENGTH);       	-- String value read from the file
+  variable index     			: integer; 														 	-- Read index
+  variable addr      			: t_myarray_1d_slv(0 to c_N_ENTRIES-1); -- Read address
+  variable str       			: string(1 to c_MAX_STR_LENGTH);  			-- Dummy read string
+variable slv_8b    			: std_logic_vector(7 downto 0);
+	variable line_in_length : integer;                           		-- Length of line
+	--variable s            : string(1 to 2000);                 -- String for parsing, >= max characters per line
+	--variable c            : character;                         -- Character
+	--variable i_rd_row     : integer;                           -- Read row index
 	begin
-		--data_arr := (others => (others => (others => "0")));
+		data_arr := (others => (others => (others => '0'))); -- Init
+		n_bx     := -1; 																		 --Init
+		--while not endfile(file_in) loop -- Read until EoF
+		for i in 0 to 5 loop -- Debug
+			readline (file_in, line_in);
+	    if (line_in.all(1 to 2) = "BX" or line_in.all = "") then -- Identify a header line or empty line
+	      n_bx            		:= n_bx +1;
+	      index           		:= 0;
+	      n_entries_arr(n_bx) := 0;
+	      if DEBUG=true then writeline(output, line_in); end if;
+	    else
+	    	line_in_length := line_in'length; -- Needed for access after read()
+				assert line_in_length < str_line'length report "str_line'length too small" severity error; -- Make sure string is big enough
+	    	read(line_in, str_line(1 to line_in_length));
+	    	sscanf(str_line, "%h", slv_8b);
+	    	if DEBUG=true then assert false report "slv_8b: " & integer'image(to_integer(unsigned(slv_8b))) severity note; end if;
 
-		readline (InF, ILine);
-		if DEBUG=true then writeline(output, ILine); end if;
+	      --rtn = $sscanf(line, "%x %s %x\n", addr[index], str, dataarray[n_bx][index]);
+	      --if (`DEBUG==1 && index==0) begin $display("n_bx=%d, index=%d, rtn=%d, addr[index]=%x, str=%s, dataarray[n_bx][index]=%x, n_entries[n_bx]=%d", n_bx, index, rtn, addr[index], str, dataarray[n_bx][index], n_entries[n_bx]); end
+	      --index           = index +1;
+	      --n_entries[n_bx] = n_entries[n_bx] +1;
+
+	    end if;
+		end loop;
 
 				-- Read file header --------------------------------------------------------------
 --		i_rd_row := 1;                                                               -- Init row index
@@ -154,7 +184,13 @@ architecture behavior of tb_top_tf is
 		-- All other reads, assigments, and writes ---------------------------------------
 		--l_rd_row : for i in 0 to 1 loop -- Debug
 
-		file_close(InF);
+--// todo: function/procedure to read emulation files
+--// todo: description
+--// todo: n_entries
+--// todo: n_head_col page
+--// todo: event counter at data assigment
+
+		file_close(file_in);
 	end read_emData;
 
 
@@ -167,39 +203,6 @@ begin
 		read_emData (FILE_IN_AS, 1, AS_L3PHICn4_data_arr, n_entries_arr);
 		wait for CLK_PERIOD;
 		assert false report "Simulation finished!" severity FAILURE;
---// todo: function/procedure to read emulation files
---// todo: description
---// todo: n_entries
---// todo: n_head_col page
---// todo: event counter at data assigment
- 
---function int read_emData(input int file_handle, n_head_col, output logic [c_EMDATA_WIDTH-1:0]dataarray[0:c_EVENTS-1][0:c_N_entries-1], output int n_entries [0:c_N_entries-1]);
---  integer n_bx;      // BX number
---  integer rtn;       // Return value
---  string  line;      // String value read from the file
---  integer index;     // Read index
---  logic   [9:0]addr [0:c_N_entries-1]; // Dummy read address
---  string  str;       // Dummy read string
-  
---  n_bx = -1;
---  while(! $feof(file_handle)) begin // Read until EoF
---    rtn = $fgets(line, file_handle); // Read line
---    if (line.substr(0,1) == "BX" || line == "") begin // Identify a header line or empty line
---      n_bx            = n_bx +1;
---      index           = 0;
---      n_entries[n_bx] = 0;
---      if (`DEBUG==1) begin $display("rtn=%d, header_line=%s", rtn, line); end
---    end
---    else begin
---      rtn = $sscanf(line, "%x %s %x\n", addr[index], str, dataarray[n_bx][index]);
---      if (`DEBUG==1 && index==0) begin $display("n_bx=%d, index=%d, rtn=%d, addr[index]=%x, str=%s, dataarray[n_bx][index]=%x, n_entries[n_bx]=%d", n_bx, index, rtn, addr[index], str, dataarray[n_bx][index], n_entries[n_bx]); end
---      index           = index +1;
---      n_entries[n_bx] = n_entries[n_bx] +1;
---    end
---  end
---  return 0;
---endfunction
-
 	end process;
 
 
