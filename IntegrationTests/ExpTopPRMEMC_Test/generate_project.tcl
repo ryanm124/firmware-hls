@@ -41,9 +41,20 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
 
 # Set 'sim_1' fileset object
 set obj [get_filesets sim_1]
-set files [list \
-	       [file normalize "${origin_dir}/sourceFiles/tb_top_tf.vhd"] \
+set files_C [list \
+			[file normalize "${origin_dir}/sourceFiles/stdio/endian_h.vhd"] \
+			[file normalize "${origin_dir}/sourceFiles/stdio/regexp_h.vhd"] \
+			[file normalize "${origin_dir}/sourceFiles/stdio/stdio_h_2args.vhd"] \
+			[file normalize "${origin_dir}/sourceFiles/stdio/strings_h.vhd"] \
+			[file normalize "${origin_dir}/sourceFiles/stdio/ctype_h.vhd"] \
+			[file normalize "${origin_dir}/sourceFiles/stdio/debugio_h.vhd"] \
+			[file normalize "${origin_dir}/sourceFiles/stdio/stdlib_h.vhd"] \
 ]
+set files [list \
+	    	[file normalize "${origin_dir}/sourceFiles/tb_top_tf.vhd"] \
+]
+add_files -norecurse -fileset $obj $files_C
+set_property library C [get_files $files_C]
 add_files -norecurse -fileset $obj $files
 
 # Create .xci file
@@ -74,3 +85,7 @@ launch_simulation
 
 
 exit
+
+#set_property SOURCE_SET sources_1 [get_filesets sim_1]
+#add_files -fileset sim_1 -norecurse {/home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/endian_h.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/regexp_h.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/stdio_h_2args.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/strings_h.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/ctype_h.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/debugio_h.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/stdlib_h.vhd}
+#set_property library C [get_files  {/home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/ctype_h.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/strings_h.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/regexp_h.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/stdlib_h.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/stdio_h_2args.vhd}]
