@@ -41,20 +41,9 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
 
 # Set 'sim_1' fileset object
 set obj [get_filesets sim_1]
-set files_C [list \
-			[file normalize "${origin_dir}/sourceFiles/stdio/endian_h.vhd"] \
-			[file normalize "${origin_dir}/sourceFiles/stdio/regexp_h.vhd"] \
-			[file normalize "${origin_dir}/sourceFiles/stdio/stdio_h_2args.vhd"] \
-			[file normalize "${origin_dir}/sourceFiles/stdio/strings_h.vhd"] \
-			[file normalize "${origin_dir}/sourceFiles/stdio/ctype_h.vhd"] \
-			[file normalize "${origin_dir}/sourceFiles/stdio/debugio_h.vhd"] \
-			[file normalize "${origin_dir}/sourceFiles/stdio/stdlib_h.vhd"] \
-]
 set files [list \
 	    	[file normalize "${origin_dir}/sourceFiles/tb_top_tf.vhd"] \
 ]
-add_files -norecurse -fileset $obj $files_C
-set_property library C [get_files $files_C]
 add_files -norecurse -fileset $obj $files
 
 # Create .xci file
