@@ -28,11 +28,6 @@ library unisim;
 --! Xilinx package
 use unisim.vcomponents.all;
 
---! stdio library
-library C;
---! stdio package
-use C.stdio_h.all; -- C like print and scan
-
 --! User packages
 use work.mytypes_pkg.all;
 
@@ -126,65 +121,48 @@ architecture behavior of tb_top_tf is
   --! @brief TextIO procedure to read emData
   procedure read_emData (
 		file_path      : in  string;  --! File path as string
-		n_head_col     : in  integer; --! Number of header columns 
+		n_x_char       : in  integer; --! Number of 'x' characters before the final value 
 		data_arr       : out t_myarray_2d_slv(0 to c_EVENTS-1,0 to c_N_ENTRIES-1); --! Dataarray with read values
-		n_entries_arr  : out t_myarray_1d_int(0 to c_EVENTS-1) --! Number of entries per event
+		n_entries_arr  : inout t_myarray_1d_int(0 to c_EVENTS-1) --! Number of entries per event; used only as out
 	) is
-	file     file_in 	 			: text open READ_MODE is FILE_IN_AS; 	 	-- Text - a file of character strings
-	variable line_in 	 			: line;    														 	-- Line - one string from a text file
-	variable n_bx      			: integer; 														 	-- BX number
-  variable rtn       			: integer; 														 	-- Return value
-  variable str_line  			: string(1 to c_MAX_STR_LENGTH);       	-- String value read from the file
-  variable index     			: integer; 														 	-- Read index
-  variable addr      			: t_myarray_1d_slv(0 to c_N_ENTRIES-1); -- Read address
-  variable str       			: string(1 to c_MAX_STR_LENGTH);  			-- Dummy read string
-variable slv_8b    			: std_logic_vector(7 downto 0);
-	variable line_in_length : integer;                           		-- Length of line
-	--variable s            : string(1 to 2000);                 -- String for parsing, >= max characters per line
-	--variable c            : character;                         -- Character
-	--variable i_rd_row     : integer;                           -- Read row index
+	file     file_in 	  : text open READ_MODE is FILE_IN_AS; 	 	-- Text - a file of character strings
+	variable line_in 	  : line;    														 	-- Line - one string from a text file
+	variable n_bx       : integer; 														 	-- BX number
+  variable rtn        : integer; 														 	-- Return value
+  variable addr       : t_myarray_1d_slv(0 to c_N_ENTRIES-1); -- Read address
+	variable i_bx_row   : integer;                              -- Read row index
+	variable i_rd_col   : integer;                           		-- Read column index
+	variable cnt_x_char : integer; 															-- Count of 'x' characters
+	variable char       : character;                         		-- Character
 	begin
-		data_arr := (others => (others => (others => '0'))); -- Init
-		n_bx     := -1; 																		 --Init
-		--while not endfile(file_in) loop -- Read until EoF
-		for i in 0 to 5 loop -- Debug
+		data_arr      := (others => (others => (others => '0'))); -- Init
+		n_entries_arr := (others => 0);                           -- Init
+		n_bx          := -1; 																		  --Init
+		l_rd_row : while not endfile(file_in) loop -- Read until EoF
+		--l_rd_row : for i in 0 to 5 loop -- Debug
 			readline (file_in, line_in);
 	    if (line_in.all(1 to 2) = "BX" or line_in.all = "") then -- Identify a header line or empty line
-	      n_bx            		:= n_bx +1;
-	      index           		:= 0;
-	      n_entries_arr(n_bx) := 0;
+	    	i_bx_row := 0;       -- Init
+	      n_bx     := n_bx +1;
 	      if DEBUG=true then writeline(output, line_in); end if;
 	    else
-	    	line_in_length := line_in'length; -- Needed for access after read()
-				assert line_in_length < str_line'length report "str_line'length too small" severity error; -- Make sure string is big enough
-	    	read(line_in, str_line(1 to line_in_length));
-	    	sscanf(str_line, "%h", slv_8b);
-	    	if DEBUG=true then assert false report "slv_8b: " & integer'image(to_integer(unsigned(slv_8b))) severity note; end if;
-
-	      --rtn = $sscanf(line, "%x %s %x\n", addr[index], str, dataarray[n_bx][index]);
-	      --if (`DEBUG==1 && index==0) begin $display("n_bx=%d, index=%d, rtn=%d, addr[index]=%x, str=%s, dataarray[n_bx][index]=%x, n_entries[n_bx]=%d", n_bx, index, rtn, addr[index], str, dataarray[n_bx][index], n_entries[n_bx]); end
-	      --index           = index +1;
-	      --n_entries[n_bx] = n_entries[n_bx] +1;
-
+	    	i_rd_col := 0;   -- Init
+	    	cnt_x_char := 0; -- Init
+				l_rd_col : while line_in'length>0 loop  -- Loop over the columns 
+					read(line_in, char);                  -- Read dummy chars ...
+					if char='x' then                      -- ... until the next x
+						cnt_x_char := cnt_x_char +1;
+						if (cnt_x_char >= n_x_char) then -- Number of 'x' chars reached
+							hread(line_in, data_arr(n_bx,i_bx_row)(line_in'length*4-1 downto 0)); -- Read value as hex slv (line_in'length in hex)
+						end if;
+					end if; 
+				i_rd_col := i_rd_col +1;
+				end loop l_rd_col;
+				n_entries_arr(n_bx) := n_entries_arr(n_bx) +1;
+				i_bx_row := i_bx_row +1;
 	    end if;
-		end loop;
+		end loop l_rd_row;
 
-				-- Read file header --------------------------------------------------------------
---		i_rd_row := 1;                                                               -- Init row index
---		l_header : while ILine.all(1)='#' loop                                       -- Read the header to determine the mode and link sequence
---			ILine_length := ILine'length;                                              -- Needed for access after read()
---			assert ILine_length < s'length report "s'length too small" severity error; -- Make sure s is big enough
---			read(ILine, s(1 to ILine'length));                                         -- Read line as string
---			if s(1 to ILine_length)="#Sideband ON" then                                -- Mode1: Sideband ON
-----				if DEBUG=true then assert false report "Mode: " & integer'image(mode) severity note; end if;
---			end if;
---			readline (InF, ILine); -- Read individual lines from input file
---			i_rd_row := i_rd_row+1;
---		end loop l_header;
-		-- All other reads, assigments, and writes ---------------------------------------
-		--l_rd_row : for i in 0 to 1 loop -- Debug
-
---// todo: function/procedure to read emulation files
 --// todo: description
 --// todo: n_entries
 --// todo: n_head_col page
@@ -197,10 +175,20 @@ variable slv_8b    			: std_logic_vector(7 downto 0);
 begin
 
 	process
-		variable n_entries_arr : t_myarray_1d_int(0 to c_EVENTS-1);			 										 -- Number of entries
-		variable AS_L3PHICn4_data_arr : t_myarray_2d_slv(0 to c_EVENTS-1,0 to c_N_ENTRIES-1);-- := (others => (others => (others => "0")));
+		variable n_entries_arr : t_myarray_1d_int(0 to c_EVENTS-1); -- Number of entries
+		variable AS_L3PHICn4_data_arr : t_myarray_2d_slv(0 to c_EVENTS-1,0 to c_N_ENTRIES-1);
+		variable line_in : line; -- Line for debug
 	begin
-		read_emData (FILE_IN_AS, 1, AS_L3PHICn4_data_arr, n_entries_arr);
+		read_emData (FILE_IN_AS, 2, AS_L3PHICn4_data_arr, n_entries_arr);
+		if DEBUG=true then assert false report "AS_L3PHICn4_data_arr(0,0): \/ (line after next)" severity note; end if;
+    if DEBUG=true then hwrite(line_in, AS_L3PHICn4_data_arr(0,0)); writeline(output, line_in); end if;
+    if DEBUG=true then assert false report "AS_L3PHICn4_data_arr(0,1): \/ (line after next)" severity note; end if;
+    if DEBUG=true then hwrite(line_in, AS_L3PHICn4_data_arr(0,1)); writeline(output, line_in); end if;
+		if DEBUG=true then assert false report "n_entries_arr(0): " & integer'image(n_entries_arr(0)) severity note; end if;
+		if DEBUG=true then assert false report "AS_L3PHICn4_data_arr(99,0): \/ (line after next)" severity note; end if;
+    if DEBUG=true then hwrite(line_in, AS_L3PHICn4_data_arr(99,0)); writeline(output, line_in); end if;
+		if DEBUG=true then assert false report "n_entries_arr(99): " & integer'image(n_entries_arr(99)) severity note; end if;
+
 		wait for CLK_PERIOD;
 		assert false report "Simulation finished!" severity FAILURE;
 	end process;
