@@ -41,26 +41,27 @@ end tb_top_tf;
 architecture behavior of tb_top_tf is
 	-- ########################### Types ###########################
 	type t_str_array_32 is array(natural range <>) of string(1 to 32); --! String array
-	type t_str_array_45 is array(natural range <>) of string(1 to 45); --! String array
+	type t_str_array_86 is array(natural range <>) of string(1 to 86); --! String array
 
 	-- ########################### Constant Definitions ###########################
 	-- ############ Please change the constants in this section ###################
-	constant FILE_IN_TPROJ : t_str_array_45(0 to 7) := ("TrackletProjections_TPROJ_L1L2H_L3PHIC_04.dat", --! Input files
-                                											"TrackletProjections_TPROJ_L5L6C_L3PHIC_04.dat",
-											                                "TrackletProjections_TPROJ_L1L2I_L3PHIC_04.dat",
-											                                "TrackletProjections_TPROJ_L5L6B_L3PHIC_04.dat",
-											                                "TrackletProjections_TPROJ_L5L6D_L3PHIC_04.dat",
-											                                "TrackletProjections_TPROJ_L1L2J_L3PHIC_04.dat",
-											                                "TrackletProjections_TPROJ_L1L2G_L3PHIC_04.dat",
-											                                "TrackletProjections_TPROJ_L1L2F_L3PHIC_04.dat" );
-	constant FILE_IN_VMSME : t_str_array_32(0 to 7) := ("VMStubs_VMSME_L3PHIC17n1_04D.dat", --! Input files
-                                											"VMStubs_VMSME_L3PHIC18n1_04D.dat",
-											                                "VMStubs_VMSME_L3PHIC19n1_04D.dat",
-											                                "VMStubs_VMSME_L3PHIC20n1_04D.dat",
-											                                "VMStubs_VMSME_L3PHIC21n1_04D.dat",
-											                                "VMStubs_VMSME_L3PHIC22n1_04D.dat",
-											                                "VMStubs_VMSME_L3PHIC23n1_04D.dat",
-											                                "VMStubs_VMSME_L3PHIC24n1_04D.dat" );
+	constant N_ME_IN_CHAIN : integer := 8; --! Number of match engines in chain 
+	constant FILE_IN_TPROJ : t_str_array_86(0 to N_ME_IN_CHAIN-1) := ("../../../../../../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L1L2H_L3PHIC_04.dat", --! Input files
+                                																		"../../../../../../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L5L6C_L3PHIC_04.dat",
+											                                							"../../../../../../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L1L2I_L3PHIC_04.dat",
+											                                							"../../../../../../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L5L6B_L3PHIC_04.dat",
+											                                							"../../../../../../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L5L6D_L3PHIC_04.dat",
+											                                							"../../../../../../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L1L2J_L3PHIC_04.dat",
+											                                							"../../../../../../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L1L2G_L3PHIC_04.dat",
+											                                							"../../../../../../../emData/PR/PR_L3PHIC/TrackletProjections_TPROJ_L1L2F_L3PHIC_04.dat" );
+	constant FILE_IN_VMSME : t_str_array_32(0 to N_ME_IN_CHAIN-1) := ("VMStubs_VMSME_L3PHIC17n1_04D.dat", --! Input files
+                                																		"VMStubs_VMSME_L3PHIC18n1_04D.dat",
+											                                							"VMStubs_VMSME_L3PHIC19n1_04D.dat",
+											                                							"VMStubs_VMSME_L3PHIC20n1_04D.dat",
+											                                							"VMStubs_VMSME_L3PHIC21n1_04D.dat",
+											                                							"VMStubs_VMSME_L3PHIC22n1_04D.dat",
+											                                							"VMStubs_VMSME_L3PHIC23n1_04D.dat",
+											                                							"VMStubs_VMSME_L3PHIC24n1_04D.dat" );
 	constant FILE_IN_AS        : string := "../../../../../../../emData/MC/MC_L3PHIC/AllStubs_AS_L3PHICn6_04.dat"; --! Input file
 	constant FILE_OUT					 : string := "../../../../../output.txt"; --! Output file
 	constant N_ADD_WR_LINES 	 : integer := 250;                  --! Number of additional lines for the output file 
@@ -109,27 +110,27 @@ architecture behavior of tb_top_tf is
 
 
 
-  -- Procedure utilities
-  constant c_EVENTS         :integer := 100; 	 -- BX events
-	constant c_N_ENTRIES      :integer := 108; 	 -- Number of entries: 108 = BX period with 240 MHz
-	constant c_EMDATA_WIDTH   :integer := 68;  	 -- Max. bit width of emData
-	constant c_MAX_STR_LENGTH :integer := 2000;  -- Max. characters per line
+  -- Procedure constants and types
+  constant EVENTS         :integer := 100; 	 -- BX events
+	constant N_ENTRIES      :integer := 108; 	 -- Number of entries: 108 = BX period with 240 MHz
+	constant EMDATA_WIDTH   :integer := 68;  	 -- Max. bit width of emData
+	constant MAX_STR_LENGTH :integer := 2000;  -- Max. characters per line
 	type t_myarray_1d_int is array(natural range <>) of integer; --! 1D array of int
-	type t_myarray_1d_slv is array(natural range <>) of std_logic_vector(integer(ceil(log2(real(c_N_ENTRIES)))) downto 0); --! 1D array of slv
-  type t_myarray_2d_slv is array(natural range <>, natural range <>) of std_logic_vector(c_EMDATA_WIDTH-1 downto 0); --! 2D array of slv
+	type t_myarray_1d_slv is array(natural range <>) of std_logic_vector(integer(ceil(log2(real(N_ENTRIES)))) downto 0); --! 1D array of slv
+  type t_myarray_2d_slv is array(natural range <>, natural range <>) of std_logic_vector(EMDATA_WIDTH-1 downto 0); --! 2D array of slv
   -- Procedure
   --! @brief TextIO procedure to read emData
   procedure read_emData (
 		file_path      : in  string;  --! File path as string
 		n_x_char       : in  integer; --! Number of 'x' characters before the final value 
-		data_arr       : out t_myarray_2d_slv(0 to c_EVENTS-1,0 to c_N_ENTRIES-1); --! Dataarray with read values
-		n_entries_arr  : inout t_myarray_1d_int(0 to c_EVENTS-1) --! Number of entries per event; used only as out
+		data_arr       : out t_myarray_2d_slv(0 to EVENTS-1,0 to N_ENTRIES-1); --! Dataarray with read values
+		n_entries_arr  : inout t_myarray_1d_int(0 to EVENTS-1) --! Number of entries per event; used only as out
 	) is
-	file     file_in 	  : text open READ_MODE is FILE_IN_AS; 	 	-- Text - a file of character strings
+	file     file_in 	  : text open READ_MODE is file_path; 	 	-- Text - a file of character strings
 	variable line_in 	  : line;    														 	-- Line - one string from a text file
 	variable n_bx       : integer; 														 	-- BX number
   variable rtn        : integer; 														 	-- Return value
-  variable addr       : t_myarray_1d_slv(0 to c_N_ENTRIES-1); -- Read address
+  variable addr       : t_myarray_1d_slv(0 to N_ENTRIES-1); -- Read address
 	variable i_bx_row   : integer;                              -- Read row index
 	variable i_rd_col   : integer;                           		-- Read column index
 	variable cnt_x_char : integer; 															-- Count of 'x' characters
@@ -137,14 +138,14 @@ architecture behavior of tb_top_tf is
 	begin
 		data_arr      := (others => (others => (others => '0'))); -- Init
 		n_entries_arr := (others => 0);                           -- Init
-		n_bx          := -1; 																		  --Init
+		n_bx          := -1; 																		  -- Init
 		l_rd_row : while not endfile(file_in) loop -- Read until EoF
 		--l_rd_row : for i in 0 to 5 loop -- Debug
 			readline (file_in, line_in);
 	    if (line_in.all(1 to 2) = "BX" or line_in.all = "") then -- Identify a header line or empty line
 	    	i_bx_row := 0;       -- Init
 	      n_bx     := n_bx +1;
-	      if DEBUG=true then writeline(output, line_in); end if;
+	      --if DEBUG=true then writeline(output, line_in); end if;
 	    else
 	    	i_rd_col := 0;   -- Init
 	    	cnt_x_char := 0; -- Init
@@ -164,9 +165,7 @@ architecture behavior of tb_top_tf is
 		end loop l_rd_row;
 
 --// todo: description
---// todo: n_entries
 --// todo: n_head_col page
---// todo: event counter at data assigment
 
 		file_close(file_in);
 	end read_emData;
@@ -175,19 +174,26 @@ architecture behavior of tb_top_tf is
 begin
 
 	process
-		variable n_entries_arr : t_myarray_1d_int(0 to c_EVENTS-1); -- Number of entries
-		variable AS_L3PHICn4_data_arr : t_myarray_2d_slv(0 to c_EVENTS-1,0 to c_N_ENTRIES-1);
+		type t_myarray_1d_1d_int is array(natural range <>) of t_myarray_1d_int(0 to EVENTS-1); --! 1x1D array of int
+  	type t_myarray_1d_2d_slv is array(natural range <>) of t_myarray_2d_slv(0 to EVENTS-1,0 to N_ENTRIES-1); --! 1x2D array of slv
+		variable TPROJ_n_entries_arr : t_myarray_1d_1d_int(0 to N_ME_IN_CHAIN-1);
+		variable TPROJ_L3PHICn4_data_arr : t_myarray_1d_2d_slv(0 to N_ME_IN_CHAIN-1);
+		variable AS_n_entries_arr : t_myarray_1d_int(0 to EVENTS-1);
+		variable AS_L3PHICn4_data_arr : t_myarray_2d_slv(0 to EVENTS-1,0 to N_ENTRIES-1);
 		variable line_in : line; -- Line for debug
 	begin
-		read_emData (FILE_IN_AS, 2, AS_L3PHICn4_data_arr, n_entries_arr);
-		if DEBUG=true then assert false report "AS_L3PHICn4_data_arr(0,0): \/ (line after next)" severity note; end if;
-    if DEBUG=true then hwrite(line_in, AS_L3PHICn4_data_arr(0,0)); writeline(output, line_in); end if;
-    if DEBUG=true then assert false report "AS_L3PHICn4_data_arr(0,1): \/ (line after next)" severity note; end if;
-    if DEBUG=true then hwrite(line_in, AS_L3PHICn4_data_arr(0,1)); writeline(output, line_in); end if;
-		if DEBUG=true then assert false report "n_entries_arr(0): " & integer'image(n_entries_arr(0)) severity note; end if;
-		if DEBUG=true then assert false report "AS_L3PHICn4_data_arr(99,0): \/ (line after next)" severity note; end if;
-    if DEBUG=true then hwrite(line_in, AS_L3PHICn4_data_arr(99,0)); writeline(output, line_in); end if;
-		if DEBUG=true then assert false report "n_entries_arr(99): " & integer'image(n_entries_arr(99)) severity note; end if;
+		read_emData (FILE_IN_AS, 2, AS_L3PHICn4_data_arr, AS_n_entries_arr);
+    if DEBUG=true then write(line_in, string'("AS_L3PHICn4_data_arr(0,0): ")); hwrite(line_in, AS_L3PHICn4_data_arr(0,0)); writeline(output, line_in); end if;
+    if DEBUG=true then write(line_in, string'("AS_L3PHICn4_data_arr(0,1): ")); hwrite(line_in, AS_L3PHICn4_data_arr(0,1)); writeline(output, line_in); end if;
+    if DEBUG=true then write(line_in, string'("AS_n_entries_arr(0): ")); write(line_in, AS_n_entries_arr(0)); writeline(output, line_in); end if;
+		if DEBUG=true then write(line_in, string'("AS_L3PHICn4_data_arr(99,0): ")); hwrite(line_in, AS_L3PHICn4_data_arr(99,0)); writeline(output, line_in); end if;
+		if DEBUG=true then write(line_in, string'("AS_n_entries_arr(99): ")); write(line_in, AS_n_entries_arr(99)); writeline(output, line_in); end if;
+		l_TPROJ_read : for i in 0 to N_ME_IN_CHAIN-1 loop
+			read_emData (FILE_IN_TPROJ(i), 2, TPROJ_L3PHICn4_data_arr(i), TPROJ_n_entries_arr(i));
+			if DEBUG=true then write(line_in, string'("TPROJ_i: ")); write(line_in, i); write(line_in, string'(";   TPROJ_L3PHICn4_data_arr(i)(0,0): ")); hwrite(line_in, TPROJ_L3PHICn4_data_arr(i)(0,0)); writeline(output, line_in); end if;
+    	if DEBUG=true then write(line_in, string'("TPROJ_i: ")); write(line_in, i); write(line_in, string'(";   TPROJ_n_entries_arr(i)(0): ")); write(line_in, TPROJ_n_entries_arr(i)(0)); writeline(output, line_in); end if;
+		end loop l_TPROJ_read;
+		
 
 		wait for CLK_PERIOD;
 		assert false report "Simulation finished!" severity FAILURE;
