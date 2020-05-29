@@ -66,7 +66,7 @@ architecture behavior of tb_top_tf is
 	constant FILE_OUT					 : string := "../../../../../output.txt"; --! Output file
 	constant N_ADD_WR_LINES 	 : integer := 250;                  --! Number of additional lines for the output file 
 	                                                              --! incl. number of header and comment lines of the input file
-	constant CLK_PERIOD        : time    := 4 ns;             		--! 250 MHz
+	constant CLK_PERIOD        : time    := 4.16667 ns;        		--! 240 MHz
 	constant DEBUG             : boolean := true;                 --! Debug off/on
 
 	-- ########################### Signals ###########################
@@ -109,139 +109,41 @@ architecture behavior of tb_top_tf is
   -- ### Other signals ###
 
 
-
-  -- Procedure constants and types
-  constant EVENTS                 :integer := 100; -- BX events
-	constant N_ENTRIES              :integer := 108; -- Number of entries: 108 = BX period with 240 MHz
-	constant EMDATA_WIDTH           :integer := 68;  -- Max. bit width of emData
-	constant N_MEM_BINS             :integer := 8;   -- Number of memory bins
-	constant N_ENTRIES_PER_MEM_BINS :integer := 16;  -- Number of entries per memory bin
-	constant PAGE_OFFSET            :integer := 128; -- Page offset for binned memory
-	type t_myarray_1d_int is array(natural range <>) of integer; --! 1D array of int
-	--type t_myarray_1d_slv is array(natural range <>) of std_logic_vector(integer(ceil(log2(real(N_ENTRIES)))) downto 0); --! 1D array of slv
-  type t_myarray_2d_slv is array(natural range <>, natural range <>) of std_logic_vector(EMDATA_WIDTH-1 downto 0); --! 2D array of slv
-  --! @brief TextIO procedure to read emData
-  --! Assuming n_x_char=2 is normal memory format with the first column as entries counter (not read) per BX
-  --! Assuming n_x_char=1 is binned memory format with the first column as address (16-bit step = 16 entries) and second column as entries counter per BX ...
-  --! ... BX = 000 (even) Event : 1 is page 0 and BX = 001 (odd) Event : 2 is page 1
-  --BX = 000 Event : 1			// page 0
-	--0 0 0101000|100|0000 0x1440 // addr 0
-	--1 0 0101011|100|0100 0x15C4 // addr 16
-	--3 0 0011111|001|0101 0x0F95 // addr 48
-	--3 1 0100000|000|0101 0x1005 // addr 49
-	--...
-	--BX = 001 Event : 2			// page 1
-	--2 0 0101011|000|0011 0x1583 // addr 128+32
-	--...
-	--BX = 010 Event : 3			// page 0
-	--0 0 0011010|001|0000 0x0D10 // addr 0
-  procedure read_emData (
-		file_path      : in  string;  --! File path as string
-		n_x_char       : in  integer; --! Number of 'x' characters before the final value 
-		data_arr       : out t_myarray_2d_slv(0 to EVENTS-1,0 to N_MEM_BINS*N_ENTRIES_PER_MEM_BINS+PAGE_OFFSET-1); --! Dataarray with read values
-		n_entries_arr  : inout t_myarray_1d_int(0 to EVENTS-1) --! Number of entries per event; used only as out
-	) is
-	file     file_in 	       : text open READ_MODE is file_path; 	 -- Text - a file of character strings
-	variable line_in 	       : line;    													 -- Line - one string from a text file
-	variable line_tmp	       : line;    													 -- Line - one string from a text file
-	variable n_bx            : integer; 													 -- BX number
-  variable rtn             : integer; 													 -- Return value
-  --variable addr            : t_myarray_1d_slv(0 to N_ENTRIES-1); -- Read address
-	variable i_bx_row        : integer;                            -- Read row index
-	variable i_rd_col        : integer;                            -- Read column index
-	variable cnt_x_char      : integer; 													 -- Count of 'x' characters
-	variable char            : character;                          -- Character
-	variable mem_bin         : integer; 													 -- Bin number of memory
-	variable n_entry_mem_bin : integer; 													 -- Entry number of memory bin
-	begin
-		data_arr      := (others => (others => (others => '0'))); -- Init
-		n_entries_arr := (others => 0);                           -- Init
-		n_bx          := -1; 																		  -- Init
-		l_rd_row : while not endfile(file_in) loop -- Read until EoF
-		--l_rd_row : for i in 0 to 5 loop -- Debug
-			readline (file_in, line_in);
-	    if (line_in.all(1 to 2) = "BX" or line_in.all = "") then -- Identify a header line or empty line
-	    	i_bx_row := 0;       -- Init
-	      n_bx     := n_bx +1;
-				--if DEBUG=true then writeline(output, line_in); end if;
-	    else
-	    	i_rd_col := 0;   -- Init
-	    	cnt_x_char := 0; -- Init
-				l_rd_col : while line_in'length>0 loop  -- Loop over the columns 
-					read(line_in, char);                  -- Read chars ...
-					if (n_x_char=1) then -- Binned memory ------------>
-						if (i_rd_col=0) then
-							mem_bin := character'pos(char)-48; -- Char to int
-						end if;
-						if (i_rd_col=2) then
-							n_entry_mem_bin := character'pos(char)-48; -- Char to int
-							--if DEBUG=true then write(line_tmp, string'("mem_bin: ")); write(line_tmp, mem_bin); write(line_tmp, string'(";   n_entry_mem_bin: ")); write(line_tmp, n_entry_mem_bin); writeline(output, line_tmp); end if;
-						end if;
-						if (i_rd_col=3 and char/=' ') then -- Second digit
-							n_entry_mem_bin := n_entry_mem_bin*10 + character'pos(char)-48; -- Char to int
-							--if DEBUG=true then write(line_tmp, string'("mem_bin: ")); write(line_tmp, mem_bin); write(line_tmp, string'(";   n_entry_mem_bin: ")); write(line_tmp, n_entry_mem_bin); writeline(output, line_tmp); end if;
-						end if; 
-						if (char='x') then                   -- ... until the next x
-							cnt_x_char := cnt_x_char +1;
-							if (cnt_x_char >= n_x_char) then -- Number of 'x' chars reached
-								if (n_bx mod 2 = 0) then -- Even
-									hread(line_in, data_arr(n_bx,mem_bin*N_ENTRIES_PER_MEM_BINS+n_entry_mem_bin)(line_in'length*4-1 downto 0)); -- Read value as hex slv (line_in'length in hex)
-								else -- Odd
-									hread(line_in, data_arr(n_bx,mem_bin*N_ENTRIES_PER_MEM_BINS+n_entry_mem_bin+PAGE_OFFSET)(line_in'length*4-1 downto 0)); -- Read value as hex slv (line_in'length in hex)
-								end if;
-							end if;
-						end if; 
-							-- Binned memory ------------<
-					elsif (char='x') then                   -- ... until the next x
-						cnt_x_char := cnt_x_char +1;
-						if (cnt_x_char >= n_x_char) then    -- Number of 'x' chars reached
-							hread(line_in, data_arr(n_bx,i_bx_row)(line_in'length*4-1 downto 0)); -- Read value as hex slv (line_in'length in hex)
-						end if;
-					end if; 
-				i_rd_col := i_rd_col +1;
-				end loop l_rd_col;
-				n_entries_arr(n_bx) := n_entries_arr(n_bx) +1;
-				i_bx_row := i_bx_row +1;
-	    end if;
-		end loop l_rd_row;
-		file_close(file_in);
-	end read_emData;
-
-
 begin
 
 	process
-		type t_myarray_1d_1d_int is array(natural range <>) of t_myarray_1d_int(0 to EVENTS-1); --! 1x1D array of int
-  	type t_myarray_1d_2d_slv is array(natural range <>) of t_myarray_2d_slv(0 to EVENTS-1,0 to N_MEM_BINS*N_ENTRIES_PER_MEM_BINS+PAGE_OFFSET-1); --! 1x2D array of slv
+		type t_myarray_1d_1d_int is array(natural range <>) of t_myarray_1d_int(0 to MAX_EVENTS-1); --! 1x1D array of int
+  	type t_myarray_1d_2d_slv is array(natural range <>) of t_myarray_2d_slv(0 to MAX_EVENTS-1,0 to 8*PAGE_OFFSET-1); --! 1x2D array of slv
 		variable TPROJ_L3PHICn4_data_arr            : t_myarray_1d_2d_slv(0 to N_ME_IN_CHAIN-1);
 		variable TPROJ_L3PHICn4_n_entries_arr       : t_myarray_1d_1d_int(0 to N_ME_IN_CHAIN-1);
 		variable VMSME_L3PHIC17to24n1_data_arr      : t_myarray_1d_2d_slv(0 to N_ME_IN_CHAIN-1);
 		variable VMSME_L3PHIC17to24n1_n_entries_arr : t_myarray_1d_1d_int(0 to N_ME_IN_CHAIN-1);
-		variable AS_L3PHICn4_data_arr               : t_myarray_2d_slv(0 to EVENTS-1,0 to N_MEM_BINS*N_ENTRIES_PER_MEM_BINS+PAGE_OFFSET-1);
-		variable AS_L3PHICn4_n_entries_arr          : t_myarray_1d_int(0 to EVENTS-1);
+		variable AS_L3PHICn4_data_arr               : t_myarray_2d_slv(0 to MAX_EVENTS-1,0 to 8*PAGE_OFFSET-1);
+		variable AS_L3PHICn4_n_entries_arr          : t_myarray_1d_int(0 to MAX_EVENTS-1);
 		variable line_in : line; -- Line for debug
 	begin
-		l_TPROJ_read : for i in 0 to N_ME_IN_CHAIN-1 loop
-			read_emData (FILE_IN_TPROJ(i), 2, TPROJ_L3PHICn4_data_arr(i), TPROJ_L3PHICn4_n_entries_arr(i));
-			if DEBUG=true then write(line_in, string'("TPROJ_i: ")); write(line_in, i); write(line_in, string'(";   TPROJ_L3PHICn4_data_arr(i)(0,0): ")); hwrite(line_in, TPROJ_L3PHICn4_data_arr(i)(0,0)); writeline(output, line_in); end if;
-    	if DEBUG=true then write(line_in, string'("TPROJ_i: ")); write(line_in, i); write(line_in, string'(";   TPROJ_L3PHICn4_n_entries_arr(i)(0): ")); write(line_in, TPROJ_L3PHICn4_n_entries_arr(i)(0)); writeline(output, line_in); end if;
-		end loop l_TPROJ_read;
-		l_VMSME_read : for i in 0 to N_ME_IN_CHAIN-1 loop
-			read_emData (FILE_IN_VMSME(i), 1, VMSME_L3PHIC17to24n1_data_arr(i), VMSME_L3PHIC17to24n1_n_entries_arr(i));
-			if DEBUG=true then write(line_in, string'("VMSME_i: ")); write(line_in, i); write(line_in, string'(";   VMSME_L3PHIC17to24n1_data_arr(i)(0,0): ")); hwrite(line_in, VMSME_L3PHIC17to24n1_data_arr(i)(0,0)); writeline(output, line_in); end if;
-    	if DEBUG=true then write(line_in, string'("VMSME_i: ")); write(line_in, i); write(line_in, string'(";   VMSME_L3PHIC17to24n1_n_entries_arr(i)(0): ")); write(line_in, VMSME_L3PHIC17to24n1_n_entries_arr(i)(0)); writeline(output, line_in); end if;
-		end loop l_VMSME_read;
-		l_VMSME_debug0 : for i in 0 to N_MEM_BINS*N_ENTRIES_PER_MEM_BINS+PAGE_OFFSET-1 loop
-    	if DEBUG=true then write(line_in, string'("addr: ")); write(line_in, i); write(line_in, string'(";   VMSME_L3PHIC17to24n1_data_arr(0)(0,addr): ")); hwrite(line_in, VMSME_L3PHIC17to24n1_data_arr(0)(0,i)); writeline(output, line_in); end if;
-		end loop l_VMSME_debug0;
-		l_VMSME_debug99 : for i in 0 to N_MEM_BINS*N_ENTRIES_PER_MEM_BINS+PAGE_OFFSET-1 loop
-    	if DEBUG=true then write(line_in, string'("addr: ")); write(line_in, i); write(line_in, string'(";   VMSME_L3PHIC17to24n1_data_arr(0)(99,addr): ")); hwrite(line_in, VMSME_L3PHIC17to24n1_data_arr(0)(99,i)); writeline(output, line_in); end if;
-		end loop l_VMSME_debug99;
-		read_emData (FILE_IN_AS, 2, AS_L3PHICn4_data_arr, AS_L3PHICn4_n_entries_arr);
+		--l_TPROJ_read : for i in 0 to N_ME_IN_CHAIN-1 loop
+		--	read_emData (FILE_IN_TPROJ(i), 2, TPROJ_L3PHICn4_data_arr(i), TPROJ_L3PHICn4_n_entries_arr(i));
+		--	if DEBUG=true then write(line_in, string'("TPROJ_i: ")); write(line_in, i); write(line_in, string'(";   TPROJ_L3PHICn4_data_arr(i)(0,0): ")); hwrite(line_in, TPROJ_L3PHICn4_data_arr(i)(0,0)); writeline(output, line_in); end if;
+  --  	if DEBUG=true then write(line_in, string'("TPROJ_i: ")); write(line_in, i); write(line_in, string'(";   TPROJ_L3PHICn4_n_entries_arr(i)(0): ")); write(line_in, TPROJ_L3PHICn4_n_entries_arr(i)(0)); writeline(output, line_in); end if;
+		--end loop l_TPROJ_read;
+		--l_VMSME_read : for i in 0 to N_ME_IN_CHAIN-1 loop
+		--	read_emData (FILE_IN_VMSME(i), 1, VMSME_L3PHIC17to24n1_data_arr(i), VMSME_L3PHIC17to24n1_n_entries_arr(i));
+		--	if DEBUG=true then write(line_in, string'("VMSME_i: ")); write(line_in, i); write(line_in, string'(";   VMSME_L3PHIC17to24n1_data_arr(i)(0,0): ")); hwrite(line_in, VMSME_L3PHIC17to24n1_data_arr(i)(0,0)); writeline(output, line_in); end if;
+  --  	if DEBUG=true then write(line_in, string'("VMSME_i: ")); write(line_in, i); write(line_in, string'(";   VMSME_L3PHIC17to24n1_n_entries_arr(i)(0): ")); write(line_in, VMSME_L3PHIC17to24n1_n_entries_arr(i)(0)); writeline(output, line_in); end if;
+		--end loop l_VMSME_read;
+		--l_VMSME_debug0 : for i in 0 to N_MEM_BINS*N_ENTRIES_PER_MEM_BINS+PAGE_OFFSET-1 loop
+  --  	if DEBUG=true then write(line_in, string'("addr: ")); write(line_in, i); write(line_in, string'(";   VMSME_L3PHIC17to24n1_data_arr(0)(0,addr): ")); hwrite(line_in, VMSME_L3PHIC17to24n1_data_arr(0)(0,i)); writeline(output, line_in); end if;
+		--end loop l_VMSME_debug0;
+		--l_VMSME_debug99 : for i in 0 to N_MEM_BINS*N_ENTRIES_PER_MEM_BINS+PAGE_OFFSET-1 loop
+  --  	if DEBUG=true then write(line_in, string'("addr: ")); write(line_in, i); write(line_in, string'(";   VMSME_L3PHIC17to24n1_data_arr(0)(99,addr): ")); hwrite(line_in, VMSME_L3PHIC17to24n1_data_arr(0)(99,i)); writeline(output, line_in); end if;
+		--end loop l_VMSME_debug99;
+		read_emData (FILE_IN_AS, 8, AS_L3PHICn4_data_arr, AS_L3PHICn4_n_entries_arr);
     if DEBUG=true then write(line_in, string'("AS_L3PHICn4_data_arr(0,0): ")); hwrite(line_in, AS_L3PHICn4_data_arr(0,0)); writeline(output, line_in); end if;
-    if DEBUG=true then write(line_in, string'("AS_L3PHICn4_data_arr(0,1): ")); hwrite(line_in, AS_L3PHICn4_data_arr(0,1)); writeline(output, line_in); end if;
+    if DEBUG=true then write(line_in, string'("AS_L3PHICn4_data_arr(0,71): ")); hwrite(line_in, AS_L3PHICn4_data_arr(0,71)); writeline(output, line_in); end if;
     if DEBUG=true then write(line_in, string'("AS_L3PHICn4_n_entries_arr(0): ")); write(line_in, AS_L3PHICn4_n_entries_arr(0)); writeline(output, line_in); end if;
-		if DEBUG=true then write(line_in, string'("AS_L3PHICn4_data_arr(99,0): ")); hwrite(line_in, AS_L3PHICn4_data_arr(99,0)); writeline(output, line_in); end if;
+		if DEBUG=true then write(line_in, string'("AS_L3PHICn4_data_arr(99,0+128*3): ")); hwrite(line_in, AS_L3PHICn4_data_arr(99,0+128*3)); writeline(output, line_in); end if;
+		if DEBUG=true then write(line_in, string'("AS_L3PHICn4_data_arr(99,35+128*3): ")); hwrite(line_in, AS_L3PHICn4_data_arr(99,35+128*3)); writeline(output, line_in); end if;
 		if DEBUG=true then write(line_in, string'("AS_L3PHICn4_n_entries_arr(99): ")); write(line_in, AS_L3PHICn4_n_entries_arr(99)); writeline(output, line_in); end if;
 
 		wait for CLK_PERIOD;
