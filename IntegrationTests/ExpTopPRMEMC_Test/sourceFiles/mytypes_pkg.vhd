@@ -58,9 +58,9 @@ package mytypes_pkg is
   type t_myarray2_8_1b is array(0 to 1, 7 downto 0) of std_logic;
   type t_myarray2_8_8b is array(0 to 1, 7 downto 0) of std_logic_vector(7 downto 0);
   -- 4D
-  type t_myarray2_8_8_1b is array(0 to 1, 0 to 7, 7 downto 0) of std_logic;
-  type t_myarray2_8_8_4b is array(0 to 1, 0 to 7, 7 downto 0) of std_logic_vector(3 downto 0);
-  type t_myarray2_8_8_5b is array(0 to 1, 0 to 7, 7 downto 0) of std_logic_vector(4 downto 0);
+  type t_myarray8_8_8_1b is array(0 to 7, 0 to 7, 7 downto 0) of std_logic;
+  type t_myarray8_8_8_4b is array(0 to 7, 0 to 7, 7 downto 0) of std_logic_vector(3 downto 0);
+  type t_myarray8_8_8_5b is array(0 to 7, 0 to 7, 7 downto 0) of std_logic_vector(4 downto 0);
   -- Others
  	type t_myarray_1d_int is array(natural range <>) of integer;                  --! 1D array of int
  	type t_myarray_2d_int is array(natural range <>,natural range <>) of integer; --! 2D array of int
@@ -109,25 +109,24 @@ package body mytypes_pkg is
 	file     file_in 	       : text open READ_MODE is file_path; 	 -- Text - a file of character strings
 	variable line_in 	       : line;    													 -- Line - one string from a text file
 	variable line_tmp	       : line;    													 -- Line - one string from a text file
-	variable n_bx            : integer; 													 -- BX number
+	variable bx_cnt          : integer; 													 -- BX counter
   variable rtn             : integer; 													 -- Return value
 	variable i_bx_row        : integer;                            -- Read row index
 	variable i_rd_col        : integer;                            -- Read column index
 	variable cnt_x_char      : integer; 													 -- Count of 'x' characters
 	variable char            : character;                          -- Character
 	variable mem_bin         : integer; 													 -- Bin number of memory
-	variable n_entry_mem_bin : integer; 													 -- Entry number of memory bin
 	variable addr_mult       : integer; 													 -- Address multiplier
 	begin
 		data_arr      := (others => (others => (others => '0'))); -- Init
 		n_entries_arr := (others => 0);                           -- Init
-		n_bx          := -1; 																		  -- Init
+		bx_cnt        := -1; 																		  -- Init
 		l_rd_row : while not endfile(file_in) loop -- Read until EoF
 		--l_rd_row : for i in 0 to 5 loop -- Debug
 			readline (file_in, line_in);
 	    if (line_in.all(1 to 2) = "BX" or line_in.all = "") then -- Identify a header line or empty line
 	    	i_bx_row := 0;       -- Init
-	      n_bx     := n_bx +1;
+	      bx_cnt   := bx_cnt +1;
 				--if DEBUG=true then writeline(output, line_in); end if;
 	    else
 	    	i_rd_col := 0;   -- Init
@@ -136,14 +135,14 @@ package body mytypes_pkg is
 					read(line_in, char);                 -- Read chars ...
 					if (char='x') then                   -- ... until the next x
 						if (cnt_x_char >= N_X_CHAR-1) then -- Number of 'x' chars reached
-							addr_mult := n_bx mod N_PAGES;
-							hread(line_in, data_arr(n_bx,i_bx_row+addr_mult*PAGE_OFFSET)(line_in'length*4-1 downto 0)); -- Read value as hex slv (line_in'length in hex)
+							addr_mult := bx_cnt mod N_PAGES;
+							hread(line_in, data_arr(bx_cnt,i_bx_row+addr_mult*PAGE_OFFSET)(line_in'length*4-1 downto 0)); -- Read value as hex slv (line_in'length in hex)
 						end if;
 						cnt_x_char := cnt_x_char +1;
 					end if; 
 				i_rd_col := i_rd_col +1;
 				end loop l_rd_col;
-				n_entries_arr(n_bx) := n_entries_arr(n_bx) +1;
+				n_entries_arr(bx_cnt) := n_entries_arr(bx_cnt) +1;
 				i_bx_row := i_bx_row +1;
 	    end if;
 		end loop l_rd_row;
@@ -165,25 +164,24 @@ package body mytypes_pkg is
 	file     file_in 	       : text open READ_MODE is file_path; 	 -- Text - a file of character strings
 	variable line_in 	       : line;    													 -- Line - one string from a text file
 	variable line_tmp	       : line;    													 -- Line - one string from a text file
-	variable n_bx            : integer; 													 -- BX number
+	variable bx_cnt          : integer; 													 -- BX counter
   variable rtn             : integer; 													 -- Return value
 	variable i_bx_row        : integer;                            -- Read row index
 	variable i_rd_col        : integer;                            -- Read column index
 	variable cnt_x_char      : integer; 													 -- Count of 'x' characters
 	variable char            : character;                          -- Character
 	variable mem_bin         : integer; 													 -- Bin number of memory
-	variable n_entry_mem_bin : integer; 													 -- Entry number of memory bin
 	variable addr_mult       : integer; 													 -- Address multiplier
 	begin
 		data_arr      := (others => (others => (others => '0'))); -- Init
 		n_entries_arr := (others => 0);                           -- Init
-		n_bx          := -1; 																		  -- Init
+		bx_cnt        := -1; 																		  -- Init
 		l_rd_row : while not endfile(file_in) loop -- Read until EoF
 		--l_rd_row : for i in 0 to 5 loop -- Debug
 			readline (file_in, line_in);
 	    if (line_in.all(1 to 2) = "BX" or line_in.all = "") then -- Identify a header line or empty line
 	    	i_bx_row := 0;       -- Init
-	      n_bx     := n_bx +1;
+	      bx_cnt   := bx_cnt +1;
 				--if DEBUG=true then writeline(output, line_in); end if;
 	    else
 	    	i_rd_col := 0;   -- Init
@@ -192,14 +190,14 @@ package body mytypes_pkg is
 					read(line_in, char);                 -- Read chars ...
 					if (char='x') then                   -- ... until the next x
 						if (cnt_x_char >= N_X_CHAR-1) then -- Number of 'x' chars reached
-							addr_mult := n_bx mod N_PAGES;
-							hread(line_in, data_arr(n_bx,i_bx_row+addr_mult*PAGE_OFFSET)(line_in'length*4-1 downto 0)); -- Read value as hex slv (line_in'length in hex)
+							addr_mult := bx_cnt mod N_PAGES;
+							hread(line_in, data_arr(bx_cnt,i_bx_row+addr_mult*PAGE_OFFSET)(line_in'length*4-1 downto 0)); -- Read value as hex slv (line_in'length in hex)
 						end if;
 						cnt_x_char := cnt_x_char +1;
 					end if; 
 				i_rd_col := i_rd_col +1;
 				end loop l_rd_col;
-				n_entries_arr(n_bx) := n_entries_arr(n_bx) +1;
+				n_entries_arr(bx_cnt) := n_entries_arr(bx_cnt) +1;
 				i_bx_row := i_bx_row +1;
 	    end if;
 		end loop l_rd_row;
@@ -241,9 +239,8 @@ package body mytypes_pkg is
 	file     file_in 	       : text open READ_MODE is file_path; 	 -- Text - a file of character strings
 	variable line_in 	       : line;    													 -- Line - one string from a text file
 	variable line_tmp	       : line;    													 -- Line - one string from a text file
-	variable n_bx            : integer; 													 -- BX number
+	variable bx_cnt          : integer; 													 -- BX counter
   variable rtn             : integer; 													 -- Return value
-  --variable addr            : t_myarray_1d_slv(0 to MAX_ENTRIES-1); -- Read address
 	variable i_bx_row        : integer;                            -- Read row index
 	variable i_rd_col        : integer;                            -- Read column index
 	variable cnt_x_char      : integer; 													 -- Count of 'x' characters
@@ -254,13 +251,13 @@ package body mytypes_pkg is
 	begin
 		data_arr      := (others => (others => (others => '0'))); -- Init
 		n_entries_arr := (others => (others => 0));               -- Init
-		n_bx          := -1; 																		  -- Init
+		bx_cnt        := -1; 																		  -- Init
 		l_rd_row : while not endfile(file_in) loop -- Read until EoF
 		--l_rd_row : for i in 0 to 5 loop -- Debug
 			readline (file_in, line_in);
 	    if (line_in.all(1 to 2) = "BX" or line_in.all = "") then -- Identify a header line or empty line
 	    	i_bx_row := 0;       -- Init
-	      n_bx     := n_bx +1;
+	      bx_cnt   := bx_cnt +1;
 				--if DEBUG=true then writeline(output, line_in); end if;
 	    else
 	    	i_rd_col := 0;   -- Init
@@ -281,10 +278,10 @@ package body mytypes_pkg is
 						if (char='x') then                   -- ... until the next x
 							cnt_x_char := cnt_x_char +1;
 							if (cnt_x_char >= N_X_CHAR) then -- Number of 'x' chars reached
-								addr_mult := n_bx mod N_PAGES;
-								hread(line_in, data_arr(n_bx,mem_bin*N_ENTRIES_PER_MEM_BINS+n_entry_mem_bin+addr_mult*PAGE_OFFSET)(line_in'length*4-1 downto 0)); -- Read value as hex slv (line_in'length in hex)
+								addr_mult := bx_cnt mod N_PAGES;
+								hread(line_in, data_arr(bx_cnt,mem_bin*N_ENTRIES_PER_MEM_BINS+n_entry_mem_bin+addr_mult*PAGE_OFFSET)(line_in'length*4-1 downto 0)); -- Read value as hex slv (line_in'length in hex)
 							end if;
-							n_entries_arr(n_bx,mem_bin) := n_entries_arr(n_bx,mem_bin) +1;
+							n_entries_arr(bx_cnt,mem_bin) := n_entries_arr(bx_cnt,mem_bin) +1;
 						end if; 
 				i_rd_col := i_rd_col +1;
 				end loop l_rd_col;
@@ -329,9 +326,8 @@ package body mytypes_pkg is
 	file     file_in 	       : text open READ_MODE is file_path; 	 -- Text - a file of character strings
 	variable line_in 	       : line;    													 -- Line - one string from a text file
 	variable line_tmp	       : line;    													 -- Line - one string from a text file
-	variable n_bx            : integer; 													 -- BX number
+	variable bx_cnt          : integer; 													 -- BX counter
   variable rtn             : integer; 													 -- Return value
-  --variable addr            : t_myarray_1d_slv(0 to MAX_ENTRIES-1); -- Read address
 	variable i_bx_row        : integer;                            -- Read row index
 	variable i_rd_col        : integer;                            -- Read column index
 	variable cnt_x_char      : integer; 													 -- Count of 'x' characters
@@ -342,13 +338,13 @@ package body mytypes_pkg is
 	begin
 		data_arr      := (others => (others => (others => '0'))); -- Init
 		n_entries_arr := (others => (others => 0));               -- Init
-		n_bx          := -1; 																		  -- Init
+		bx_cnt        := -1; 																		  -- Init
 		l_rd_row : while not endfile(file_in) loop -- Read until EoF
 		--l_rd_row : for i in 0 to 5 loop -- Debug
 			readline (file_in, line_in);
 	    if (line_in.all(1 to 2) = "BX" or line_in.all = "") then -- Identify a header line or empty line
 	    	i_bx_row := 0;       -- Init
-	      n_bx     := n_bx +1;
+	      bx_cnt   := bx_cnt +1;
 				--if DEBUG=true then writeline(output, line_in); end if;
 	    else
 	    	i_rd_col := 0;   -- Init
@@ -369,10 +365,10 @@ package body mytypes_pkg is
 						if (char='x') then                   -- ... until the next x
 							cnt_x_char := cnt_x_char +1;
 							if (cnt_x_char >= N_X_CHAR) then -- Number of 'x' chars reached
-								addr_mult := n_bx mod N_PAGES;
-								hread(line_in, data_arr(n_bx,mem_bin*N_ENTRIES_PER_MEM_BINS+n_entry_mem_bin+addr_mult*PAGE_OFFSET)(line_in'length*4-1 downto 0)); -- Read value as hex slv (line_in'length in hex)
+								addr_mult := bx_cnt mod N_PAGES;
+								hread(line_in, data_arr(bx_cnt,mem_bin*N_ENTRIES_PER_MEM_BINS+n_entry_mem_bin+addr_mult*PAGE_OFFSET)(line_in'length*4-1 downto 0)); -- Read value as hex slv (line_in'length in hex)
 							end if;
-							n_entries_arr(n_bx,mem_bin) := n_entries_arr(n_bx,mem_bin) +1;
+							n_entries_arr(bx_cnt,mem_bin) := n_entries_arr(bx_cnt,mem_bin) +1;
 						end if; 
 				i_rd_col := i_rd_col +1;
 				end loop l_rd_col;
