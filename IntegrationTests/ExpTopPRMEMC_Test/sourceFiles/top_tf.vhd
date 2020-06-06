@@ -27,6 +27,7 @@ entity top_tf is
     -- For VMStubME memories
     VMSME_L3PHIC17to24n1_dataarray_data_V_wea       : in t_myarray8_1b;
     VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr : in t_myarray8_9b;
+-- todo: VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr --: t_myarray8_10b
     VMSME_L3PHIC17to24n1_dataarray_data_V_din       : in t_myarray8_14b;
     VMSME_L3PHIC17to24n1_nentries_V_we  : in t_myarray8_8_8_1b;
     VMSME_L3PHIC17to24n1_nentries_V_din : in t_myarray8_8_8_4b;
