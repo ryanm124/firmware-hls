@@ -127,13 +127,13 @@ begin
 
 	--! @brief Read emData process
 	read_data : process
-	variable v_TPROJ_L3PHICn4_data_arr            : t_myarray_1d_2d_slv_2p(0 to N_ME_IN_CHAIN-1);
-	variable v_TPROJ_L3PHICn4_n_entries_arr       : t_myarray_1d_1d_int(0 to N_ME_IN_CHAIN-1);
-	variable v_VMSME_L3PHIC17to24n1_data_arr      : t_myarray_1d_2d_slv_8p(0 to N_ME_IN_CHAIN-1);
-	variable v_VMSME_L3PHIC17to24n1_n_entries_arr : t_myarray_1d_2d_int(0 to N_ME_IN_CHAIN-1);
-	variable v_AS_L3PHICn4_data_arr               : t_myarray_2d_slv(0 to MAX_EVENTS-1,0 to N_ME_IN_CHAIN*PAGE_OFFSET-1);
-	variable v_AS_L3PHICn4_n_entries_arr          : t_myarray_1d_int(0 to MAX_EVENTS-1);
-	variable v_line_in : line; -- Line for debug
+		variable v_TPROJ_L3PHICn4_data_arr            : t_myarray_1d_2d_slv_2p(0 to N_ME_IN_CHAIN-1);
+		variable v_TPROJ_L3PHICn4_n_entries_arr       : t_myarray_1d_1d_int(0 to N_ME_IN_CHAIN-1);
+		variable v_VMSME_L3PHIC17to24n1_data_arr      : t_myarray_1d_2d_slv_8p(0 to N_ME_IN_CHAIN-1);
+		variable v_VMSME_L3PHIC17to24n1_n_entries_arr : t_myarray_1d_2d_int(0 to N_ME_IN_CHAIN-1);
+		variable v_AS_L3PHICn4_data_arr               : t_myarray_2d_slv(0 to MAX_EVENTS-1,0 to N_ME_IN_CHAIN*PAGE_OFFSET-1);
+		variable v_AS_L3PHICn4_n_entries_arr          : t_myarray_1d_int(0 to MAX_EVENTS-1);
+		variable v_line_in : line; -- Line for debug
 	begin
 		-- TPROJ
 		l_TPROJ_read : for i in 0 to N_ME_IN_CHAIN-1 loop
@@ -176,49 +176,52 @@ begin
     wait;
 	end process read_data;
 
-  --! @brief Playback and write process
+  --! @brief Playback process
   --! @BoBX0: en_proc=0, 	w TPROJ p1,
 	--! @BoBX1: en_proc=1, 	w TPROJ p2,	w VMSME p1
 	--! @BoBX2: en_proc=1, 	w TPROJ p1,	w VMSME p2, w AS p1
 	--! @BoBX3: en_proc=1, 	w TPROJ p2,	w VMSME p3, w AS p2
 	--! @BoBX3: en_proc=1, 	w TPROJ p1,	w VMSME p4, w AS p3
 	--! ...
-	playback_and_write : process
-	variable v_page_cnt2               : integer := 0; -- Page counter
-	variable v_page_cnt8               : integer := 0; -- Page counter
-	variable v_VMSME_n_entries_bin     : t_myarray_1d_int(0 to N_ENTRIES_PER_MEM_BINS-1) := (others => 0); -- Number of VMSME entries per bin
-variable v_VMSME_n_entries_bin_cnt : t_myarray_1d_int(0 to N_ENTRIES_PER_MEM_BINS-1) := (others => 0); -- Counter of VMSME entries per bin
-variable v_bin_cnt                 : t_myarray_1d_int(0 to N_ME_IN_CHAIN-1) := (others => 0); -- Bin counter
+	playback : process
+		variable v_page_cnt2_d0            : integer := 0; -- Page counter 
+		variable v_page_cnt2_d1            : integer := 0; -- Page counter delayed by one
+		variable v_page_cnt8               : integer := 0; -- Page counter
+		variable v_VMSME_n_entries_bin     : t_myarray_1d_int(0 to N_ENTRIES_PER_MEM_BINS-1) := (others => 0); -- Number of VMSME entries per bin
+		variable v_VMSME_n_entries_bin_cnt : t_myarray_1d_int(0 to N_ENTRIES_PER_MEM_BINS-1) := (others => 0); -- Counter of VMSME entries per bin
+		variable v_bin_cnt                 : t_myarray_1d_int(0 to N_ME_IN_CHAIN-1) := (others => 0); -- Bin counter
+		variable v_last_bin                : boolean := false; -- Last bin tag
 	begin
 		wait for CLK_PERIOD; -- Let the read process finish
 		reset <= '0';        -- Relase reset
 		l_BX : for v_bx_cnt in -1 to MAX_EVENTS+1 loop -- -1 (to write the first memories before starting) to 101
-		  bx_cnt      <= v_bx_cnt; -- Update the signal
-		  v_page_cnt2 := v_bx_cnt mod 2; -- mod 2
-		  v_page_cnt8 := v_bx_cnt mod N_MEM_BINS; -- mod 8
-		  page_cnt2   <= v_page_cnt2; -- Update the signal
-		  page_cnt8   <= v_page_cnt8; -- Update the signal
-		  v_bin_cnt   := (others => 0);
+		  bx_cnt         <= v_bx_cnt; -- Update the signal
+		  v_page_cnt2_d0 := v_bx_cnt mod 2; -- mod 2
+		  v_page_cnt2_d1 := (v_bx_cnt+1) mod 2; -- mod 2
+		  v_page_cnt8    := v_bx_cnt mod N_MEM_BINS; -- mod 8
+		  page_cnt2      <= v_page_cnt2_d0; -- Update the signal
+		  page_cnt8      <= v_page_cnt8;    -- Update the signal
+		  v_bin_cnt      := (others => 0);
 		  v_VMSME_n_entries_bin_cnt := (others => 0);
 			l_addr : for addr in 0 to MAX_ENTRIES-1 loop -- 0 to 107
 				l_copies : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7 -- Unable to assign arrays directly
+					v_last_bin := false; -- Default assigment
 				  -- TPROJ
 				  if (v_bx_cnt<MAX_EVENTS-1) then -- Start and stop early
 				    TPROJ_L3PHIC_dataarray_data_V_wea <= (others => '1');             
 			      TPROJ_L3PHIC_nentries_V_we        <= (others => (others => '1'));
-						TPROJ_L3PHIC_dataarray_data_V_writeaddr(cp) <= std_logic_vector(to_unsigned(addr+PAGE_OFFSET*v_page_cnt2, TPROJ_L3PHIC_dataarray_data_V_writeaddr(0)'length));
-						TPROJ_L3PHIC_dataarray_data_V_din(cp)       <= TPROJ_L3PHICn4_data_arr(cp)(v_bx_cnt+1,addr+PAGE_OFFSET*v_page_cnt2) (TPROJ_L3PHIC_dataarray_data_V_din(0)'length-1 downto 0);
-					  TPROJ_L3PHIC_nentries_V_din(v_page_cnt2,cp) <= std_logic_vector(to_unsigned(TPROJ_L3PHICn4_n_entries_arr(cp)(v_bx_cnt+1), TPROJ_L3PHIC_nentries_V_din(0,0)'length));
+						TPROJ_L3PHIC_dataarray_data_V_writeaddr(cp) <= std_logic_vector(to_unsigned(addr+PAGE_OFFSET*v_page_cnt2_d1, TPROJ_L3PHIC_dataarray_data_V_writeaddr(0)'length));
+						TPROJ_L3PHIC_dataarray_data_V_din(cp)       <= TPROJ_L3PHICn4_data_arr(cp)(v_bx_cnt+1,addr+PAGE_OFFSET*v_page_cnt2_d1) (TPROJ_L3PHIC_dataarray_data_V_din(0)'length-1 downto 0);
+					  TPROJ_L3PHIC_nentries_V_din(v_page_cnt2_d1,cp) <= std_logic_vector(to_unsigned(TPROJ_L3PHICn4_n_entries_arr(cp)(v_bx_cnt+1), TPROJ_L3PHIC_nentries_V_din(0,0)'length));
 					end if;
 					-- VMSME
 					if (v_bx_cnt>=VMSME_DELAY and v_bx_cnt<MAX_EVENTS) then -- Start after delay of BXs
 						en_proc <= '1'; -- Start the chain
-						VMSME_L3PHIC17to24n1_dataarray_data_V_wea <= (others => '1');                         -- Default assigment
-				    VMSME_L3PHIC17to24n1_nentries_V_we        <= (others => (others => (others => '1'))); -- Default assigment
---					  l_bins : for v_bin_cnt in 0 to N_MEM_BINS-1 loop -- 0 to 7
+						VMSME_L3PHIC17to24n1_dataarray_data_V_wea(cp) <= '1';                                     -- Default assigment
+				    VMSME_L3PHIC17to24n1_nentries_V_we            <= (others => (others => (others => '1'))); -- Default assigment
 						if v_bin_cnt(cp)<=N_MEM_BINS-1 then -- Valid bin
 							v_VMSME_n_entries_bin(cp) := VMSME_L3PHIC17to24n1_n_entries_arr(cp)(v_bx_cnt-VMSME_DELAY,v_bin_cnt(cp));
-VMSME_L3PHIC17to24n1_nentries_V_din(((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS),cp,v_bin_cnt(cp)) <= std_logic_vector(to_unsigned(v_VMSME_n_entries_bin(cp), VMSME_L3PHIC17to24n1_nentries_V_din(0,0,0)'length));
+							VMSME_L3PHIC17to24n1_nentries_V_din(((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS),cp,v_bin_cnt(cp)) <= std_logic_vector(to_unsigned(v_VMSME_n_entries_bin(cp), VMSME_L3PHIC17to24n1_nentries_V_din(0,0,0)'length));
 						end if;
 					  l_bin_empty : while (v_VMSME_n_entries_bin(cp)<=0) loop -- Bin empty
 					  	v_bin_cnt(cp)             := v_bin_cnt(cp) +1;
@@ -229,24 +232,15 @@ VMSME_L3PHIC17to24n1_nentries_V_din(((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS),c
 								exit;
 							end if;
 					  end loop l_bin_empty;
-
---					  	if (v_VMSME_n_entries_bin(cp)>0) then -- Is there an entry
---					  		l_VMSME_n_entries_bin : for v_VMSME_n_entries_bin_cnt in 0 to N_ENTRIES_PER_MEM_BINS-1 loop -- 0 to max 15
 						if v_bin_cnt(cp)<=N_MEM_BINS-1 then -- Valid bin
 							VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(cp) <= std_logic_vector(to_unsigned((v_bin_cnt(cp)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS)), VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(0)'length));
 							VMSME_L3PHIC17to24n1_dataarray_data_V_din(cp)       <= VMSME_L3PHIC17to24n1_data_arr(cp)(v_bx_cnt-VMSME_DELAY, (v_bin_cnt(cp)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS))) (VMSME_L3PHIC17to24n1_dataarray_data_V_din(0)'length-1 downto 0);
 						end if;
-						  
--- 0 0 0 1 6 1 1 0
--- 0 16 32 48 49 50 51 52 53 64
-if DEBUG=true then assert (addr>1 or v_bx_cnt>0) report "addr = " & integer'image(addr) & ";   cp = " & integer'image(addr) & ";   v_bin_cnt(0) = " & integer'image(v_bin_cnt(0)) & ";   v_VMSME_n_entries_bin_cnt(cp) = " & integer'image(v_VMSME_n_entries_bin_cnt(cp)) & ";   waddr = " & integer'image((v_bin_cnt(0)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS))) severity note; end if;
---					  		end loop l_VMSME_n_entries_bin;
---					  	else -- Write zero to the first bin addr
---					  		VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(cp) <= std_logic_vector(to_unsigned(v_bin_cnt(cp)*N_ENTRIES_PER_MEM_BINS, VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(0)'length));
---					  		VMSME_L3PHIC17to24n1_dataarray_data_V_din(cp)       <= (others => '0');
---if DEBUG=true then assert (addr>1 or v_bx_cnt>0) report "addr = " & integer'image(addr) & ";   cp = " & integer'image(addr) & ";   v_bin_cnt(0) = " & integer'image(v_bin_cnt(0)) & ";   waddr = " & integer'image(v_bin_cnt(0)*N_ENTRIES_PER_MEM_BINS) severity note; end if;
---					  	end if;
+						--if DEBUG=true then assert (addr>1 or v_bx_cnt>0) report "addr = " & integer'image(addr) & ";   cp = " & integer'image(addr) & ";   v_bin_cnt(0) = " & integer'image(v_bin_cnt(0)) & ";   v_VMSME_n_entries_bin_cnt(cp) = " & integer'image(v_VMSME_n_entries_bin_cnt(cp)) & ";   waddr = " & integer'image((v_bin_cnt(0)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS))) severity note; end if;
 						if v_VMSME_n_entries_bin_cnt(cp)>=v_VMSME_n_entries_bin(cp)-1 then -- End of bin entries
+							if (v_bin_cnt(cp)=N_MEM_BINS-1) then -- Last bin
+								v_last_bin := true;
+							end if;
 							v_bin_cnt(cp)                 := v_bin_cnt(cp) +1;
 							v_VMSME_n_entries_bin_cnt(cp) := 0;
 							if (v_bin_cnt(cp)>=N_MEM_BINS) then
@@ -257,10 +251,11 @@ if DEBUG=true then assert (addr>1 or v_bx_cnt>0) report "addr = " & integer'imag
 						end if;
 						if v_bin_cnt(cp)>N_MEM_BINS-1 then -- Invalid bin
 							v_bin_cnt(cp) := N_MEM_BINS; 
-							VMSME_L3PHIC17to24n1_dataarray_data_V_wea(cp) <= '0';
-							VMSME_L3PHIC17to24n1_nentries_V_we            <= (others => (others => (others => '0')));
+							if v_last_bin=false then
+								VMSME_L3PHIC17to24n1_dataarray_data_V_wea(cp) <= '0';
+								VMSME_L3PHIC17to24n1_nentries_V_we            <= (others => (others => (others => '0')));
+							end if;
 						end if;
---					  end loop l_bins;
 					end if;
 					-- AS
 					if (v_bx_cnt>=AS_DELAY and v_bx_cnt<MAX_EVENTS+1) then -- Start after delay of BXs
@@ -271,15 +266,81 @@ if DEBUG=true then assert (addr>1 or v_bx_cnt>0) report "addr = " & integer'imag
 	          AS_L3PHICn4_nentries_V_din((v_page_cnt8-AS_DELAY) mod N_MEM_BINS) <= std_logic_vector(to_unsigned(AS_L3PHICn4_n_entries_arr(v_bx_cnt-AS_DELAY), AS_L3PHICn4_nentries_V_din(0)'length));
           end if;
 			  end loop l_copies;
---v_bin_cnt                 := v_bin_cnt +1 mod N_MEM_BINS-1;                             -- Increase counter and wrap around
---v_VMSME_n_entries_bin_cnt := v_VMSME_n_entries_bin_cnt +1 mod N_ENTRIES_PER_MEM_BINS-1; -- Increase counter and wrap around
-	      wait for CLK_PERIOD; -- Main time controll 
-if DEBUG=true then assert (v_bx_cnt>0) report "addr = " & integer'image(addr) & ";   VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(0) = " & integer'image(to_integer(unsigned(VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(0)))) severity note; end if;
+	      wait for CLK_PERIOD; -- Main time control
+				--if DEBUG=true then assert (v_bx_cnt>0) report "addr = " & integer'image(addr) & ";   VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(0) = " & integer'image(to_integer(unsigned(VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(0)))) severity note; end if;
 			end loop l_addr;
 		end loop l_BX;
 		wait for CLK_PERIOD;
-		assert false report "Simulation finished!" severity FAILURE;
-	end process playback_and_write;
+assert false report "Simulation finished!" severity FAILURE;
+	end process playback;
+
+--	--! @brief TextIO process for writting the output
+--	write : process
+--		file     file_out : text open WRITE_MODE is FILE_OUT; -- Text - a file of character strings
+--variable v_line   : line;                             -- Line - one string from a text
+--	begin
+
+--		-- Write file header
+--		writeline (file_out, "  time clk_cnt reset   enb readaddr FM_L1L2XX_L3PHIC_*_dout" & 
+--                               "   enb readaddr FM_L1L2XX_L3PHIC_*_dout\n"); -- Write line
+--		-- Other writes ---------------------------------------
+---- Wait for first result
+--		l_BX : for v_bx_cnt in 0 to MAX_EVENTS-1 loop -- 0 to 99
+--			l_addr : for addr in 0 to MAX_ENTRIES-1 loop -- 0 to 107
+
+--			wait for CLK_PERIOD; -- Main time control
+--			end loop l_addr;
+--		end loop l_BX;
+
+
+
+--		--l_rd_row : for i in 0 to 1 loop -- Debug
+--		l_rd_row : loop
+--			ILine_length := ILine'length;                                              -- Needed for access after read()
+--			assert ILine_length < s'length report "s'length too small" severity error; -- Make sure s is big enough
+--			-- Write file ------------------------------------------------------------------
+--			write(OLine, string'("0x")); hwrite(OLine, std_logic_vector(to_unsigned(i_wr_row,line_cnt'length))); write(OLine, string'("       "));
+--			write(OLine, string'("0b")); write(OLine, algoRst); write(OLine, string'("       "));
+--			write(OLine, string'("0b")); write(OLine, algoStart); write(OLine, string'("      "));
+--			write(OLine, string'("0b")); write(OLine, algoDone); write(OLine, string'("      "));
+--			write(OLine, string'("0b")); write(OLine, algoIdle); write(OLine, string'("       "));
+--			write(OLine, string'("0b")); write(OLine, algoReady); write(OLine, string'("  "));
+--			l_wr_col : for i_wr_col_loop in 0 to N_OUTPUT_STREAMS-1 loop
+--				-- Compose sideband: Rsv & [FFO_Lock Link_Lock CHKSM_Err FFO SOF] & tLast & tVaild
+--				v_axiStreamOut_SB := '0' & axiStreamOut(i_wr_col_loop).tUser(4 downto 0) & axiStreamOut(i_wr_col_loop).tLast & axiStreamOut(i_wr_col_loop).tValid;
+--				write(OLine, string'("0x")); hwrite(OLine, v_axiStreamOut_SB); write(OLine, string'(" "));
+--				write(OLine, string'("0x")); hwrite(OLine, axiStreamOut(i_wr_col_loop).tData(63 downto 0)); write(OLine, string'("  "));
+--			end loop l_wr_col;
+--			writeline (OutF, OLine); -- write all output variables to line
+--			i_wr_row := i_wr_row+1;
+--			i_rd_row := i_rd_row+1;
+--		end loop l_rd_row;
+--		-- Additional lines for the output file -----------------------------------------
+--		l_wr_add_row : for i_wr_add_row in 1 to N_ADD_WR_LINES loop
+--			wait for CLK_PERIOD;
+--			write(OLine, string'("0x")); hwrite(OLine, std_logic_vector(to_unsigned(i_wr_row,line_cnt'length))); write(OLine, string'("       "));
+--			write(OLine, string'("0b")); write(OLine, algoRst); write(OLine, string'("       "));
+--			write(OLine, string'("0b")); write(OLine, algoStart); write(OLine, string'("      "));
+--			write(OLine, string'("0b")); write(OLine, algoDone); write(OLine, string'("      "));
+--			write(OLine, string'("0b")); write(OLine, algoIdle); write(OLine, string'("       "));
+--			write(OLine, string'("0b")); write(OLine, algoReady); write(OLine, string'("  "));
+--			l_wr_col_add : for i_wr_col_loop in 0 to N_OUTPUT_STREAMS-1 loop
+--				-- Compose sideband: Rsv & [FFO_Lock Link_Lock CHKSM_Err FFO SOF] & tLast & tVaild
+--				v_axiStreamOut_SB := '0' & axiStreamOut(i_wr_col_loop).tUser(4 downto 0) & axiStreamOut(i_wr_col_loop).tLast & axiStreamOut(i_wr_col_loop).tValid;
+--				write(OLine, string'("0x")); hwrite(OLine, v_axiStreamOut_SB); write(OLine, string'(" "));
+--				write(OLine, string'("0x")); hwrite(OLine, axiStreamOut(i_wr_col_loop).tData(63 downto 0)); write(OLine, string'("  "));
+--			end loop l_wr_col_add;
+--			writeline (OutF, OLine); -- write all output variables to line
+--			i_wr_row := i_wr_row+1;
+--		end loop l_wr_add_row;
+--		-- Report stats -----------------------------------------------------------------
+--		assert false report "Read " & integer'image(i_rd_row) & " rows (incl. header and comments) for " & integer'image(i_rd_col) & " links " severity note;
+--		assert false report "Wrote " & integer'image(i_wr_row) & " rows (incl. header) for " & integer'image(N_OUTPUT_STREAMS-1) & " links " severity note;
+--		wait for CLK_PERIOD;
+--		file_close(InF);
+--		file_close(OutF);
+--		assert false report "Simulation finished!" severity FAILURE;
+--	end process write;
 
 
 
