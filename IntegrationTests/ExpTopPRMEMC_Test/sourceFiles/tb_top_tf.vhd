@@ -274,73 +274,102 @@ begin
 assert false report "Simulation finished!" severity FAILURE;
 	end process playback;
 
---	--! @brief TextIO process for writting the output
---	write : process
---		file     file_out : text open WRITE_MODE is FILE_OUT; -- Text - a file of character strings
---variable v_line   : line;                             -- Line - one string from a text
---	begin
+	--! @brief TextIO process for writting the output
+	write_result : process
+		file     file_out : text open WRITE_MODE is FILE_OUT; -- Text - a file of character strings
+    variable v_line   : line;                             -- Line - one string from a text
+	begin
+		-- Write file header
+		write(v_line, string'("time"), right, 12); write(v_line, string'("BX#"), right, 4); --write(v_line, string'("addr"), right, 7);
+    write(v_line, string'("reset"), right, 6);
+		write(v_line, string'("nentries"), right, 14); write(v_line, string'("enb"), right, 4);  
+		write(v_line, string'("readaddr"), right, 9);  write(v_line, string'("FM_L1L2XX_L3PHIC_*_dout"), right, 24); 
+		write(v_line, string'("nentries"), right, 14); write(v_line, string'("enb"), right, 4);  
+		write(v_line, string'("readaddr"), right, 9);  write(v_line, string'("FM_L5L6XX_L3PHIC_*_dout"), right, 24);
+		writeline (file_out, v_line); -- Write line
+		wait until rising_edge(MatchCalculator_done); -- Wait for first result
+		l_BX : for v_bx_cnt in 0 to MAX_EVENTS-1 loop -- 0 to 99
+			l_addr : for addr in 0 to MAX_ENTRIES-1 loop -- 0 to 107
+				FM_L1L2XX_L3PHIC_dataarray_data_V_enb <= '1';
+				FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr,FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr'length));
+				FM_L5L6XX_L3PHIC_dataarray_data_V_enb <= '1';
+FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr+128,FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr'length));
+				wait for CLK_PERIOD; -- Main time control
+				-- Other writes ---------------------------------------
+        write(v_line, NOW, right, 12); -- NOW = current simulation time
+        write(v_line, v_bx_cnt, right, 4);
+        --write(v_line, string'("0x"), right, 4); hwrite(v_line, std_logic_vector(to_unsigned(addr,10)), right, 3);
+        write(v_line, string'("0b"), right, 5); write(v_line, reset, right, 1);
+        write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L1L2XX_L3PHIC_nentries_V_dout(0), right, 2);
+        write(v_line, string'("0x"), right, 3);  hwrite(v_line, FM_L1L2XX_L3PHIC_nentries_V_dout(1), right, 2);
+        write(v_line, string'("0b"), right, 3);   write(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_enb, right, 1);
+        write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr, right, 2);
+        write(v_line, string'("0x"), right, 12); hwrite(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_dout, right, 12);
+        write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L5L6XX_L3PHIC_nentries_V_dout(0), right, 2);
+        write(v_line, string'("0x"), right, 3);  hwrite(v_line, FM_L5L6XX_L3PHIC_nentries_V_dout(1), right, 2);
+        write(v_line, string'("0b"), right, 3);   write(v_line, FM_L5L6XX_L3PHIC_dataarray_data_V_enb, right, 1);
+        write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr, right, 2);
+        write(v_line, string'("0x"), right, 12); hwrite(v_line, FM_L5L6XX_L3PHIC_dataarray_data_V_dout, right, 12);
+---- MatchCalculator outputs
+--bx_out_MatchCalculator     : out std_logic_vector(2 downto 0);
+--bx_out_MatchCalculator_vld : out std_logic;
+--MatchCalculator_done       : out std_logic
 
---		-- Write file header
---		writeline (file_out, "  time clk_cnt reset   enb readaddr FM_L1L2XX_L3PHIC_*_dout" & 
---                               "   enb readaddr FM_L1L2XX_L3PHIC_*_dout\n"); -- Write line
---		-- Other writes ---------------------------------------
----- Wait for first result
---		l_BX : for v_bx_cnt in 0 to MAX_EVENTS-1 loop -- 0 to 99
---			l_addr : for addr in 0 to MAX_ENTRIES-1 loop -- 0 to 107
+        writeline (file_out, v_line); -- Write line
 
---			wait for CLK_PERIOD; -- Main time control
---			end loop l_addr;
---		end loop l_BX;
+        
+			end loop l_addr;
+		end loop l_BX;
 
 
 
---		--l_rd_row : for i in 0 to 1 loop -- Debug
---		l_rd_row : loop
---			ILine_length := ILine'length;                                              -- Needed for access after read()
---			assert ILine_length < s'length report "s'length too small" severity error; -- Make sure s is big enough
---			-- Write file ------------------------------------------------------------------
---			write(OLine, string'("0x")); hwrite(OLine, std_logic_vector(to_unsigned(i_wr_row,line_cnt'length))); write(OLine, string'("       "));
---			write(OLine, string'("0b")); write(OLine, algoRst); write(OLine, string'("       "));
---			write(OLine, string'("0b")); write(OLine, algoStart); write(OLine, string'("      "));
---			write(OLine, string'("0b")); write(OLine, algoDone); write(OLine, string'("      "));
---			write(OLine, string'("0b")); write(OLine, algoIdle); write(OLine, string'("       "));
---			write(OLine, string'("0b")); write(OLine, algoReady); write(OLine, string'("  "));
---			l_wr_col : for i_wr_col_loop in 0 to N_OUTPUT_STREAMS-1 loop
---				-- Compose sideband: Rsv & [FFO_Lock Link_Lock CHKSM_Err FFO SOF] & tLast & tVaild
---				v_axiStreamOut_SB := '0' & axiStreamOut(i_wr_col_loop).tUser(4 downto 0) & axiStreamOut(i_wr_col_loop).tLast & axiStreamOut(i_wr_col_loop).tValid;
---				write(OLine, string'("0x")); hwrite(OLine, v_axiStreamOut_SB); write(OLine, string'(" "));
---				write(OLine, string'("0x")); hwrite(OLine, axiStreamOut(i_wr_col_loop).tData(63 downto 0)); write(OLine, string'("  "));
---			end loop l_wr_col;
---			writeline (OutF, OLine); -- write all output variables to line
---			i_wr_row := i_wr_row+1;
---			i_rd_row := i_rd_row+1;
---		end loop l_rd_row;
---		-- Additional lines for the output file -----------------------------------------
---		l_wr_add_row : for i_wr_add_row in 1 to N_ADD_WR_LINES loop
---			wait for CLK_PERIOD;
---			write(OLine, string'("0x")); hwrite(OLine, std_logic_vector(to_unsigned(i_wr_row,line_cnt'length))); write(OLine, string'("       "));
---			write(OLine, string'("0b")); write(OLine, algoRst); write(OLine, string'("       "));
---			write(OLine, string'("0b")); write(OLine, algoStart); write(OLine, string'("      "));
---			write(OLine, string'("0b")); write(OLine, algoDone); write(OLine, string'("      "));
---			write(OLine, string'("0b")); write(OLine, algoIdle); write(OLine, string'("       "));
---			write(OLine, string'("0b")); write(OLine, algoReady); write(OLine, string'("  "));
---			l_wr_col_add : for i_wr_col_loop in 0 to N_OUTPUT_STREAMS-1 loop
---				-- Compose sideband: Rsv & [FFO_Lock Link_Lock CHKSM_Err FFO SOF] & tLast & tVaild
---				v_axiStreamOut_SB := '0' & axiStreamOut(i_wr_col_loop).tUser(4 downto 0) & axiStreamOut(i_wr_col_loop).tLast & axiStreamOut(i_wr_col_loop).tValid;
---				write(OLine, string'("0x")); hwrite(OLine, v_axiStreamOut_SB); write(OLine, string'(" "));
---				write(OLine, string'("0x")); hwrite(OLine, axiStreamOut(i_wr_col_loop).tData(63 downto 0)); write(OLine, string'("  "));
---			end loop l_wr_col_add;
---			writeline (OutF, OLine); -- write all output variables to line
---			i_wr_row := i_wr_row+1;
---		end loop l_wr_add_row;
---		-- Report stats -----------------------------------------------------------------
---		assert false report "Read " & integer'image(i_rd_row) & " rows (incl. header and comments) for " & integer'image(i_rd_col) & " links " severity note;
---		assert false report "Wrote " & integer'image(i_wr_row) & " rows (incl. header) for " & integer'image(N_OUTPUT_STREAMS-1) & " links " severity note;
---		wait for CLK_PERIOD;
---		file_close(InF);
---		file_close(OutF);
---		assert false report "Simulation finished!" severity FAILURE;
---	end process write;
+		----l_rd_row : for i in 0 to 1 loop -- Debug
+		--l_rd_row : loop
+		--	ILine_length := ILine'length;                                              -- Needed for access after read()
+		--	assert ILine_length < s'length report "s'length too small" severity error; -- Make sure s is big enough
+		--	-- Write file ------------------------------------------------------------------
+		--	write(OLine, string'("0x")); hwrite(OLine, std_logic_vector(to_unsigned(i_wr_row,line_cnt'length))); write(OLine, string'("       "));
+		--	write(OLine, string'("0b")); write(OLine, algoRst); write(OLine, string'("       "));
+		--	write(OLine, string'("0b")); write(OLine, algoStart); write(OLine, string'("      "));
+		--	write(OLine, string'("0b")); write(OLine, algoDone); write(OLine, string'("      "));
+		--	write(OLine, string'("0b")); write(OLine, algoIdle); write(OLine, string'("       "));
+		--	write(OLine, string'("0b")); write(OLine, algoReady); write(OLine, string'("  "));
+		--	l_wr_col : for i_wr_col_loop in 0 to N_OUTPUT_STREAMS-1 loop
+		--		-- Compose sideband: Rsv & [FFO_Lock Link_Lock CHKSM_Err FFO SOF] & tLast & tVaild
+		--		v_axiStreamOut_SB := '0' & axiStreamOut(i_wr_col_loop).tUser(4 downto 0) & axiStreamOut(i_wr_col_loop).tLast & axiStreamOut(i_wr_col_loop).tValid;
+		--		write(OLine, string'("0x")); hwrite(OLine, v_axiStreamOut_SB); write(OLine, string'(" "));
+		--		write(OLine, string'("0x")); hwrite(OLine, axiStreamOut(i_wr_col_loop).tData(63 downto 0)); write(OLine, string'("  "));
+		--	end loop l_wr_col;
+		--	writeline (OutF, OLine); -- write all output variables to line
+		--	i_wr_row := i_wr_row+1;
+		--	i_rd_row := i_rd_row+1;
+		--end loop l_rd_row;
+		---- Additional lines for the output file -----------------------------------------
+		--l_wr_add_row : for i_wr_add_row in 1 to N_ADD_WR_LINES loop
+		--	wait for CLK_PERIOD;
+		--	write(OLine, string'("0x")); hwrite(OLine, std_logic_vector(to_unsigned(i_wr_row,line_cnt'length))); write(OLine, string'("       "));
+		--	write(OLine, string'("0b")); write(OLine, algoRst); write(OLine, string'("       "));
+		--	write(OLine, string'("0b")); write(OLine, algoStart); write(OLine, string'("      "));
+		--	write(OLine, string'("0b")); write(OLine, algoDone); write(OLine, string'("      "));
+		--	write(OLine, string'("0b")); write(OLine, algoIdle); write(OLine, string'("       "));
+		--	write(OLine, string'("0b")); write(OLine, algoReady); write(OLine, string'("  "));
+		--	l_wr_col_add : for i_wr_col_loop in 0 to N_OUTPUT_STREAMS-1 loop
+		--		-- Compose sideband: Rsv & [FFO_Lock Link_Lock CHKSM_Err FFO SOF] & tLast & tVaild
+		--		v_axiStreamOut_SB := '0' & axiStreamOut(i_wr_col_loop).tUser(4 downto 0) & axiStreamOut(i_wr_col_loop).tLast & axiStreamOut(i_wr_col_loop).tValid;
+		--		write(OLine, string'("0x")); hwrite(OLine, v_axiStreamOut_SB); write(OLine, string'(" "));
+		--		write(OLine, string'("0x")); hwrite(OLine, axiStreamOut(i_wr_col_loop).tData(63 downto 0)); write(OLine, string'("  "));
+		--	end loop l_wr_col_add;
+		--	writeline (OutF, OLine); -- write all output variables to line
+		--	i_wr_row := i_wr_row+1;
+		--end loop l_wr_add_row;
+		---- Report stats -----------------------------------------------------------------
+		--assert false report "Read " & integer'image(i_rd_row) & " rows (incl. header and comments) for " & integer'image(i_rd_col) & " links " severity note;
+		--assert false report "Wrote " & integer'image(i_wr_row) & " rows (incl. header) for " & integer'image(N_OUTPUT_STREAMS-1) & " links " severity note;
+		--wait for CLK_PERIOD;
+		--file_close(InF);
+		--file_close(OutF);
+		--assert false report "Simulation finished!" severity FAILURE;
+	end process write_result;
 
 
 
