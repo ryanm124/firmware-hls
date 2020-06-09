@@ -34,12 +34,12 @@ package mytypes_pkg is
 
 	-- ########################### Constants #######################
 	constant DEBUG                  : boolean := true; --! Debug off/on
-	constant MAX_EVENTS             :integer := 100;   -- Max. number of BX events
-	constant MAX_ENTRIES            :integer := 108;   -- Max. number of entries: 108 = BX period with 240 MHz
-	constant EMDATA_WIDTH           :integer := 68;    -- Max. bit width of emData
-	constant N_MEM_BINS             :integer := 8;     -- Number of memory bins
-	constant N_ENTRIES_PER_MEM_BINS :integer := 16;    -- Number of entries per memory bin
-	constant PAGE_OFFSET            :integer := 128;   -- Page offset for all memories
+	constant MAX_EVENTS             : integer := 100;   -- Max. number of BX events
+	constant MAX_ENTRIES            : integer := 108;   -- Max. number of entries: 108 = BX period with 240 MHz
+	constant EMDATA_WIDTH           : integer := 68;    -- Max. bit width of emData
+	constant N_MEM_BINS             : integer := 8;     -- Number of memory bins
+	constant N_ENTRIES_PER_MEM_BINS : integer := 16;    -- Number of entries per memory bin
+	constant PAGE_OFFSET            : integer := 128;   -- Page offset for all memories
 
 	-- ########################### Types ###########################
 	-- 2D
