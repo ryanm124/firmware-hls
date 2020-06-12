@@ -102,16 +102,16 @@ architecture behavior of tb_top_tf is
   -- FullMatches output
   signal FM_L1L2XX_L3PHIC_dataarray_data_V_enb      : std_logic                     := '0'; 
   signal FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr : std_logic_vector(7 downto 0)  := (others => '0');
-  signal FM_L1L2XX_L3PHIC_dataarray_data_V_dout     : std_logic_vector(44 downto 0) := (others => '0');
-  signal FM_L1L2XX_L3PHIC_nentries_V_dout : t_myarray2_8b := (others => (others => '0'));
+  signal FM_L1L2XX_L3PHIC_dataarray_data_V_dout     : std_logic_vector(44 downto 0);
+  signal FM_L1L2XX_L3PHIC_nentries_V_dout : t_myarray2_8b;
   signal FM_L5L6XX_L3PHIC_dataarray_data_V_enb      : std_logic                     := '0';
   signal FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr : std_logic_vector(7 downto 0)  := (others => '0');
-  signal FM_L5L6XX_L3PHIC_dataarray_data_V_dout     : std_logic_vector(44 downto 0) := (others => '0');
-  signal FM_L5L6XX_L3PHIC_nentries_V_dout : t_myarray2_8b := (others => (others => '0'));
+  signal FM_L5L6XX_L3PHIC_dataarray_data_V_dout     : std_logic_vector(44 downto 0);
+  signal FM_L5L6XX_L3PHIC_nentries_V_dout : t_myarray2_8b;
   -- MatchCalculator outputs
-  signal bx_out_MatchCalculator     : std_logic_vector(2 downto 0) := (others => '0');
-  signal bx_out_MatchCalculator_vld : std_logic                    := '0';
-  signal MatchCalculator_done       : std_logic                    := '0';
+  signal bx_out_MatchCalculator     : std_logic_vector(2 downto 0);
+  signal bx_out_MatchCalculator_vld : std_logic;
+  signal MatchCalculator_done       : std_logic;
   -- ### Other signals ###
   signal TPROJ_L3PHICn4_data_arr            : t_myarray_1d_2d_slv_2p(0 to N_ME_IN_CHAIN-1);
 	signal TPROJ_L3PHICn4_n_entries_arr       : t_myarray_1d_1d_int(0 to N_ME_IN_CHAIN-1);
@@ -286,10 +286,12 @@ assert false report "Simulation finished!" severity FAILURE;
 		write(v_line, string'("readaddr"), right, 9);  write(v_line, string'("FM_L1L2XX_L3PHIC_*_dout"), right, 24); 
 		write(v_line, string'("nentries"), right, 14); write(v_line, string'("enb"), right, 4);  
 		write(v_line, string'("readaddr"), right, 9);  write(v_line, string'("FM_L5L6XX_L3PHIC_*_dout"), right, 24);
+		write(v_line, string'("done"), right, 9);  write(v_line, string'("vld"), right, 4); write(v_line, string'("bx_out_MatchCalculator"), right, 23);
 		writeline (file_out, v_line); -- Write line
 		wait until rising_edge(MatchCalculator_done); -- Wait for first result
 		l_BX : for v_bx_cnt in 0 to MAX_EVENTS-1 loop -- 0 to 99
 			l_addr : for addr in 0 to MAX_ENTRIES-1 loop -- 0 to 107
+-- todo: write all 256 addr to file; pause playback and en_proc (wait for readout done)
 				FM_L1L2XX_L3PHIC_dataarray_data_V_enb <= '1';
 				FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr,FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr'length));
 				FM_L5L6XX_L3PHIC_dataarray_data_V_enb <= '1';
@@ -310,11 +312,9 @@ FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr+
         write(v_line, string'("0b"), right, 3);   write(v_line, FM_L5L6XX_L3PHIC_dataarray_data_V_enb, right, 1);
         write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr, right, 2);
         write(v_line, string'("0x"), right, 12); hwrite(v_line, FM_L5L6XX_L3PHIC_dataarray_data_V_dout, right, 12);
----- MatchCalculator outputs
---bx_out_MatchCalculator     : out std_logic_vector(2 downto 0);
---bx_out_MatchCalculator_vld : out std_logic;
---MatchCalculator_done       : out std_logic
-
+        write(v_line, string'("0b"), right, 8);   write(v_line, MatchCalculator_done, right, 1);
+        write(v_line, string'("0b"), right, 3);   write(v_line, bx_out_MatchCalculator_vld, right, 1);
+        write(v_line, string'("0x"), right, 22); hwrite(v_line, bx_out_MatchCalculator, right, 1);
         writeline (file_out, v_line); -- Write line
 
         
