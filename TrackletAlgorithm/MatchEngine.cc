@@ -222,3 +222,26 @@ void MatchEngineTop(const BXType bx, BXType& bx_o,
 
 	MatchEngine<LAYER,MODULETYPE,PROJECTIONTYPE>(bx, bx_o, inputStubData, inputProjectionData, outputCandidateMatch); 
 }
+
+void SuperMatchEngineTop(const BXType bxset[ME_multiplicity], BXType (&bx_oset)[ME_multiplicity],
+					const VMStubMEMemory<MODULETYPE> (&inputStubDataset)[ME_multiplicity],
+					const VMProjectionMemory<PROJECTIONTYPE> (&inputProjectionDataset)[ME_multiplicity],
+					CandidateMatchMemory (&outputCandidateMatchset)[ME_multiplicity]){
+
+	#pragma HLS interface register port=bx_oset
+	//#pragma HLS resource variable=inputStubData->get_mem() latency=2
+	//#pragma HLS resource variable=inputProjectionData->get_mem() latency=2
+
+	//int split = ME_multiplicity / 2;
+
+	#pragma HLS array_partition variable=bxset complete
+	//#pragma HLS array_partition variable=bx_oset complete
+	#pragma HLS array_partition variable=inputStubDataset complete
+	#pragma HLS array_partition variable=inputProjectionDataset complete
+	//#pragma HLS array_partition variable=outputCandidateMatchset complete
+	
+	for (int i=0;i<ME_multiplicity;i++) {
+		#pragma HLS unroll factor=4
+		MatchEngine<LAYER,MODULETYPE,PROJECTIONTYPE>(bxset[i], bx_oset[i], inputStubDataset[i], inputProjectionDataset[i], outputCandidateMatchset[i]); 
+	}
+}

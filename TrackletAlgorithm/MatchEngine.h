@@ -1,5 +1,5 @@
-#ifndef TrackletAlgorithm_MatchEngine_h
-#define TrackletAlgorithm_MatchEngine_h
+#ifndef MATCHENGINE_H
+#define MATCHENGINE_H
 
 // cms-tracklet/firmware-hls Headers
 #include "Constants.h"
@@ -101,5 +101,11 @@ void MatchEngineTop(const BXType bx, BXType& bx_o,
 					const VMStubMEMemory<MODULETYPE>& inputStubData,
 					const VMProjectionMemory<PROJECTIONTYPE>& inputProjectionData,
 					CandidateMatchMemory& outputCandidateMatch);
+
+const int ME_multiplicity = 8;
+void SuperMatchEngineTop(const BXType bxset[ME_multiplicity], BXType (&bx_oset)[ME_multiplicity],
+					const VMStubMEMemory<MODULETYPE> (&inputStubDataset)[ME_multiplicity],
+					const VMProjectionMemory<PROJECTIONTYPE> (&inputProjectionDataset)[ME_multiplicity],
+					CandidateMatchMemory (&outputCandidateMatchset)[ME_multiplicity]);
 
 #endif
