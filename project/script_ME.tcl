@@ -4,11 +4,11 @@
 # WARNING: this will wipe out the original project by the same name
 
 # create new project (deleting any existing one of same name)
-open_project -reset supermatchengine_UNROLLfactor4_x8
+open_project -reset supermatchengine_UNROLLED_x4
 
 # source files
-# Optional Flags: -DDEBUG
-set CFLAGS {-std=c++11 -I../TrackletAlgorithm}
+# Optional Flags: -DDEBUG -DSUPER
+set CFLAGS {-std=c++11 -I../TrackletAlgorithm -DSUPER}
 #set_top MatchEngineTop
 set_top SuperMatchEngineTop
 add_files ../TrackletAlgorithm/MatchEngine.cc -cflags "$CFLAGS"
@@ -22,11 +22,19 @@ source settings_hls.tcl
 # data files
 add_files -tb ../emData/ME/
 
+set t1 [clock clicks -millisec]
+set t0 [clock clicks -millisec]
 csim_design -compiler gcc -mflags "-j8"
+puts stderr "CSIM TIME: [expr {([clock clicks -millisec]-$t0)/1000.}] sec" ;# RS
 csynth_design
+puts stderr "CSYNTH TIME: [expr {([clock clicks -millisec]-$t0)/1000.}] sec" ;# RS
 cosim_design -trace_level all -rtl verilog -verbose
+puts stderr "COSIM TIME: [expr {([clock clicks -millisec]-$t0)/1000.}] sec" ;# RS
 #export_design -format ip_catalog
 # Adding "-flow impl" runs full Vivado implementation, providing accurate resource use numbers (very slow).
-#export_design -rtl verilog -format ip_catalog -flow impl
+export_design -rtl verilog -format ip_catalog -flow impl
+puts stderr "EXPORT TIME:[expr {([clock clicks -millisec]-$t0)/1000.}] sec" ;# RS
+puts stderr "TOTAL TIME: [expr {([clock clicks -millisec]-$t1)/1000.}] sec" ;# RS
+
 
 exit

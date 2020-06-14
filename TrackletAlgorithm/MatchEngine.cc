@@ -241,7 +241,7 @@ void SuperMatchEngineTop(const BXType bxset[ME_multiplicity], BXType (&bx_oset)[
 	//#pragma HLS array_partition variable=outputCandidateMatchset complete
 	
 	for (int i=0;i<ME_multiplicity;i++) {
-		#pragma HLS unroll factor=4
+		#pragma HLS unroll
 		MatchEngine<LAYER,MODULETYPE,PROJECTIONTYPE>(bxset[i], bx_oset[i], inputStubDataset[i], inputProjectionDataset[i], outputCandidateMatchset[i]); 
 	}
 }

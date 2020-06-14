@@ -90,60 +90,59 @@ int main() {
 		}
 		std::cout<<std::dec<<std::endl;
 
-		if (super_module) {
+	#ifdef SUPER
 
-			// Duplicate input stubs, projections, and output memory
-			VMStubMEMemory<MODULETYPE> inputvmstubsset[ME_multiplicity];
-			VMProjectionMemory<PROJECTIONTYPE> inputvmprojsset[ME_multiplicity]; 
-			CandidateMatchMemory outputcandmatchesset[ME_multiplicity];
-			BXType bxset[ME_multiplicity];
-			BXType bx_outset[ME_multiplicity];
+		// Duplicate input stubs, projections, and output memory
+		VMStubMEMemory<MODULETYPE> inputvmstubsset[ME_multiplicity];
+		VMProjectionMemory<PROJECTIONTYPE> inputvmprojsset[ME_multiplicity]; 
+		CandidateMatchMemory outputcandmatchesset[ME_multiplicity];
+		BXType bxset[ME_multiplicity];
+		BXType bx_outset[ME_multiplicity];
 
-			for (int i=0;i<ME_multiplicity;i++) {
-				inputvmstubsset[i]=inputvmstubs;
-				inputvmprojsset[i]=inputvmprojs;
-				outputcandmatchesset[i]=outputcandmatches;
-				bxset[i]=bx;
-				bx_outset[i]=bx_out;
-			}
+		for (int i=0;i<ME_multiplicity;i++) {
+			inputvmstubsset[i]=inputvmstubs;
+			inputvmprojsset[i]=inputvmprojs;
+			outputcandmatchesset[i]=outputcandmatches;
+			bxset[i]=bx;
+			bx_outset[i]=bx_out;
+		}
 
-			// Unit Under Test
-			SuperMatchEngineTop(bxset,bx_outset,inputvmstubsset,inputvmprojsset,outputcandmatchesset);
+		// Unit Under Test
+		SuperMatchEngineTop(bxset,bx_outset,inputvmstubsset,inputvmprojsset,outputcandmatchesset);
 
-			// Compare the computed of random ME in module with the expected ones for the candidate matches
-			bool truncation = true;
-			int rand_engine = rand() % ME_multiplicity;
-			err_count += compareMemWithFile<CandidateMatchMemory,16,2>(outputcandmatchesset[rand_engine], fin_candmatch, ievt, "CandidateMatch",truncation);
-			
-			// Check that all MEs in module agree
-			bool engine_agreement = true;
-			for (int i=0;i<ME_multiplicity;i++) {
-				for (int ievt = 0; ievt < nevents; ++ievt) {
-					for (int j=0;j<outputcandmatchesset[i].getEntries(ievt);j++) {						
-						if (outputcandmatchesset[i].read_mem(ievt,j).raw() == outputcandmatchesset[rand_engine].read_mem(ievt,j).raw()) {
-							continue;
-						} else {
-							engine_agreement = false;
-						}
-						
+		// Compare the computed output of random ME in module with the expected ones for the candidate matches
+		bool truncation = true;
+		int rand_engine = rand() % ME_multiplicity;
+		err_count += compareMemWithFile<CandidateMatchMemory,16,2>(outputcandmatchesset[rand_engine], fin_candmatch, ievt, "CandidateMatch",truncation);
+		
+		// Check that all MEs in module agree
+		bool engine_agreement = true;
+		for (int i=0;i<ME_multiplicity;i++) {
+			for (int ievt = 0; ievt < nevents; ++ievt) {
+				for (int j=0;j<outputcandmatchesset[i].getEntries(ievt);j++) {						
+					if (outputcandmatchesset[i].read_mem(ievt,j).raw() == outputcandmatchesset[rand_engine].read_mem(ievt,j).raw()) {
+						continue;
+					} else {
+						engine_agreement = false;
 					}
+					
 				}
 			}
-
-			if (engine_agreement) {
-				std::cout<<"Match Engines Agree"<<std::endl;
-			} else {
-				std::cout<<"Match Engine Inconsistency!"<<std::endl;
-			}
-			
-		} else {
-			// Unit Under Test
-			MatchEngineTop(bx,bx_out,inputvmstubs,inputvmprojs,outputcandmatches);
-
-			// Compare the computed outputs with the expected ones for the candidate matches
-			bool truncation = true;
-			err_count += compareMemWithFile<CandidateMatchMemory,16,2>(outputcandmatches, fin_candmatch, ievt, "CandidateMatch",truncation);
 		}
+
+		if (engine_agreement) {
+			std::cout<<"Match Engines Agree"<<std::endl;
+		} else {
+			std::cout<<"Match Engine Inconsistency!"<<std::endl;
+		}
+	#else
+		// Unit Under Test
+		MatchEngineTop(bx,bx_out,inputvmstubs,inputvmprojs,outputcandmatches);
+
+		// Compare the computed outputs with the expected ones for the candidate matches
+		bool truncation = true;
+		err_count += compareMemWithFile<CandidateMatchMemory,16,2>(outputcandmatches, fin_candmatch, ievt, "CandidateMatch",truncation);
+	#endif
 	}  // End of event loop
   
 	// Close files
