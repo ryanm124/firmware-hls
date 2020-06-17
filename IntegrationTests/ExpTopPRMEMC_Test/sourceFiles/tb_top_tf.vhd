@@ -50,14 +50,14 @@ architecture behavior of tb_top_tf is
 	-- ########################### Constant Definitions ###########################
 	-- ############ Please change the constants in this section ###################
 	constant N_ME_IN_CHAIN : integer := 8; --! Number of match engines in chain 
-	constant FILE_IN_TPROJ : t_str_array_TPROJ(0 to N_ME_IN_CHAIN-1) := ("../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L1L2H_L3PHIC_04.dat", --! Input files
-                                																			 "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L5L6C_L3PHIC_04.dat",
-											                                								 "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L1L2I_L3PHIC_04.dat",
-											                                								 "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L5L6B_L3PHIC_04.dat",
-											                                								 "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L5L6D_L3PHIC_04.dat",
-											                                								 "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L1L2J_L3PHIC_04.dat",
-											                                								 "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L1L2G_L3PHIC_04.dat",
-											                                								 "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L1L2F_L3PHIC_04.dat" );
+	constant FILE_IN_TPROJ : t_str_array_TPROJ(0 to N_ME_IN_CHAIN-1) := ("../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L1L2F_L3PHIC_04.dat", --! Input files
+                                																			 "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L1L2G_L3PHIC_04.dat",
+                                																			 "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L1L2H_L3PHIC_04.dat",
+                                																			 "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L1L2I_L3PHIC_04.dat",
+                                																			 "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L1L2J_L3PHIC_04.dat",
+                                																			 "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L5L6B_L3PHIC_04.dat",
+											                                								 "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L5L6C_L3PHIC_04.dat",
+											                                								 "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L5L6D_L3PHIC_04.dat" );
 	constant FILE_IN_VMSME : t_str_array_VMSME(0 to N_ME_IN_CHAIN-1) := ("../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC17n1_04.dat", --! Input files
                                 																			 "../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC18n1_04.dat",
 											                                								 "../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC19n1_04.dat",
@@ -195,14 +195,15 @@ begin
 		wait for CLK_PERIOD; -- Let the read process finish
 		reset <= '0';        -- Relase reset
 		l_BX : for v_bx_cnt in -1 to MAX_EVENTS+1 loop -- -1 (to write the first memories before starting) to 101
-		  bx_cnt         <= v_bx_cnt; -- Update the signal
-		  v_page_cnt2_d0 := v_bx_cnt mod 2; -- mod 2
-		  v_page_cnt2_d1 := (v_bx_cnt+1) mod 2; -- mod 2
+		  bx_cnt         <= v_bx_cnt;       -- Update the signal
+		  v_page_cnt2_d0 := v_bx_cnt mod 2;          -- mod 2
+		  v_page_cnt2_d1 := (v_bx_cnt+1) mod 2;      -- mod 2
 		  v_page_cnt8    := v_bx_cnt mod N_MEM_BINS; -- mod 8
 		  page_cnt2      <= v_page_cnt2_d0; -- Update the signal
 		  page_cnt8      <= v_page_cnt8;    -- Update the signal
 		  v_bin_cnt      := (others => 0);
 		  v_VMSME_n_entries_bin_cnt := (others => 0);
+		  bx_in_ProjectionRouter <= std_logic_vector(to_unsigned(v_bx_cnt, bx_in_ProjectionRouter'length));
 			l_addr : for addr in 0 to MAX_ENTRIES-1 loop -- 0 to 107
 				l_copies : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7 -- Unable to assign arrays directly
 					v_last_bin := false; -- Default assigment
@@ -293,10 +294,10 @@ assert false report "Simulation finished!" severity FAILURE;
 			l_addr : for addr in 0 to MAX_ENTRIES-1 loop -- 0 to 107
 -- todo: write all 256 addr to file; pause playback and en_proc (wait for readout done)
 				FM_L1L2XX_L3PHIC_dataarray_data_V_enb <= '1';
-				FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr,FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr'length));
+				FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr+(PAGE_OFFSET*(v_bx_cnt mod 2)),FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr'length));
 				FM_L5L6XX_L3PHIC_dataarray_data_V_enb <= '1';
-FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr+128,FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr'length));
-				wait for CLK_PERIOD; -- Main time control
+				FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr+(PAGE_OFFSET*(v_bx_cnt mod 2)),FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr'length));
+wait for 0 ns; -- Update signals
 				-- Other writes ---------------------------------------
         write(v_line, NOW, right, 12); -- NOW = current simulation time
         write(v_line, v_bx_cnt, right, 4);
@@ -316,8 +317,7 @@ FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr+
         write(v_line, string'("0b"), right, 3);   write(v_line, bx_out_MatchCalculator_vld, right, 1);
         write(v_line, string'("0x"), right, 22); hwrite(v_line, bx_out_MatchCalculator, right, 1);
         writeline (file_out, v_line); -- Write line
-
-        
+        wait for CLK_PERIOD; -- Main time control
 			end loop l_addr;
 		end loop l_BX;
 
