@@ -73,7 +73,9 @@ architecture behavior of tb_top_tf is
 	constant CLK_PERIOD        : time    := 4.16667 ns; --! 240 MHz
 	constant DEBUG             : boolean := true;       --! Debug off/on
 	constant VMSME_DELAY       : integer := 1-1;        --! Number of BX delays (can be written early 8 pages)
-	constant AS_DELAY          : integer := -1;        --! Number of BX delays (can be written early 8 pages)
+--constant AS_DELAY          : integer := 2-1;        --! Number of BX delays (can be written early 8 pages)
+	constant AS_DELAY          : integer := -1;         --! Number of BX delays (can be written early 8 pages)
+	constant MEM_READ_DELAY    : integer := 2;          --! Number of memory read delay
 
 	-- ########################### Signals ###########################
 	-- ### UUT signals ###
@@ -208,7 +210,7 @@ begin
 				l_copies : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7 -- Unable to assign arrays directly
 					v_last_bin := false; -- Default assigment
 				  -- TPROJ
-				  if (v_bx_cnt<MAX_EVENTS-1) then -- Start and stop early
+				  if (v_bx_cnt<MAX_EVENTS-1) then -- Start early
 				    TPROJ_L3PHIC_dataarray_data_V_wea <= (others => '1');             
 			      TPROJ_L3PHIC_nentries_V_we        <= (others => (others => '1'));
 						TPROJ_L3PHIC_dataarray_data_V_writeaddr(cp) <= std_logic_vector(to_unsigned(addr+PAGE_OFFSET*v_page_cnt2_d1, TPROJ_L3PHIC_dataarray_data_V_writeaddr(0)'length));
@@ -216,7 +218,7 @@ begin
 					  TPROJ_L3PHIC_nentries_V_din(v_page_cnt2_d1)(cp) <= std_logic_vector(to_unsigned(TPROJ_L3PHICn4_n_entries_arr(cp)(v_bx_cnt+1), TPROJ_L3PHIC_nentries_V_din(0)(0)'length));
 					end if;
 					-- VMSME
-					if (v_bx_cnt>=VMSME_DELAY and v_bx_cnt<MAX_EVENTS) then -- Start after delay of BXs
+					if (v_bx_cnt>=VMSME_DELAY and v_bx_cnt<MAX_EVENTS-1) then -- Start after delay of BXs
 						en_proc <= '1'; -- Start the chain
 						VMSME_L3PHIC17to24n1_dataarray_data_V_wea(cp) <= '1';                                     -- Default assigment
 				    VMSME_L3PHIC17to24n1_nentries_V_we            <= (others => (others => (others => '1'))); -- Default assigment
@@ -259,7 +261,7 @@ begin
 						end if;
 					end if;
 					-- AS
-					if (v_bx_cnt>=AS_DELAY and v_bx_cnt<MAX_EVENTS+1) then -- Start after delay of BXs
+					if (v_bx_cnt>=AS_DELAY and v_bx_cnt<MAX_EVENTS-1) then -- Start after delay of BXs
 					  AS_L3PHICn4_dataarray_data_V_wea <= '1';
 				    AS_L3PHICn4_nentries_V_we        <= (others => '1');
 	          AS_L3PHICn4_dataarray_data_V_writeaddr  <= std_logic_vector(to_unsigned(addr+(PAGE_OFFSET*((v_page_cnt8-AS_DELAY) mod N_MEM_BINS)),AS_L3PHICn4_dataarray_data_V_writeaddr'length));
@@ -278,6 +280,8 @@ begin
 	write_result : process
 		file     file_out : text open WRITE_MODE is FILE_OUT; -- Text - a file of character strings
     variable v_line   : line;                             -- Line - one string from a text
+    variable v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d : std_logic_vector(MEM_READ_DELAY-1 downto 0) := (others => '0'); -- Delay vector
+    variable v_FM_L5L6XX_L3PHIC_dataarray_data_V_enb_d : std_logic_vector(MEM_READ_DELAY-1 downto 0) := (others => '0'); -- Delay vector
 	begin
 		-- Write file header
 		write(v_line, string'("time"), right, 12); write(v_line, string'("BX#"), right, 4); --write(v_line, string'("addr"), right, 7);
@@ -291,31 +295,54 @@ begin
 		wait until rising_edge(MatchCalculator_done); -- Wait for first result
 		l_BX : for v_bx_cnt in 0 to MAX_EVENTS-1 loop -- 0 to 99
 			l_addr : for addr in 0 to MAX_ENTRIES-1 loop -- 0 to 107
+-- todo: write addr 2 more and put the next 10 lines in an if (addr >= MAX_ENTRIES-1) then
 -- todo: write all 256 addr to file; pause playback and en_proc (wait for readout done)
-				FM_L1L2XX_L3PHIC_dataarray_data_V_enb <= '1';
+				if (addr < (to_integer(unsigned(FM_L1L2XX_L3PHIC_nentries_V_dout(0))))) or (addr < (to_integer(unsigned(FM_L1L2XX_L3PHIC_nentries_V_dout(1))))) then -- Only read number of entries: Switch off in complete read out mode
+-- todo: Distinguish between 2 page addresses
+					FM_L1L2XX_L3PHIC_dataarray_data_V_enb <= '1';
+				else
+					FM_L1L2XX_L3PHIC_dataarray_data_V_enb <= '0';
+				end if;
 				FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr+(PAGE_OFFSET*(v_bx_cnt mod 2)),FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr'length));
-				FM_L5L6XX_L3PHIC_dataarray_data_V_enb <= '1';
+				if (addr < (to_integer(unsigned(FM_L5L6XX_L3PHIC_nentries_V_dout(0))))) or (addr < (to_integer(unsigned(FM_L5L6XX_L3PHIC_nentries_V_dout(1))))) then -- Only read number of entries: Switch off in complete read out mode
+-- todo: Distinguish between 2 page addresses
+					FM_L5L6XX_L3PHIC_dataarray_data_V_enb <= '1';
+				else
+					FM_L5L6XX_L3PHIC_dataarray_data_V_enb <= '0';
+				end if;
 				FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr+(PAGE_OFFSET*(v_bx_cnt mod 2)),FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr'length));
-				wait for 0 ns; -- Update signals
+				wait for 0 ns; -- Update signals0
 				-- Other writes ---------------------------------------
-        write(v_line, NOW, right, 12); -- NOW = current simulation time
-        write(v_line, v_bx_cnt, right, 4);
-        --write(v_line, string'("0x"), right, 4); hwrite(v_line, std_logic_vector(to_unsigned(addr,10)), right, 3);
-        write(v_line, string'("0b"), right, 5);   write(v_line, reset, right, 1);
-        write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L1L2XX_L3PHIC_nentries_V_dout(0), right, 2);
-        write(v_line, string'("0x"), right, 3);  hwrite(v_line, FM_L1L2XX_L3PHIC_nentries_V_dout(1), right, 2);
-        write(v_line, string'("0b"), right, 3);   write(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_enb, right, 1);
-        write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr, right, 2);
-        write(v_line, string'("0x"), right, 12); hwrite(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_dout, right, 12);
-        write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L5L6XX_L3PHIC_nentries_V_dout(0), right, 2);
-        write(v_line, string'("0x"), right, 3);  hwrite(v_line, FM_L5L6XX_L3PHIC_nentries_V_dout(1), right, 2);
-        write(v_line, string'("0b"), right, 3);   write(v_line, FM_L5L6XX_L3PHIC_dataarray_data_V_enb, right, 1);
-        write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr, right, 2);
-        write(v_line, string'("0x"), right, 12); hwrite(v_line, FM_L5L6XX_L3PHIC_dataarray_data_V_dout, right, 12);
-        write(v_line, string'("0b"), right, 8);   write(v_line, MatchCalculator_done, right, 1);
-        write(v_line, string'("0b"), right, 3);   write(v_line, bx_out_MatchCalculator_vld, right, 1);
-        write(v_line, string'("0x"), right, 22); hwrite(v_line, bx_out_MatchCalculator, right, 1);
-        writeline (file_out, v_line); -- Write line
+				if (addr >= MEM_READ_DELAY) then -- Take read dealy into account
+	        write(v_line, NOW, right, 12); -- NOW = current simulation time
+	        write(v_line, v_bx_cnt, right, 4);
+	        --write(v_line, string'("0x"), right, 4); hwrite(v_line, std_logic_vector(to_unsigned(addr,10)), right, 3);
+	        write(v_line, string'("0b"), right, 5);   write(v_line, reset, right, 1);
+	        write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L1L2XX_L3PHIC_nentries_V_dout(0), right, 2);
+	        write(v_line, string'("0x"), right, 3);  hwrite(v_line, FM_L1L2XX_L3PHIC_nentries_V_dout(1), right, 2); 
+	        write(v_line, string'("0b"), right, 3);   write(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_enb, right, 1);
+	        write(v_line, string'("0x"), right, 7);  hwrite(v_line, std_logic_vector(unsigned(FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr)-to_unsigned(MEM_READ_DELAY,FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr'length)), right, 2);
+	        if (v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-1)='1') then -- Only write if enable (delayed): Switch off in complete read out mode
+						write(v_line, string'("0x"), right, 12); hwrite(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_dout, right, 12);
+					else
+						write(v_line, string'("0x"), right, 12);  write(v_line, string'("000000000000"), right, 12);
+					end if;
+	        write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L5L6XX_L3PHIC_nentries_V_dout(0), right, 2);
+	        write(v_line, string'("0x"), right, 3);  hwrite(v_line, FM_L5L6XX_L3PHIC_nentries_V_dout(1), right, 2);
+	        write(v_line, string'("0b"), right, 3);   write(v_line, FM_L5L6XX_L3PHIC_dataarray_data_V_enb, right, 1);
+	        write(v_line, string'("0x"), right, 7);  hwrite(v_line, std_logic_vector(unsigned(FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr)-to_unsigned(MEM_READ_DELAY,FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr'length)), right, 2);
+	        if (v_FM_L5L6XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-1)='1') then -- Only write if enable (delayed): Switch off in complete read out mode
+						write(v_line, string'("0x"), right, 12); hwrite(v_line, FM_L5L6XX_L3PHIC_dataarray_data_V_dout, right, 12);
+					else
+						write(v_line, string'("0x"), right, 12);  write(v_line, string'("000000000000"), right, 12);
+					end if;
+	        write(v_line, string'("0b"), right, 8);   write(v_line, MatchCalculator_done, right, 1);
+	        write(v_line, string'("0b"), right, 3);   write(v_line, bx_out_MatchCalculator_vld, right, 1);
+	        write(v_line, string'("0x"), right, 22); hwrite(v_line, bx_out_MatchCalculator, right, 1);
+	        writeline (file_out, v_line); -- Write line
+	      end if;
+        v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d :=  v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-2 downto 0) & FM_L1L2XX_L3PHIC_dataarray_data_V_enb; -- Required delay
+        v_FM_L5L6XX_L3PHIC_dataarray_data_V_enb_d :=  v_FM_L5L6XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-2 downto 0) & FM_L5L6XX_L3PHIC_dataarray_data_V_enb; -- Required delay
         if (DEBUG=true and v_bx_cnt<=5 and addr<=10) then write(v_line, string'("v_bx_cnt: ")); write(v_line, v_bx_cnt); write(v_line, string'("   FM_L1L2XX_L3PHIC readaddr: ")); hwrite(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr); write(v_line, string'(", dout: ")); hwrite(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_dout); writeline(output, v_line); end if;
         wait for CLK_PERIOD; -- Main time control
 			end loop l_addr;
