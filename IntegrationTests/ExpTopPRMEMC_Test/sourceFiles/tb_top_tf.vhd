@@ -61,7 +61,7 @@ architecture behavior of tb_top_tf is
 	constant FILE_IN_VMSME : t_str_array_VMSME(0 to N_ME_IN_CHAIN-1) := ("../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC17n1_04.dat", --! Input files
                                 																			 "../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC18n1_04.dat",
 											                                								 "../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC19n1_04.dat",
-											                                								 "../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC20n1_04.dat",
+											                                								 "../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC20n1_04.dat", -- Used by lastest ME HLS c(o)sim
 											                                								 "../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC21n1_04.dat",
 											                                								 "../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC22n1_04.dat",
 											                                								 "../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC23n1_04.dat",
@@ -91,8 +91,8 @@ architecture behavior of tb_top_tf is
   signal VMSME_L3PHIC17to24n1_dataarray_data_V_wea       : t_myarray8_1b  := (others => '0');
   signal VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr : t_myarray8_9b  := (others => (others => '0'));
   signal VMSME_L3PHIC17to24n1_dataarray_data_V_din       : t_myarray8_14b := (others => (others => '0'));
-  signal VMSME_L3PHIC17to24n1_nentries_V_we  : t_myarray8_8_8_1b := (others => (others => (others => '0')));
-  signal VMSME_L3PHIC17to24n1_nentries_V_din : t_myarray8_8_8_4b := (others => (others => (others => (others => '0'))));
+  signal VMSME_L3PHIC17to24n1_nentries_V_we  : t_myarray8_8_8_1b := (others => (others => (others => '0')));             -- (#page, #bin, #mem)
+  signal VMSME_L3PHIC17to24n1_nentries_V_din : t_myarray8_8_8_4b := (others => (others => (others => (others => '0')))); -- (#page, #bin, #mem)
   -- For AllStubs memories
   signal AS_L3PHICn4_dataarray_data_V_wea       : std_logic                     := '0';
   signal AS_L3PHICn4_dataarray_data_V_writeaddr : std_logic_vector(9 downto 0)  := (others => '0');
@@ -213,7 +213,7 @@ begin
 			      TPROJ_L3PHIC_nentries_V_we        <= (others => (others => '1'));
 						TPROJ_L3PHIC_dataarray_data_V_writeaddr(cp) <= std_logic_vector(to_unsigned(addr+PAGE_OFFSET*v_page_cnt2_d1, TPROJ_L3PHIC_dataarray_data_V_writeaddr(0)'length));
 						TPROJ_L3PHIC_dataarray_data_V_din(cp)       <= TPROJ_L3PHICn4_data_arr(cp)(v_bx_cnt+1,addr+PAGE_OFFSET*v_page_cnt2_d1) (TPROJ_L3PHIC_dataarray_data_V_din(0)'length-1 downto 0);
-					  TPROJ_L3PHIC_nentries_V_din(v_page_cnt2_d1,cp) <= std_logic_vector(to_unsigned(TPROJ_L3PHICn4_n_entries_arr(cp)(v_bx_cnt+1), TPROJ_L3PHIC_nentries_V_din(0,0)'length));
+					  TPROJ_L3PHIC_nentries_V_din(v_page_cnt2_d1)(cp) <= std_logic_vector(to_unsigned(TPROJ_L3PHICn4_n_entries_arr(cp)(v_bx_cnt+1), TPROJ_L3PHIC_nentries_V_din(0)(0)'length));
 					end if;
 					-- VMSME
 					if (v_bx_cnt>=VMSME_DELAY and v_bx_cnt<MAX_EVENTS) then -- Start after delay of BXs
@@ -222,7 +222,7 @@ begin
 				    VMSME_L3PHIC17to24n1_nentries_V_we            <= (others => (others => (others => '1'))); -- Default assigment
 						if v_bin_cnt(cp)<=N_MEM_BINS-1 then -- Valid bin
 							v_VMSME_n_entries_bin(cp) := VMSME_L3PHIC17to24n1_n_entries_arr(cp)(v_bx_cnt-VMSME_DELAY,v_bin_cnt(cp));
-							VMSME_L3PHIC17to24n1_nentries_V_din(((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS),cp,v_bin_cnt(cp)) <= std_logic_vector(to_unsigned(v_VMSME_n_entries_bin(cp), VMSME_L3PHIC17to24n1_nentries_V_din(0,0,0)'length));
+							VMSME_L3PHIC17to24n1_nentries_V_din(((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS))(v_bin_cnt(cp))(cp) <= std_logic_vector(to_unsigned(v_VMSME_n_entries_bin(cp), VMSME_L3PHIC17to24n1_nentries_V_din(0)(0)(0)'length));
 						end if;
 					  l_bin_empty : while (v_VMSME_n_entries_bin(cp)<=0) loop -- Bin empty
 					  	v_bin_cnt(cp)             := v_bin_cnt(cp) +1;
@@ -272,7 +272,6 @@ begin
 			end loop l_addr;
 		end loop l_BX;
 		wait for CLK_PERIOD;
-assert false report "Simulation finished!" severity FAILURE;
 	end process playback;
 
 	--! @brief TextIO process for writting the output
@@ -297,12 +296,12 @@ assert false report "Simulation finished!" severity FAILURE;
 				FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr+(PAGE_OFFSET*(v_bx_cnt mod 2)),FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr'length));
 				FM_L5L6XX_L3PHIC_dataarray_data_V_enb <= '1';
 				FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr+(PAGE_OFFSET*(v_bx_cnt mod 2)),FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr'length));
-wait for 0 ns; -- Update signals
+				wait for 0 ns; -- Update signals
 				-- Other writes ---------------------------------------
         write(v_line, NOW, right, 12); -- NOW = current simulation time
         write(v_line, v_bx_cnt, right, 4);
         --write(v_line, string'("0x"), right, 4); hwrite(v_line, std_logic_vector(to_unsigned(addr,10)), right, 3);
-        write(v_line, string'("0b"), right, 5); write(v_line, reset, right, 1);
+        write(v_line, string'("0b"), right, 5);   write(v_line, reset, right, 1);
         write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L1L2XX_L3PHIC_nentries_V_dout(0), right, 2);
         write(v_line, string'("0x"), right, 3);  hwrite(v_line, FM_L1L2XX_L3PHIC_nentries_V_dout(1), right, 2);
         write(v_line, string'("0b"), right, 3);   write(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_enb, right, 1);
@@ -320,55 +319,7 @@ wait for 0 ns; -- Update signals
         wait for CLK_PERIOD; -- Main time control
 			end loop l_addr;
 		end loop l_BX;
-
-
-
-		----l_rd_row : for i in 0 to 1 loop -- Debug
-		--l_rd_row : loop
-		--	ILine_length := ILine'length;                                              -- Needed for access after read()
-		--	assert ILine_length < s'length report "s'length too small" severity error; -- Make sure s is big enough
-		--	-- Write file ------------------------------------------------------------------
-		--	write(OLine, string'("0x")); hwrite(OLine, std_logic_vector(to_unsigned(i_wr_row,line_cnt'length))); write(OLine, string'("       "));
-		--	write(OLine, string'("0b")); write(OLine, algoRst); write(OLine, string'("       "));
-		--	write(OLine, string'("0b")); write(OLine, algoStart); write(OLine, string'("      "));
-		--	write(OLine, string'("0b")); write(OLine, algoDone); write(OLine, string'("      "));
-		--	write(OLine, string'("0b")); write(OLine, algoIdle); write(OLine, string'("       "));
-		--	write(OLine, string'("0b")); write(OLine, algoReady); write(OLine, string'("  "));
-		--	l_wr_col : for i_wr_col_loop in 0 to N_OUTPUT_STREAMS-1 loop
-		--		-- Compose sideband: Rsv & [FFO_Lock Link_Lock CHKSM_Err FFO SOF] & tLast & tVaild
-		--		v_axiStreamOut_SB := '0' & axiStreamOut(i_wr_col_loop).tUser(4 downto 0) & axiStreamOut(i_wr_col_loop).tLast & axiStreamOut(i_wr_col_loop).tValid;
-		--		write(OLine, string'("0x")); hwrite(OLine, v_axiStreamOut_SB); write(OLine, string'(" "));
-		--		write(OLine, string'("0x")); hwrite(OLine, axiStreamOut(i_wr_col_loop).tData(63 downto 0)); write(OLine, string'("  "));
-		--	end loop l_wr_col;
-		--	writeline (OutF, OLine); -- write all output variables to line
-		--	i_wr_row := i_wr_row+1;
-		--	i_rd_row := i_rd_row+1;
-		--end loop l_rd_row;
-		---- Additional lines for the output file -----------------------------------------
-		--l_wr_add_row : for i_wr_add_row in 1 to N_ADD_WR_LINES loop
-		--	wait for CLK_PERIOD;
-		--	write(OLine, string'("0x")); hwrite(OLine, std_logic_vector(to_unsigned(i_wr_row,line_cnt'length))); write(OLine, string'("       "));
-		--	write(OLine, string'("0b")); write(OLine, algoRst); write(OLine, string'("       "));
-		--	write(OLine, string'("0b")); write(OLine, algoStart); write(OLine, string'("      "));
-		--	write(OLine, string'("0b")); write(OLine, algoDone); write(OLine, string'("      "));
-		--	write(OLine, string'("0b")); write(OLine, algoIdle); write(OLine, string'("       "));
-		--	write(OLine, string'("0b")); write(OLine, algoReady); write(OLine, string'("  "));
-		--	l_wr_col_add : for i_wr_col_loop in 0 to N_OUTPUT_STREAMS-1 loop
-		--		-- Compose sideband: Rsv & [FFO_Lock Link_Lock CHKSM_Err FFO SOF] & tLast & tVaild
-		--		v_axiStreamOut_SB := '0' & axiStreamOut(i_wr_col_loop).tUser(4 downto 0) & axiStreamOut(i_wr_col_loop).tLast & axiStreamOut(i_wr_col_loop).tValid;
-		--		write(OLine, string'("0x")); hwrite(OLine, v_axiStreamOut_SB); write(OLine, string'(" "));
-		--		write(OLine, string'("0x")); hwrite(OLine, axiStreamOut(i_wr_col_loop).tData(63 downto 0)); write(OLine, string'("  "));
-		--	end loop l_wr_col_add;
-		--	writeline (OutF, OLine); -- write all output variables to line
-		--	i_wr_row := i_wr_row+1;
-		--end loop l_wr_add_row;
-		---- Report stats -----------------------------------------------------------------
-		--assert false report "Read " & integer'image(i_rd_row) & " rows (incl. header and comments) for " & integer'image(i_rd_col) & " links " severity note;
-		--assert false report "Wrote " & integer'image(i_wr_row) & " rows (incl. header) for " & integer'image(N_OUTPUT_STREAMS-1) & " links " severity note;
-		--wait for CLK_PERIOD;
-		--file_close(InF);
-		--file_close(OutF);
-		--assert false report "Simulation finished!" severity FAILURE;
+		assert false report "Simulation finished!" severity FAILURE;
 	end process write_result;
 
 
