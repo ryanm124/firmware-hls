@@ -72,8 +72,8 @@ architecture behavior of tb_top_tf is
 	                                                    --! incl. number of header and comment lines of the input file
 	constant CLK_PERIOD        : time    := 4.16667 ns; --! 240 MHz
 	constant DEBUG             : boolean := true;       --! Debug off/on
-	constant VMSME_DELAY       : integer := 1-1;        --! Number of BX delays
-	constant AS_DELAY          : integer := 2-1;        --! Number of BX delays
+	constant VMSME_DELAY       : integer := 1-1;        --! Number of BX delays (can be written early 8 pages)
+	constant AS_DELAY          : integer := -1;        --! Number of BX delays (can be written early 8 pages)
 
 	-- ########################### Signals ###########################
 	-- ### UUT signals ###
@@ -316,6 +316,7 @@ begin
         write(v_line, string'("0b"), right, 3);   write(v_line, bx_out_MatchCalculator_vld, right, 1);
         write(v_line, string'("0x"), right, 22); hwrite(v_line, bx_out_MatchCalculator, right, 1);
         writeline (file_out, v_line); -- Write line
+        if (DEBUG=true and v_bx_cnt<=5 and addr<=10) then write(v_line, string'("v_bx_cnt: ")); write(v_line, v_bx_cnt); write(v_line, string'("   FM_L1L2XX_L3PHIC readaddr: ")); hwrite(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr); write(v_line, string'(", dout: ")); hwrite(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_dout); writeline(output, v_line); end if;
         wait for CLK_PERIOD; -- Main time control
 			end loop l_addr;
 		end loop l_BX;
