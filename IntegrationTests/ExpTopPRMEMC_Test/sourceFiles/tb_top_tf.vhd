@@ -320,7 +320,7 @@ begin
 	        write(v_line, string'("0b"), right, 5);   write(v_line, reset, right, 1);
 	        write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L1L2XX_L3PHIC_nentries_V_dout(0), right, 2);
 	        write(v_line, string'("0x"), right, 3);  hwrite(v_line, FM_L1L2XX_L3PHIC_nentries_V_dout(1), right, 2); 
-	        write(v_line, string'("0b"), right, 3);   write(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_enb, right, 1);
+	        write(v_line, string'("0b"), right, 3);   write(v_line, v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-1), right, 1);
 	        write(v_line, string'("0x"), right, 7);  hwrite(v_line, std_logic_vector(unsigned(FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr)-to_unsigned(MEM_READ_DELAY,FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr'length)), right, 2);
 	        if (v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-1)='1') then -- Only write if enable (delayed): Switch off in complete read out mode
 						write(v_line, string'("0x"), right, 12); hwrite(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_dout, right, 12);
@@ -329,7 +329,7 @@ begin
 					end if;
 	        write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L5L6XX_L3PHIC_nentries_V_dout(0), right, 2);
 	        write(v_line, string'("0x"), right, 3);  hwrite(v_line, FM_L5L6XX_L3PHIC_nentries_V_dout(1), right, 2);
-	        write(v_line, string'("0b"), right, 3);   write(v_line, FM_L5L6XX_L3PHIC_dataarray_data_V_enb, right, 1);
+	        write(v_line, string'("0b"), right, 3);   write(v_line, v_FM_L5L6XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-1), right, 1);
 	        write(v_line, string'("0x"), right, 7);  hwrite(v_line, std_logic_vector(unsigned(FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr)-to_unsigned(MEM_READ_DELAY,FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr'length)), right, 2);
 	        if (v_FM_L5L6XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-1)='1') then -- Only write if enable (delayed): Switch off in complete read out mode
 						write(v_line, string'("0x"), right, 12); hwrite(v_line, FM_L5L6XX_L3PHIC_dataarray_data_V_dout, right, 12);
