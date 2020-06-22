@@ -127,7 +127,18 @@ architecture behavior of tb_top_tf is
 
 begin
 
-	--! @brief Read emData process
+	-- ########################### Processes ###########################
+	
+	--! @brief Clock process ---------------------------------------
+	CLK_process : process
+	begin
+		clk <= '0';
+		wait for CLK_PERIOD/2;
+		clk <= '1';
+		wait for CLK_PERIOD/2;
+	end process CLK_process;
+	
+	--! @brief Read emData process ---------------------------------------
 	read_data : process
 		variable v_TPROJ_L3PHICn4_data_arr            : t_myarray_1d_2d_slv_2p(0 to N_ME_IN_CHAIN-1);
 		variable v_TPROJ_L3PHICn4_n_entries_arr       : t_myarray_1d_1d_int(0 to N_ME_IN_CHAIN-1);
@@ -178,7 +189,7 @@ begin
     wait;
 	end process read_data;
 
-  --! @brief Playback process
+  --! @brief Playback process ---------------------------------------
   --! @BoBX0: en_proc=0, 	w TPROJ p1,
 	--! @BoBX1: en_proc=1, 	w TPROJ p2,	w VMSME p1
 	--! @BoBX2: en_proc=1, 	w TPROJ p1,	w VMSME p2, w AS p1
@@ -276,7 +287,7 @@ begin
 		wait for CLK_PERIOD;
 	end process playback;
 
-	--! @brief TextIO process for writting the output
+	--! @brief TextIO process for writting the output ---------------------------------------
 	write_result : process
 		file     file_out : text open WRITE_MODE is FILE_OUT; -- Text - a file of character strings
     variable v_line   : line;                             -- Line - one string from a text
@@ -294,22 +305,21 @@ begin
 		writeline (file_out, v_line); -- Write line
 		wait until rising_edge(MatchCalculator_done); -- Wait for first result
 		l_BX : for v_bx_cnt in 0 to MAX_EVENTS-1 loop -- 0 to 99
-			l_addr : for addr in 0 to MAX_ENTRIES-1 loop -- 0 to 107
--- todo: write addr 2 more and put the next 10 lines in an if (addr >= MAX_ENTRIES-1) then
--- todo: write all 256 addr to file; pause playback and en_proc (wait for readout done)
-				if (addr < (to_integer(unsigned(FM_L1L2XX_L3PHIC_nentries_V_dout(0))))) or (addr < (to_integer(unsigned(FM_L1L2XX_L3PHIC_nentries_V_dout(1))))) then -- Only read number of entries: Switch off in complete read out mode
--- todo: Distinguish between 2 page addresses
-					FM_L1L2XX_L3PHIC_dataarray_data_V_enb <= '1';
-				else
-					FM_L1L2XX_L3PHIC_dataarray_data_V_enb <= '0';
+			l_addr : for addr in 0 to MAX_ENTRIES-1+MEM_READ_DELAY loop -- 0 to 109
+        if (addr <= MAX_ENTRIES-1) then -- w/o MEM_READ_DELAY
+	-- todo: write all 256 addr to file; pause playback and en_proc (wait for readout done)
+					if (addr < (to_integer(unsigned(FM_L1L2XX_L3PHIC_nentries_V_dout(0))))) or (addr < (to_integer(unsigned(FM_L1L2XX_L3PHIC_nentries_V_dout(1))))) then -- Only read number of entries: Switch off in complete read out mode
+						FM_L1L2XX_L3PHIC_dataarray_data_V_enb <= '1';
+					else
+						FM_L1L2XX_L3PHIC_dataarray_data_V_enb <= '0';
+					end if;
+					if (addr < (to_integer(unsigned(FM_L5L6XX_L3PHIC_nentries_V_dout(0))))) or (addr < (to_integer(unsigned(FM_L5L6XX_L3PHIC_nentries_V_dout(1))))) then -- Only read number of entries: Switch off in complete read out mode
+						FM_L5L6XX_L3PHIC_dataarray_data_V_enb <= '1';
+					else
+						FM_L5L6XX_L3PHIC_dataarray_data_V_enb <= '0';
+					end if;
 				end if;
 				FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr+(PAGE_OFFSET*(v_bx_cnt mod 2)),FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr'length));
-				if (addr < (to_integer(unsigned(FM_L5L6XX_L3PHIC_nentries_V_dout(0))))) or (addr < (to_integer(unsigned(FM_L5L6XX_L3PHIC_nentries_V_dout(1))))) then -- Only read number of entries: Switch off in complete read out mode
--- todo: Distinguish between 2 page addresses
-					FM_L5L6XX_L3PHIC_dataarray_data_V_enb <= '1';
-				else
-					FM_L5L6XX_L3PHIC_dataarray_data_V_enb <= '0';
-				end if;
 				FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr+(PAGE_OFFSET*(v_bx_cnt mod 2)),FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr'length));
 				wait for 0 ns; -- Update signals0
 				-- Other writes ---------------------------------------
@@ -351,9 +361,6 @@ begin
 	end process write_result;
 
 
-
-	-- ########################### Assertion ###########################
-
 	-- ########################### Instantiation ###########################
 	-- Instantiate the Unit Under Test (UUT)
 	uut : entity work.top_tf
@@ -394,191 +401,5 @@ begin
 	    bx_out_MatchCalculator_vld => bx_out_MatchCalculator_vld,
 	    MatchCalculator_done       => MatchCalculator_done );
 
-	-- ########################### Port Map ##########################
 
-	-- ########################### Processes ###########################
-	--! @brief Clock process ---------------------------------------
-	CLK_process : process
-	begin
-		clk <= '0';
-		wait for CLK_PERIOD/2;
-		clk <= '1';
-		wait for CLK_PERIOD/2;
-	end process CLK_process;
-
-
-
---	--! @brief TextIO process ---------------------------------------
---	text_proc : process
---		-- Files
---		file InF  : text open READ_MODE is INPUT_FILE;             -- text - a file of character strings
---		file OutF : text open WRITE_MODE is OUTPUT_FILE;           -- text - a file of character strings
---		-- TextIO
---		variable ILine        : line;                              -- line - one string from a text file
---		variable ILine_length : integer;                           -- Length of ILine
---		variable OLine        : line;                              -- line - one string from a text 
---		variable s            : string(1 to 2000);                 -- String for parsing, >= max characters per line
---		variable mode         : integer;                           -- Mode: 0-Sideband OFF, 1-Sideband ON
---		variable LinkSeq_arr  : t_int_array(0 to N_INPUT_STREAMS-1); -- Array of link sequence delay
---		variable line_cnt     : std_logic_vector(15 downto 0);     -- Line counter
---		variable c            : character;                         -- Character
---		variable i_rd_row     : integer;                           -- Read row index
---		variable i_rd_col     : integer;                           -- Read column index
---		variable i_wr_row     : integer;                           -- Write row index
---		variable i_wr_col     : integer;                           -- Write column index
---		-- AXI-Stream In/Out Ports
---		variable v_axiStreamIn        : AxiStreamMasterArray(0 to N_INPUT_STREAMS-1) := (others => AXI_STREAM_MASTER_INIT_C);        -- Streams read from file
---		variable v_axiStreamIn_arr    : t_arr_axiStream(0 to MAX_LIMKSEQ_DELAY) := (others => (others => AXI_STREAM_MASTER_INIT_C)); -- Delayed array of streams
---		variable v_axiStreamIn_SB     : std_logic_vector(7 downto 0); -- Sideband vector
---		variable v_axiStreamOut_SB    : std_logic_vector(7 downto 0); -- Sideband vector
---	begin
---		wait for (SIG_RST_HOLD+SIG_START_D)*CLK_PERIOD; -- Wait for start-up
---		-- Read file header --------------------------------------------------------------
---		readline (InF, ILine);                                                       -- Read 1. line from input file
---		i_rd_row := 1;                                                               -- Init row index
---		i_wr_row := 0;                                                               -- Init row index
---		l_header : while ILine.all(1)='#' loop                                       -- Read the header to determine the mode and link sequence
---			ILine_length := ILine'length;                                              -- Needed for access after read()
---			assert ILine_length < s'length report "s'length too small" severity error; -- Make sure s is big enough
---			read(ILine, s(1 to ILine'length));                                         -- Read line as string
---			if s(1 to ILine_length)="#Sideband ON" then                                -- Mode1: Sideband ON
---				mode := 1;
---				if DEBUG=true then assert false report "Mode: " & integer'image(mode) severity note; end if;
---			elsif s(1 to ILine_length)="#Sideband OFF" then -- Mode0: Sideband OFF
---				mode := 0;
---				if DEBUG=true then assert false report "Mode: " & integer'image(mode) severity note; end if;
---			end if;
---			if s(1 to LIMKSEQ_OFFSET)="#LinkSeq" then -- Read in LinkSeq
---				if DEBUG=true then assert false report "" & s(1 to ILine_length) severity note; end if;
---				write(ILine, s(1 to ILine_length)); -- Write to tmp line buffer, which is easier to read than the string
---				read(ILine, s(1 to LIMKSEQ_OFFSET)); -- Dummy read header
---				l_LinkSeq : for i_LinkNum in 0 to N_INPUT_STREAMS-1 loop -- Get delays for links
---					read(ILine, LinkSeq_arr(i_LinkNum)); -- Read delay
---					if DEBUG=true then assert false report "LinkNum = " & integer'image(i_LinkNum) & " with LinkSeq = " & integer'image(LinkSeq_arr(i_LinkNum)) severity note; end if;
---					-- Make sure the delay is big enough
---					assert LinkSeq_arr(i_LinkNum) < MAX_LIMKSEQ_DELAY report "MAX_LIMKSEQ_DELAY is smaller than read link delay, which is " & integer'image(LinkSeq_arr(i_LinkNum)) severity error;
---				end loop l_LinkSeq;
---			else
---				LinkSeq_arr := (others => 0); -- No link delay
---			end if;
---			readline (InF, ILine); -- Read individual lines from input file
---			i_rd_row := i_rd_row+1;
---		end loop l_header;
---		-- Write file header --------------------------------------------------------------
---		write(OLine, string'("#Counter")); write(OLine, string'(" "));
---		write(OLine, string'("algoRst")); write(OLine, string'(" "));
---		write(OLine, string'("algoStart")); write(OLine, string'(" "));
---		write(OLine, string'("algoDone")); write(OLine, string'(" "));
---		write(OLine, string'("algoIdle")); write(OLine, string'(" "));
---		write(OLine, string'("algoReady")); write(OLine, string'("                  "));
---		l_wr_header : for i_wr_col in 0 to N_OUTPUT_STREAMS-1 loop -- Write link labels
---			if i_wr_col < 10 then
---				write(OLine, string'("Link_0")); write(OLine, i_wr_col); write(OLine, string'("                  "));
---			else
---				write(OLine, string'("Link_")); write(OLine, i_wr_col); write(OLine, string'("                  "));
---			end if;
---		end loop l_wr_header;
---		writeline (OutF, OLine); -- Write line
---		-- All other reads, assigments, and writes ---------------------------------------
---		--l_rd_row : for i in 0 to 1 loop -- Debug
---		l_rd_row : loop
---			ILine_length := ILine'length;                                              -- Needed for access after read()
---			assert ILine_length < s'length report "s'length too small" severity error; -- Make sure s is big enough
---			s := (others => ' ');                                                      -- Make sure that the previous line is overwritten
---			if ILine_length > 0 then                                                   -- Check that the Iline is not empty
---				if ILine.all(1)='#' then                                                 -- Check if the line starts with a #
---					read(ILine, s(1 to ILine'length));                                     -- Read line as string
---				else
---					read(ILine, c); -- Read dummy char
---					if DEBUG=true then assert false report "c0: " & c severity note; end if;
---					read(ILine, c); -- Read dummy char
---					if DEBUG=true then assert false report "c1: " & c severity note; end if;
---					hread(ILine, line_cnt); -- Read value as hex slv
---					if DEBUG=true then assert false report "line_cnt in decimal = " & integer'image(to_integer(unsigned(line_cnt))) severity note; end if;
---					i_rd_col := 0;                        -- Init column index
---					l_rd_col : while ILine'length>0 loop  -- Loop over the columns 
---						read(ILine, c);                     -- Read dummy chars ...
---						if c='x' then                       -- ... until the next x
---							if (mode=1) then                  --Sideband ON
---								hread(ILine, v_axiStreamIn_SB); -- Read value as hex slv
---								read(ILine, c);                 -- Read dummy char
---								while (not (c='x')) loop        -- Read dummy chars until the next x
---									read(ILine, c);
---								end loop;
---							end if;
---							hread(ILine, v_axiStreamIn(i_rd_col).tData(63 downto 0)); -- Read value as hex slv
---							v_axiStreamIn_arr(LinkSeq_arr(i_rd_col))(i_rd_col) := v_axiStreamIn(i_rd_col); -- Assign according to delay
---							if (mode=0) then                  -- Sideband OFF
---								v_axiStreamIn_arr(LinkSeq_arr(i_rd_col))(i_rd_col).tValid := '1';
---							-- Add more sideband information if needed
---							elsif (mode=1) then               --Sideband ON
---								v_axiStreamIn_arr(LinkSeq_arr(i_rd_col))(i_rd_col).tValid            := v_axiStreamIn_SB(0);
---								v_axiStreamIn_arr(LinkSeq_arr(i_rd_col))(i_rd_col).tLast             := v_axiStreamIn_SB(1);
---								v_axiStreamIn_arr(LinkSeq_arr(i_rd_col))(i_rd_col).tUser(4 downto 0) := v_axiStreamIn_SB(6 downto 2);
---								--Rsv <= v_axiStreamIn_SB(7);
---								if DEBUG=true then if (i_rd_col=0) then assert false report "v_axiStreamIn_SB (of i_rd_col=" & integer'image(i_rd_col) & ") in decimal at accoring delay vaule = " & integer'image(to_integer(unsigned(v_axiStreamIn_SB))) severity note; end if; end if;
---							end if;
---							if DEBUG=true then if (i_rd_col=0) then assert false report "v_axiStreamIn_arr(0))(" & integer'image(i_rd_col) & ").tData(63 downto 0) in decimal = " & integer'image(to_integer(unsigned(v_axiStreamIn_arr(0)(i_rd_col).tData(63 downto 0)))) severity note; end if; end if;
---							i_rd_col := i_rd_col+1;
---						end if;
---					end loop l_rd_col;
---				end if;
---			end if;
---			-- Assign variable to signal each line -----------------------------------------
---			axiStreamIn   <= v_axiStreamIn_arr(0);
---			v_axiStreamIn := (others => AXI_STREAM_MASTER_INIT_C);
---			if s(1) /= '#' then -- Check if this is a comment line
---				v_axiStreamIn_arr(0 to MAX_LIMKSEQ_DELAY-1) := v_axiStreamIn_arr(1 to MAX_LIMKSEQ_DELAY); -- Update array
---				wait for CLK_PERIOD;
---			end if;
---			-- Write file ------------------------------------------------------------------
---			write(OLine, string'("0x")); hwrite(OLine, std_logic_vector(to_unsigned(i_wr_row,line_cnt'length))); write(OLine, string'("       "));
---			write(OLine, string'("0b")); write(OLine, algoRst); write(OLine, string'("       "));
---			write(OLine, string'("0b")); write(OLine, algoStart); write(OLine, string'("      "));
---			write(OLine, string'("0b")); write(OLine, algoDone); write(OLine, string'("      "));
---			write(OLine, string'("0b")); write(OLine, algoIdle); write(OLine, string'("       "));
---			write(OLine, string'("0b")); write(OLine, algoReady); write(OLine, string'("  "));
---			l_wr_col : for i_wr_col_loop in 0 to N_OUTPUT_STREAMS-1 loop
---				-- Compose sideband: Rsv & [FFO_Lock Link_Lock CHKSM_Err FFO SOF] & tLast & tVaild
---				v_axiStreamOut_SB := '0' & axiStreamOut(i_wr_col_loop).tUser(4 downto 0) & axiStreamOut(i_wr_col_loop).tLast & axiStreamOut(i_wr_col_loop).tValid;
---				write(OLine, string'("0x")); hwrite(OLine, v_axiStreamOut_SB); write(OLine, string'(" "));
---				write(OLine, string'("0x")); hwrite(OLine, axiStreamOut(i_wr_col_loop).tData(63 downto 0)); write(OLine, string'("  "));
---			end loop l_wr_col;
---			writeline (OutF, OLine); -- write all output variables to line
---			i_wr_row := i_wr_row+1;
---			-- Check EOF (input) ----------------------------------------------------------
---			if endfile(InF) then
---				assert false report "End of file encountered; exiting." severity NOTE;
---				exit;
---			end if;
---			readline (InF, ILine); -- Read individual lines from input file
---			i_rd_row := i_rd_row+1;
---		end loop l_rd_row;
---		-- Additional lines for the output file -----------------------------------------
---		l_wr_add_row : for i_wr_add_row in 1 to N_ADD_WR_LINES loop
---			wait for CLK_PERIOD;
---			write(OLine, string'("0x")); hwrite(OLine, std_logic_vector(to_unsigned(i_wr_row,line_cnt'length))); write(OLine, string'("       "));
---			write(OLine, string'("0b")); write(OLine, algoRst); write(OLine, string'("       "));
---			write(OLine, string'("0b")); write(OLine, algoStart); write(OLine, string'("      "));
---			write(OLine, string'("0b")); write(OLine, algoDone); write(OLine, string'("      "));
---			write(OLine, string'("0b")); write(OLine, algoIdle); write(OLine, string'("       "));
---			write(OLine, string'("0b")); write(OLine, algoReady); write(OLine, string'("  "));
---			l_wr_col_add : for i_wr_col_loop in 0 to N_OUTPUT_STREAMS-1 loop
---				-- Compose sideband: Rsv & [FFO_Lock Link_Lock CHKSM_Err FFO SOF] & tLast & tVaild
---				v_axiStreamOut_SB := '0' & axiStreamOut(i_wr_col_loop).tUser(4 downto 0) & axiStreamOut(i_wr_col_loop).tLast & axiStreamOut(i_wr_col_loop).tValid;
---				write(OLine, string'("0x")); hwrite(OLine, v_axiStreamOut_SB); write(OLine, string'(" "));
---				write(OLine, string'("0x")); hwrite(OLine, axiStreamOut(i_wr_col_loop).tData(63 downto 0)); write(OLine, string'("  "));
---			end loop l_wr_col_add;
---			writeline (OutF, OLine); -- write all output variables to line
---			i_wr_row := i_wr_row+1;
---		end loop l_wr_add_row;
---		-- Report stats -----------------------------------------------------------------
---		assert false report "Read " & integer'image(i_rd_row) & " rows (incl. header and comments) for " & integer'image(i_rd_col) & " links " severity note;
---		assert false report "Wrote " & integer'image(i_wr_row) & " rows (incl. header) for " & integer'image(N_OUTPUT_STREAMS-1) & " links " severity note;
-
---		wait for CLK_PERIOD;
---		file_close(InF);
---		file_close(OutF);
---		assert false report "Simulation finished!" severity FAILURE;
---	end process text_proc;
 end behavior;
