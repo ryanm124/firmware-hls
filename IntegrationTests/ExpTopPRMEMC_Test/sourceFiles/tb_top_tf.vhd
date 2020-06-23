@@ -362,7 +362,7 @@ begin
 
 	-- ########################### Instantiation ###########################
 	-- Instantiate the Unit Under Test (UUT)
-	gen_top_tf : if INST_TOP_TF = 1 generate
+	i_top_tf : if INST_TOP_TF = 1 generate
 		uut : entity work.top_tf
 			port map(
 		    clk     => clk,
@@ -402,7 +402,7 @@ begin
 		    MatchCalculator_done       => MatchCalculator_done );
 	end generate;
 
-	gen_top_tf : if INST_TOP_TF = 0 generate
+	i_others : if INST_TOP_TF = 0 generate
 		uut : entity work.SectorProcessor
 			port map(
 	    clk        => clk,
