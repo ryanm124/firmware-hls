@@ -102,7 +102,7 @@ void MatchEngineTop(const BXType bx, BXType& bx_o,
 					const VMProjectionMemory<PROJECTIONTYPE>& inputProjectionData,
 					CandidateMatchMemory& outputCandidateMatch);
 
-const int ME_multiplicity = 4;
+const int ME_multiplicity = 8;
 void SuperMatchEngineTop(const BXType bxset[ME_multiplicity], BXType (&bx_oset)[ME_multiplicity],
 					const VMStubMEMemory<MODULETYPE> (&inputStubDataset)[ME_multiplicity],
 					const VMProjectionMemory<PROJECTIONTYPE> (&inputProjectionDataset)[ME_multiplicity],

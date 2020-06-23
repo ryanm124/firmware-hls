@@ -235,10 +235,10 @@ void SuperMatchEngineTop(const BXType bxset[ME_multiplicity], BXType (&bx_oset)[
 	//int split = ME_multiplicity / 2;
 
 	#pragma HLS array_partition variable=bxset complete
-	//#pragma HLS array_partition variable=bx_oset complete
+	#pragma HLS array_partition variable=bx_oset complete
 	#pragma HLS array_partition variable=inputStubDataset complete
 	#pragma HLS array_partition variable=inputProjectionDataset complete
-	//#pragma HLS array_partition variable=outputCandidateMatchset complete
+	#pragma HLS array_partition variable=outputCandidateMatchset complete
 	
 	for (int i=0;i<ME_multiplicity;i++) {
 		#pragma HLS unroll
