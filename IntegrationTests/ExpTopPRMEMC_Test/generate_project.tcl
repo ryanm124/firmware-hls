@@ -71,7 +71,7 @@ set_property -name "file_type" -value "VHDL" -objects $file_obj
 # Set 'sim_1' fileset properties
 set obj [get_filesets sim_1]
 set_property -name "top" -value "tb_top_tf" -objects $obj
-set_property -name "xsim.simulate.runtime" -value "6000ns" -objects $obj
+set_property -name "xsim.simulate.runtime" -value "50000ns" -objects $obj
 
 puts "INFO: Project created:${_xil_proj_name_}"
 
