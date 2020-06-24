@@ -6,7 +6,7 @@ variables:
   CLANG_TIDY_COMP_OPTIONS: '-std=c++11 -I../TrackletAlgorithm -I../TestBenches -I/nfs/data41/software/Xilinx/Vivado/2019.2/include'
 
 stages: # ---------------------------------------------------------------------
-#  - quality-check
+  - quality-check
   - hls-build
   - topTF-build
 
