@@ -1440,7 +1440,7 @@ begin
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -1470,7 +1470,7 @@ begin
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => TPROJ_L1L2XXF_L3PHIC_nentries_0_V_dout,
-      nent_o1  => TPROJ_L1L2XXF_L3PHIC_nentries_0_V_dout,
+      nent_o1  => TPROJ_L1L2XXF_L3PHIC_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -1486,7 +1486,7 @@ begin
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -1516,7 +1516,7 @@ begin
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => TPROJ_L1L2XXG_L3PHIC_nentries_0_V_dout,
-      nent_o1  => TPROJ_L1L2XXG_L3PHIC_nentries_0_V_dout,
+      nent_o1  => TPROJ_L1L2XXG_L3PHIC_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -1532,7 +1532,7 @@ begin
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -1562,7 +1562,7 @@ begin
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => TPROJ_L1L2XXH_L3PHIC_nentries_0_V_dout,
-      nent_o1  => TPROJ_L1L2XXH_L3PHIC_nentries_0_V_dout,
+      nent_o1  => TPROJ_L1L2XXH_L3PHIC_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -1578,7 +1578,7 @@ begin
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -1608,7 +1608,7 @@ begin
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => TPROJ_L1L2XXI_L3PHIC_nentries_0_V_dout,
-      nent_o1  => TPROJ_L1L2XXI_L3PHIC_nentries_0_V_dout,
+      nent_o1  => TPROJ_L1L2XXI_L3PHIC_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -1624,7 +1624,7 @@ begin
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -1654,7 +1654,7 @@ begin
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => TPROJ_L1L2XXJ_L3PHIC_nentries_0_V_dout,
-      nent_o1  => TPROJ_L1L2XXJ_L3PHIC_nentries_0_V_dout,
+      nent_o1  => TPROJ_L1L2XXJ_L3PHIC_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -1670,7 +1670,7 @@ begin
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -1700,7 +1700,7 @@ begin
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => TPROJ_L5L6XXB_L3PHIC_nentries_0_V_dout,
-      nent_o1  => TPROJ_L5L6XXB_L3PHIC_nentries_0_V_dout,
+      nent_o1  => TPROJ_L5L6XXB_L3PHIC_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -1716,7 +1716,7 @@ begin
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -1746,7 +1746,7 @@ begin
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => TPROJ_L5L6XXC_L3PHIC_nentries_0_V_dout,
-      nent_o1  => TPROJ_L5L6XXC_L3PHIC_nentries_0_V_dout,
+      nent_o1  => TPROJ_L5L6XXC_L3PHIC_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -1762,7 +1762,7 @@ begin
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -1792,7 +1792,7 @@ begin
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => TPROJ_L5L6XXD_L3PHIC_nentries_0_V_dout,
-      nent_o1  => TPROJ_L5L6XXD_L3PHIC_nentries_0_V_dout,
+      nent_o1  => TPROJ_L5L6XXD_L3PHIC_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -2775,13 +2775,13 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => AS_L3PHICn6_nentries_7_V_we,
       nent_i7  => AS_L3PHICn6_nentries_7_V_din,
       nent_o0  => AS_L3PHICn6_nentries_0_V_dout,
-      nent_o1  => AS_L3PHICn6_nentries_0_V_dout,
-      nent_o2  => AS_L3PHICn6_nentries_0_V_dout,
-      nent_o3  => AS_L3PHICn6_nentries_0_V_dout,
-      nent_o4  => AS_L3PHICn6_nentries_0_V_dout,
-      nent_o5  => AS_L3PHICn6_nentries_0_V_dout,
-      nent_o6  => AS_L3PHICn6_nentries_0_V_dout,
-      nent_o7  => AS_L3PHICn6_nentries_0_V_dout
+      nent_o1  => AS_L3PHICn6_nentries_1_V_dout,
+      nent_o2  => AS_L3PHICn6_nentries_2_V_dout,
+      nent_o3  => AS_L3PHICn6_nentries_3_V_dout,
+      nent_o4  => AS_L3PHICn6_nentries_4_V_dout,
+      nent_o5  => AS_L3PHICn6_nentries_5_V_dout,
+      nent_o6  => AS_L3PHICn6_nentries_6_V_dout,
+      nent_o7  => AS_L3PHICn6_nentries_7_V_dout
   );
 
 
@@ -2790,7 +2790,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_WIDTH       => 21,
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
-      RAM_PERFORMANCE => "HIGH_PERFORMANCE",
+      RAM_PERFORMANCE => "LOW_LATENCY",
       HEX             => 0
     )
     port map (
@@ -2821,7 +2821,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => VMPROJ_L3PHIC17_nentries_0_V_dout,
-      nent_o1  => VMPROJ_L3PHIC17_nentries_0_V_dout,
+      nent_o1  => VMPROJ_L3PHIC17_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -2836,7 +2836,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_WIDTH       => 21,
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
-      RAM_PERFORMANCE => "HIGH_PERFORMANCE",
+      RAM_PERFORMANCE => "LOW_LATENCY",
       HEX             => 0
     )
     port map (
@@ -2867,7 +2867,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => VMPROJ_L3PHIC18_nentries_0_V_dout,
-      nent_o1  => VMPROJ_L3PHIC18_nentries_0_V_dout,
+      nent_o1  => VMPROJ_L3PHIC18_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -2882,7 +2882,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_WIDTH       => 21,
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
-      RAM_PERFORMANCE => "HIGH_PERFORMANCE",
+      RAM_PERFORMANCE => "LOW_LATENCY",
       HEX             => 0
     )
     port map (
@@ -2913,7 +2913,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => VMPROJ_L3PHIC19_nentries_0_V_dout,
-      nent_o1  => VMPROJ_L3PHIC19_nentries_0_V_dout,
+      nent_o1  => VMPROJ_L3PHIC19_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -2928,7 +2928,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_WIDTH       => 21,
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
-      RAM_PERFORMANCE => "HIGH_PERFORMANCE",
+      RAM_PERFORMANCE => "LOW_LATENCY",
       HEX             => 0
     )
     port map (
@@ -2959,7 +2959,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => VMPROJ_L3PHIC20_nentries_0_V_dout,
-      nent_o1  => VMPROJ_L3PHIC20_nentries_0_V_dout,
+      nent_o1  => VMPROJ_L3PHIC20_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -2974,7 +2974,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_WIDTH       => 21,
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
-      RAM_PERFORMANCE => "HIGH_PERFORMANCE",
+      RAM_PERFORMANCE => "LOW_LATENCY",
       HEX             => 0
     )
     port map (
@@ -3005,7 +3005,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => VMPROJ_L3PHIC21_nentries_0_V_dout,
-      nent_o1  => VMPROJ_L3PHIC21_nentries_0_V_dout,
+      nent_o1  => VMPROJ_L3PHIC21_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -3020,7 +3020,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_WIDTH       => 21,
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
-      RAM_PERFORMANCE => "HIGH_PERFORMANCE",
+      RAM_PERFORMANCE => "LOW_LATENCY",
       HEX             => 0
     )
     port map (
@@ -3051,7 +3051,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => VMPROJ_L3PHIC22_nentries_0_V_dout,
-      nent_o1  => VMPROJ_L3PHIC22_nentries_0_V_dout,
+      nent_o1  => VMPROJ_L3PHIC22_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -3066,7 +3066,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_WIDTH       => 21,
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
-      RAM_PERFORMANCE => "HIGH_PERFORMANCE",
+      RAM_PERFORMANCE => "LOW_LATENCY",
       HEX             => 0
     )
     port map (
@@ -3097,7 +3097,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => VMPROJ_L3PHIC23_nentries_0_V_dout,
-      nent_o1  => VMPROJ_L3PHIC23_nentries_0_V_dout,
+      nent_o1  => VMPROJ_L3PHIC23_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -3112,7 +3112,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_WIDTH       => 21,
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
-      RAM_PERFORMANCE => "HIGH_PERFORMANCE",
+      RAM_PERFORMANCE => "LOW_LATENCY",
       HEX             => 0
     )
     port map (
@@ -3143,7 +3143,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => VMPROJ_L3PHIC24_nentries_0_V_dout,
-      nent_o1  => VMPROJ_L3PHIC24_nentries_0_V_dout,
+      nent_o1  => VMPROJ_L3PHIC24_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -3159,7 +3159,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -3189,7 +3189,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => CM_L3PHIC17_nentries_0_V_dout,
-      nent_o1  => CM_L3PHIC17_nentries_0_V_dout,
+      nent_o1  => CM_L3PHIC17_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -3205,7 +3205,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -3235,7 +3235,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => CM_L3PHIC18_nentries_0_V_dout,
-      nent_o1  => CM_L3PHIC18_nentries_0_V_dout,
+      nent_o1  => CM_L3PHIC18_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -3251,7 +3251,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -3281,7 +3281,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => CM_L3PHIC19_nentries_0_V_dout,
-      nent_o1  => CM_L3PHIC19_nentries_0_V_dout,
+      nent_o1  => CM_L3PHIC19_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -3297,7 +3297,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -3327,7 +3327,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => CM_L3PHIC20_nentries_0_V_dout,
-      nent_o1  => CM_L3PHIC20_nentries_0_V_dout,
+      nent_o1  => CM_L3PHIC20_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -3343,7 +3343,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -3373,7 +3373,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => CM_L3PHIC21_nentries_0_V_dout,
-      nent_o1  => CM_L3PHIC21_nentries_0_V_dout,
+      nent_o1  => CM_L3PHIC21_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -3389,7 +3389,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -3419,7 +3419,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => CM_L3PHIC22_nentries_0_V_dout,
-      nent_o1  => CM_L3PHIC22_nentries_0_V_dout,
+      nent_o1  => CM_L3PHIC22_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -3435,7 +3435,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -3465,7 +3465,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => CM_L3PHIC23_nentries_0_V_dout,
-      nent_o1  => CM_L3PHIC23_nentries_0_V_dout,
+      nent_o1  => CM_L3PHIC23_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -3481,7 +3481,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_DEPTH       => 256,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -3511,7 +3511,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => CM_L3PHIC24_nentries_0_V_dout,
-      nent_o1  => CM_L3PHIC24_nentries_0_V_dout,
+      nent_o1  => CM_L3PHIC24_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -3527,7 +3527,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       RAM_DEPTH       => 1024,
       INIT_FILE       => "",
       RAM_PERFORMANCE => "HIGH_PERFORMANCE",
-      HEX             => 0
+      HEX             => 1
     )
     port map (
       clka      => clk,
@@ -3557,13 +3557,13 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => AP_L3PHIC_nentries_7_V_we,
       nent_i7  => AP_L3PHIC_nentries_7_V_din,
       nent_o0  => AP_L3PHIC_nentries_0_V_dout,
-      nent_o1  => AP_L3PHIC_nentries_0_V_dout,
-      nent_o2  => AP_L3PHIC_nentries_0_V_dout,
-      nent_o3  => AP_L3PHIC_nentries_0_V_dout,
-      nent_o4  => AP_L3PHIC_nentries_0_V_dout,
-      nent_o5  => AP_L3PHIC_nentries_0_V_dout,
-      nent_o6  => AP_L3PHIC_nentries_0_V_dout,
-      nent_o7  => AP_L3PHIC_nentries_0_V_dout
+      nent_o1  => AP_L3PHIC_nentries_1_V_dout,
+      nent_o2  => AP_L3PHIC_nentries_2_V_dout,
+      nent_o3  => AP_L3PHIC_nentries_3_V_dout,
+      nent_o4  => AP_L3PHIC_nentries_4_V_dout,
+      nent_o5  => AP_L3PHIC_nentries_5_V_dout,
+      nent_o6  => AP_L3PHIC_nentries_6_V_dout,
+      nent_o7  => AP_L3PHIC_nentries_7_V_dout
   );
 
 
@@ -3603,7 +3603,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => FM_L1L2XX_L3PHIC_nentries_0_V_dout,
-      nent_o1  => FM_L1L2XX_L3PHIC_nentries_0_V_dout,
+      nent_o1  => FM_L1L2XX_L3PHIC_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
@@ -3649,7 +3649,7 @@ VMSME_L3PHIC24n1 : myMemoryBinned
       nent_we7 => '0',
       nent_i7  => (others=>'0'),
       nent_o0  => FM_L5L6XX_L3PHIC_nentries_0_V_dout,
-      nent_o1  => FM_L5L6XX_L3PHIC_nentries_0_V_dout,
+      nent_o1  => FM_L5L6XX_L3PHIC_nentries_1_V_dout,
       nent_o2  => open,
       nent_o3  => open,
       nent_o4  => open,
