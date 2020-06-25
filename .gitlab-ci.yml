@@ -55,6 +55,7 @@ stages: # ---------------------------------------------------------------------
     - pwd; ls -la; #debug
     - vivado -mode tcl -source generate_project.tcl
     - vivado -mode tcl -source synth.tcl
+    - md5sum ./output.txt
   artifacts:
     when: on_success
     name: "$CI_JOB_NAME-$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
