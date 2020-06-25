@@ -26,8 +26,7 @@ entity top_tf is
     TPROJ_L3PHIC_nentries_V_din : in t_myarray2_8_8b;
     -- For VMStubME memories
     VMSME_L3PHIC17to24n1_dataarray_data_V_wea       : in t_myarray8_1b;
-    VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr : in t_myarray8_9b;
--- todo: VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr --: t_myarray8_10b
+    VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr : in t_myarray8_10b;
     VMSME_L3PHIC17to24n1_dataarray_data_V_din       : in t_myarray8_14b;
     VMSME_L3PHIC17to24n1_nentries_V_we  : in t_myarray8_8_8_1b;
     VMSME_L3PHIC17to24n1_nentries_V_din : in t_myarray8_8_8_4b;
@@ -660,7 +659,7 @@ begin
       port map (        
         clka       => clk,
         wea        => VMSME_L3PHIC17to24n1_dataarray_data_V_wea(vmsidx),
-        addra      => VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(vmsidx),
+        addra      => VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(vmsidx)(8 downto 0), -- For now 4 pages
         dina       => VMSME_L3PHIC17to24n1_dataarray_data_V_din(vmsidx),
         nent_0_we0 =>  VMSME_L3PHIC17to24n1_nentries_V_we(0)(0)(vmsidx),
         nent_0_i0  => VMSME_L3PHIC17to24n1_nentries_V_din(0)(0)(vmsidx),
