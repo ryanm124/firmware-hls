@@ -68,7 +68,7 @@ architecture behavior of tb_top_tf is
 											                                								 "../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC24n1_04.dat" );
 	constant FILE_IN_AS        : string := "../../../../../../../emData/MemPrints/Stubs/AllStubs_AS_L3PHICn6_04.dat"; --! Input file
 	constant FILE_OUT					 : string := "../../../../../output.txt"; --! Output file
-	constant INST_TOP_TF       : integer := 0;          --! Instantiate top_tf or other
+	constant INST_TOP_TF       : integer := 1;          --! Instantiate top_tf or other
 	constant CLK_PERIOD        : time    := 4.16667 ns; --! 240 MHz
 	constant DEBUG             : boolean := true;       --! Debug off/on
 	constant VMSME_DELAY       : integer := 1-1;        --! Number of BX delays (can be written early 8 pages)
@@ -356,6 +356,7 @@ begin
         wait for CLK_PERIOD; -- Main time control
 			end loop l_addr;
 		end loop l_BX;
+		file_close(file_out);
 		assert false report "Simulation finished!" severity FAILURE;
 	end process write_result;
 
