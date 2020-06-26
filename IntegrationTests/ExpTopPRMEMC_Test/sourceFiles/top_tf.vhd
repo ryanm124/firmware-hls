@@ -235,6 +235,102 @@ PORT (
   nent_3_i7  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_3_we7 : in std_logic;                                         -- Write enable
   nent_3_o7  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_4_i0  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_4_we0 : in std_logic;                                         -- Write enable
+  nent_4_o0  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_4_i1  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_4_we1 : in std_logic;                                         -- Write enable
+  nent_4_o1  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_4_i2  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_4_we2 : in std_logic;                                         -- Write enable
+  nent_4_o2  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_4_i3  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_4_we3 : in std_logic;                                         -- Write enable
+  nent_4_o3  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_4_i4  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_4_we4 : in std_logic;                                         -- Write enable
+  nent_4_o4  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_4_i5  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_4_we5 : in std_logic;                                         -- Write enable
+  nent_4_o5  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_4_i6  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_4_we6 : in std_logic;                                         -- Write enable
+  nent_4_o6  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_4_i7  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_4_we7 : in std_logic;                                         -- Write enable
+  nent_4_o7  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_5_i0  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_5_we0 : in std_logic;                                         -- Write enable
+  nent_5_o0  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_5_i1  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_5_we1 : in std_logic;                                         -- Write enable
+  nent_5_o1  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_5_i2  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_5_we2 : in std_logic;                                         -- Write enable
+  nent_5_o2  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_5_i3  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_5_we3 : in std_logic;                                         -- Write enable
+  nent_5_o3  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_5_i4  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_5_we4 : in std_logic;                                         -- Write enable
+  nent_5_o4  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_5_i5  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_5_we5 : in std_logic;                                         -- Write enable
+  nent_5_o5  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_5_i6  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_5_we6 : in std_logic;                                         -- Write enable
+  nent_5_o6  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_5_i7  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_5_we7 : in std_logic;                                         -- Write enable
+  nent_5_o7  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_6_i0  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_6_we0 : in std_logic;                                         -- Write enable
+  nent_6_o0  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_6_i1  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_6_we1 : in std_logic;                                         -- Write enable
+  nent_6_o1  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_6_i2  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_6_we2 : in std_logic;                                         -- Write enable
+  nent_6_o2  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_6_i3  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_6_we3 : in std_logic;                                         -- Write enable
+  nent_6_o3  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_6_i4  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_6_we4 : in std_logic;                                         -- Write enable
+  nent_6_o4  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_6_i5  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_6_we5 : in std_logic;                                         -- Write enable
+  nent_6_o5  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_6_i6  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_6_we6 : in std_logic;                                         -- Write enable
+  nent_6_o6  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_6_i7  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_6_we7 : in std_logic;                                         -- Write enable
+  nent_6_o7  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_7_i0  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_7_we0 : in std_logic;                                         -- Write enable
+  nent_7_o0  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_7_i1  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_7_we1 : in std_logic;                                         -- Write enable
+  nent_7_o1  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_7_i2  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_7_we2 : in std_logic;                                         -- Write enable
+  nent_7_o2  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_7_i3  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_7_we3 : in std_logic;                                         -- Write enable
+  nent_7_o3  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_7_i4  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_7_we4 : in std_logic;                                         -- Write enable
+  nent_7_o4  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_7_i5  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_7_we5 : in std_logic;                                         -- Write enable
+  nent_7_o5  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_7_i6  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_7_we6 : in std_logic;                                         -- Write enable
+  nent_7_o6  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_7_i7  : in std_logic_vector(3 downto 0);                      -- Num entries received
+  nent_7_we7 : in std_logic;                                         -- Write enable
+  nent_7_o7  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
   doutb      : out std_logic_vector(RAM_WIDTH-1 downto 0)            -- RAM output data
   );
 END COMPONENT;
@@ -273,7 +369,7 @@ END COMPONENT;
   
   -- connecting VMStubME memories to MatchEngine input
   signal VMSME_L3PHIC17to24n1_dataarray_data_V_enb      : t_myarray8_1b;
-  signal VMSME_L3PHIC17to24n1_dataarray_data_V_readaddr : t_myarray8_9b;
+  signal VMSME_L3PHIC17to24n1_dataarray_data_V_readaddr : t_myarray8_10b;
   signal VMSME_L3PHIC17to24n1_dataarray_data_V_dout     : t_myarray8_14b;
   signal VMSME_L3PHIC17to24n1_nentries_V_dout : t_myarray8_8_8_5b;
   
@@ -600,7 +696,7 @@ begin
         RAM_WIDTH       => 21,
         RAM_DEPTH       => 256,
         INIT_FILE       => "",
-        RAM_PERFORMANCE => "LOW_LATENCY",
+        RAM_PERFORMANCE => "HIGH_PERFORMANCE",
         HEX             => 0       
         )
       port map (        
@@ -651,15 +747,15 @@ begin
     VMSME_L3PHIC17to24n1 : myMemoryBinned
       generic map (
         RAM_WIDTH       => 14,
-        RAM_DEPTH       => 512,
+        RAM_DEPTH       => 1024,
         INIT_FILE       => "",
-        RAM_PERFORMANCE => "LOW_LATENCY",
+        RAM_PERFORMANCE => "HIGH_PERFORMANCE",
         HEX             => 0       
         )
       port map (        
         clka       => clk,
         wea        => VMSME_L3PHIC17to24n1_dataarray_data_V_wea(vmsidx),
-        addra      => VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(vmsidx)(8 downto 0), -- For now 4 pages
+        addra      => VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(vmsidx),
         dina       => VMSME_L3PHIC17to24n1_dataarray_data_V_din(vmsidx),
         nent_0_we0 =>  VMSME_L3PHIC17to24n1_nentries_V_we(0)(0)(vmsidx),
         nent_0_i0  => VMSME_L3PHIC17to24n1_nentries_V_din(0)(0)(vmsidx),
@@ -725,6 +821,70 @@ begin
         nent_3_i6  => VMSME_L3PHIC17to24n1_nentries_V_din(3)(6)(vmsidx),
         nent_3_we7 =>  VMSME_L3PHIC17to24n1_nentries_V_we(3)(7)(vmsidx),
         nent_3_i7  => VMSME_L3PHIC17to24n1_nentries_V_din(3)(7)(vmsidx),
+        nent_4_we0 =>  VMSME_L3PHIC17to24n1_nentries_V_we(4)(0)(vmsidx),
+        nent_4_i0  => VMSME_L3PHIC17to24n1_nentries_V_din(4)(0)(vmsidx),
+        nent_4_we1 =>  VMSME_L3PHIC17to24n1_nentries_V_we(4)(1)(vmsidx),
+        nent_4_i1  => VMSME_L3PHIC17to24n1_nentries_V_din(4)(1)(vmsidx),
+        nent_4_we2 =>  VMSME_L3PHIC17to24n1_nentries_V_we(4)(2)(vmsidx),
+        nent_4_i2  => VMSME_L3PHIC17to24n1_nentries_V_din(4)(2)(vmsidx),
+        nent_4_we3 =>  VMSME_L3PHIC17to24n1_nentries_V_we(4)(3)(vmsidx),
+        nent_4_i3  => VMSME_L3PHIC17to24n1_nentries_V_din(4)(3)(vmsidx),
+        nent_4_we4 =>  VMSME_L3PHIC17to24n1_nentries_V_we(4)(4)(vmsidx),
+        nent_4_i4  => VMSME_L3PHIC17to24n1_nentries_V_din(4)(4)(vmsidx),
+        nent_4_we5 =>  VMSME_L3PHIC17to24n1_nentries_V_we(4)(5)(vmsidx),
+        nent_4_i5  => VMSME_L3PHIC17to24n1_nentries_V_din(4)(5)(vmsidx),
+        nent_4_we6 =>  VMSME_L3PHIC17to24n1_nentries_V_we(4)(6)(vmsidx),
+        nent_4_i6  => VMSME_L3PHIC17to24n1_nentries_V_din(4)(6)(vmsidx),
+        nent_4_we7 =>  VMSME_L3PHIC17to24n1_nentries_V_we(4)(7)(vmsidx),
+        nent_4_i7  => VMSME_L3PHIC17to24n1_nentries_V_din(4)(7)(vmsidx),
+        nent_5_we0 =>  VMSME_L3PHIC17to24n1_nentries_V_we(5)(0)(vmsidx),
+        nent_5_i0  => VMSME_L3PHIC17to24n1_nentries_V_din(5)(0)(vmsidx),
+        nent_5_we1 =>  VMSME_L3PHIC17to24n1_nentries_V_we(5)(1)(vmsidx),
+        nent_5_i1  => VMSME_L3PHIC17to24n1_nentries_V_din(5)(1)(vmsidx),
+        nent_5_we2 =>  VMSME_L3PHIC17to24n1_nentries_V_we(5)(2)(vmsidx),
+        nent_5_i2  => VMSME_L3PHIC17to24n1_nentries_V_din(5)(2)(vmsidx),
+        nent_5_we3 =>  VMSME_L3PHIC17to24n1_nentries_V_we(5)(3)(vmsidx),
+        nent_5_i3  => VMSME_L3PHIC17to24n1_nentries_V_din(5)(3)(vmsidx),
+        nent_5_we4 =>  VMSME_L3PHIC17to24n1_nentries_V_we(5)(4)(vmsidx),
+        nent_5_i4  => VMSME_L3PHIC17to24n1_nentries_V_din(5)(4)(vmsidx),
+        nent_5_we5 =>  VMSME_L3PHIC17to24n1_nentries_V_we(5)(5)(vmsidx),
+        nent_5_i5  => VMSME_L3PHIC17to24n1_nentries_V_din(5)(5)(vmsidx),
+        nent_5_we6 =>  VMSME_L3PHIC17to24n1_nentries_V_we(5)(6)(vmsidx),
+        nent_5_i6  => VMSME_L3PHIC17to24n1_nentries_V_din(5)(6)(vmsidx),
+        nent_5_we7 =>  VMSME_L3PHIC17to24n1_nentries_V_we(5)(7)(vmsidx),
+        nent_5_i7  => VMSME_L3PHIC17to24n1_nentries_V_din(5)(7)(vmsidx),
+        nent_6_we0 =>  VMSME_L3PHIC17to24n1_nentries_V_we(6)(0)(vmsidx),
+        nent_6_i0  => VMSME_L3PHIC17to24n1_nentries_V_din(6)(0)(vmsidx),
+        nent_6_we1 =>  VMSME_L3PHIC17to24n1_nentries_V_we(6)(1)(vmsidx),
+        nent_6_i1  => VMSME_L3PHIC17to24n1_nentries_V_din(6)(1)(vmsidx),
+        nent_6_we2 =>  VMSME_L3PHIC17to24n1_nentries_V_we(6)(2)(vmsidx),
+        nent_6_i2  => VMSME_L3PHIC17to24n1_nentries_V_din(6)(2)(vmsidx),
+        nent_6_we3 =>  VMSME_L3PHIC17to24n1_nentries_V_we(6)(3)(vmsidx),
+        nent_6_i3  => VMSME_L3PHIC17to24n1_nentries_V_din(6)(3)(vmsidx),
+        nent_6_we4 =>  VMSME_L3PHIC17to24n1_nentries_V_we(6)(4)(vmsidx),
+        nent_6_i4  => VMSME_L3PHIC17to24n1_nentries_V_din(6)(4)(vmsidx),
+        nent_6_we5 =>  VMSME_L3PHIC17to24n1_nentries_V_we(6)(5)(vmsidx),
+        nent_6_i5  => VMSME_L3PHIC17to24n1_nentries_V_din(6)(5)(vmsidx),
+        nent_6_we6 =>  VMSME_L3PHIC17to24n1_nentries_V_we(6)(6)(vmsidx),
+        nent_6_i6  => VMSME_L3PHIC17to24n1_nentries_V_din(6)(6)(vmsidx),
+        nent_6_we7 =>  VMSME_L3PHIC17to24n1_nentries_V_we(6)(7)(vmsidx),
+        nent_6_i7  => VMSME_L3PHIC17to24n1_nentries_V_din(6)(7)(vmsidx),
+        nent_7_we0 =>  VMSME_L3PHIC17to24n1_nentries_V_we(7)(0)(vmsidx),
+        nent_7_i0  => VMSME_L3PHIC17to24n1_nentries_V_din(7)(0)(vmsidx),
+        nent_7_we1 =>  VMSME_L3PHIC17to24n1_nentries_V_we(7)(1)(vmsidx),
+        nent_7_i1  => VMSME_L3PHIC17to24n1_nentries_V_din(7)(1)(vmsidx),
+        nent_7_we2 =>  VMSME_L3PHIC17to24n1_nentries_V_we(7)(2)(vmsidx),
+        nent_7_i2  => VMSME_L3PHIC17to24n1_nentries_V_din(7)(2)(vmsidx),
+        nent_7_we3 =>  VMSME_L3PHIC17to24n1_nentries_V_we(7)(3)(vmsidx),
+        nent_7_i3  => VMSME_L3PHIC17to24n1_nentries_V_din(7)(3)(vmsidx),
+        nent_7_we4 =>  VMSME_L3PHIC17to24n1_nentries_V_we(7)(4)(vmsidx),
+        nent_7_i4  => VMSME_L3PHIC17to24n1_nentries_V_din(7)(4)(vmsidx),
+        nent_7_we5 =>  VMSME_L3PHIC17to24n1_nentries_V_we(7)(5)(vmsidx),
+        nent_7_i5  => VMSME_L3PHIC17to24n1_nentries_V_din(7)(5)(vmsidx),
+        nent_7_we6 =>  VMSME_L3PHIC17to24n1_nentries_V_we(7)(6)(vmsidx),
+        nent_7_i6  => VMSME_L3PHIC17to24n1_nentries_V_din(7)(6)(vmsidx),
+        nent_7_we7 =>  VMSME_L3PHIC17to24n1_nentries_V_we(7)(7)(vmsidx),
+        nent_7_i7  => VMSME_L3PHIC17to24n1_nentries_V_din(7)(7)(vmsidx),
         clkb       => clk,
         rstb       => '0',
         regceb     => '1',
@@ -762,7 +922,39 @@ begin
         nent_3_o4  => VMSME_L3PHIC17to24n1_nentries_V_dout(3)(4)(vmsidx)(3 downto 0),
         nent_3_o5  => VMSME_L3PHIC17to24n1_nentries_V_dout(3)(5)(vmsidx)(3 downto 0),
         nent_3_o6  => VMSME_L3PHIC17to24n1_nentries_V_dout(3)(6)(vmsidx)(3 downto 0),
-        nent_3_o7  => VMSME_L3PHIC17to24n1_nentries_V_dout(3)(7)(vmsidx)(3 downto 0)
+        nent_3_o7  => VMSME_L3PHIC17to24n1_nentries_V_dout(3)(7)(vmsidx)(3 downto 0),
+        nent_4_o0  => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(0)(vmsidx)(3 downto 0),
+        nent_4_o1  => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(1)(vmsidx)(3 downto 0),
+        nent_4_o2  => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(2)(vmsidx)(3 downto 0),
+        nent_4_o3  => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(3)(vmsidx)(3 downto 0),
+        nent_4_o4  => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(4)(vmsidx)(3 downto 0),
+        nent_4_o5  => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(5)(vmsidx)(3 downto 0),
+        nent_4_o6  => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(6)(vmsidx)(3 downto 0),
+        nent_4_o7  => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(7)(vmsidx)(3 downto 0),
+        nent_5_o0  => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(0)(vmsidx)(3 downto 0),
+        nent_5_o1  => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(1)(vmsidx)(3 downto 0),
+        nent_5_o2  => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(2)(vmsidx)(3 downto 0),
+        nent_5_o3  => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(3)(vmsidx)(3 downto 0),
+        nent_5_o4  => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(4)(vmsidx)(3 downto 0),
+        nent_5_o5  => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(5)(vmsidx)(3 downto 0),
+        nent_5_o6  => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(6)(vmsidx)(3 downto 0),
+        nent_5_o7  => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(7)(vmsidx)(3 downto 0),
+        nent_6_o0  => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(0)(vmsidx)(3 downto 0),
+        nent_6_o1  => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(1)(vmsidx)(3 downto 0),
+        nent_6_o2  => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(2)(vmsidx)(3 downto 0),
+        nent_6_o3  => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(3)(vmsidx)(3 downto 0),
+        nent_6_o4  => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(4)(vmsidx)(3 downto 0),
+        nent_6_o5  => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(5)(vmsidx)(3 downto 0),
+        nent_6_o6  => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(6)(vmsidx)(3 downto 0),
+        nent_6_o7  => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(7)(vmsidx)(3 downto 0),
+        nent_7_o0  => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(0)(vmsidx)(3 downto 0),
+        nent_7_o1  => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(1)(vmsidx)(3 downto 0),
+        nent_7_o2  => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(2)(vmsidx)(3 downto 0),
+        nent_7_o3  => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(3)(vmsidx)(3 downto 0),
+        nent_7_o4  => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(4)(vmsidx)(3 downto 0),
+        nent_7_o5  => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(5)(vmsidx)(3 downto 0),
+        nent_7_o6  => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(6)(vmsidx)(3 downto 0),
+        nent_7_o7  => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(7)(vmsidx)(3 downto 0)
         );
 
   end generate gen_VMSME_L3PHIC17to24n1;
@@ -819,6 +1011,38 @@ begin
         inputStubData_nentries_3_V_5 => VMSME_L3PHIC17to24n1_nentries_V_dout(3)(5)(meidx),
         inputStubData_nentries_3_V_6 => VMSME_L3PHIC17to24n1_nentries_V_dout(3)(6)(meidx),
         inputStubData_nentries_3_V_7 => VMSME_L3PHIC17to24n1_nentries_V_dout(3)(7)(meidx),
+        inputStubData_nentries_4_V_0 => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(0)(meidx),
+        inputStubData_nentries_4_V_1 => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(1)(meidx),
+        inputStubData_nentries_4_V_2 => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(2)(meidx),
+        inputStubData_nentries_4_V_3 => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(3)(meidx),
+        inputStubData_nentries_4_V_4 => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(4)(meidx),
+        inputStubData_nentries_4_V_5 => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(5)(meidx),
+        inputStubData_nentries_4_V_6 => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(6)(meidx),
+        inputStubData_nentries_4_V_7 => VMSME_L3PHIC17to24n1_nentries_V_dout(4)(7)(meidx),
+        inputStubData_nentries_5_V_0 => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(0)(meidx),
+        inputStubData_nentries_5_V_1 => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(1)(meidx),
+        inputStubData_nentries_5_V_2 => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(2)(meidx),
+        inputStubData_nentries_5_V_3 => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(3)(meidx),
+        inputStubData_nentries_5_V_4 => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(4)(meidx),
+        inputStubData_nentries_5_V_5 => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(5)(meidx),
+        inputStubData_nentries_5_V_6 => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(6)(meidx),
+        inputStubData_nentries_5_V_7 => VMSME_L3PHIC17to24n1_nentries_V_dout(5)(7)(meidx),
+        inputStubData_nentries_6_V_0 => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(0)(meidx),
+        inputStubData_nentries_6_V_1 => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(1)(meidx),
+        inputStubData_nentries_6_V_2 => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(2)(meidx),
+        inputStubData_nentries_6_V_3 => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(3)(meidx),
+        inputStubData_nentries_6_V_4 => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(4)(meidx),
+        inputStubData_nentries_6_V_5 => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(5)(meidx),
+        inputStubData_nentries_6_V_6 => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(6)(meidx),
+        inputStubData_nentries_6_V_7 => VMSME_L3PHIC17to24n1_nentries_V_dout(6)(7)(meidx),
+        inputStubData_nentries_7_V_0 => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(0)(meidx),
+        inputStubData_nentries_7_V_1 => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(1)(meidx),
+        inputStubData_nentries_7_V_2 => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(2)(meidx),
+        inputStubData_nentries_7_V_3 => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(3)(meidx),
+        inputStubData_nentries_7_V_4 => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(4)(meidx),
+        inputStubData_nentries_7_V_5 => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(5)(meidx),
+        inputStubData_nentries_7_V_6 => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(6)(meidx),
+        inputStubData_nentries_7_V_7 => VMSME_L3PHIC17to24n1_nentries_V_dout(7)(7)(meidx),
         inputProjectionData_dataarray_data_V_address0 => VMPROJ_L3PHIC17to24_dataarray_data_V_readaddr(meidx),
         inputProjectionData_dataarray_data_V_ce0      => VMPROJ_L3PHIC17to24_dataarray_data_V_enb(meidx),
         inputProjectionData_dataarray_data_V_q0       => VMPROJ_L3PHIC17to24_dataarray_data_V_dout(meidx),
