@@ -13,14 +13,14 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="6850001fs"></ZoomEndTime>
-      <Cursor1Time time="897773fs"></Cursor1Time>
+      <ZoomEndTime time="6890001fs"></ZoomEndTime>
+      <Cursor1Time time="1793463fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="431"></NameColumnWidth>
-      <ValueColumnWidth column_width="172"></ValueColumnWidth>
+      <ValueColumnWidth column_width="168"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="25" />
+   <WVObjectSize size="26" />
    <wave_markers>
       <marker label="" time="1381029" />
    </wave_markers>
@@ -95,6 +95,10 @@
    <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/bx_out_MatchEngine_vld">
       <obj_property name="ElementShortName">bx_out_MatchEngine_vld[7:0]</obj_property>
       <obj_property name="ObjectShortName">bx_out_MatchEngine_vld[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/bx_out_MatchEngine_minus1_0">
+      <obj_property name="ElementShortName">bx_out_MatchEngine_minus1_0[2:0]</obj_property>
+      <obj_property name="ObjectShortName">bx_out_MatchEngine_minus1_0[2:0]</obj_property>
    </wvobject>
    <wvobject fp_name="divider295" type="divider">
       <obj_property name="label">MC</obj_property>
