@@ -76,7 +76,7 @@ void MatchEngine(const BXType bx, BXType& bx_o,
 #endif
 
 	// Main processing loops starts here
-	STEP_LOOP: for (ap_uint<kNBits_MemAddr> istep=0; istep<kMaxProc-8; istep++) {
+	STEP_LOOP: for (ap_uint<kNBits_MemAddr> istep=0; istep<kMaxProc-9; istep++) {
 		#pragma HLS PIPELINE II=1
 		#pragma HLS DEPENDENCE variable=tail_readindex inter false
 

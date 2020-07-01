@@ -2,7 +2,8 @@
 library ieee;
 --! Standard package
 use ieee.std_logic_1164.all;
-
+--! Signed/unsigned calculations
+use ieee.numeric_std.all;
 --! Xilinx library
 library unisim;
 --! Xilinx package
@@ -14,9 +15,10 @@ use work.mytypes_pkg.all;
 
 entity top_tf is
   port(
-    clk     : in std_logic;
-    reset   : in std_logic;
-    en_proc : in std_logic;
+    clk       : in std_logic;
+    reset     : in std_logic;
+    en_proc   : in std_logic;
+    idle_proc : out std_logic;
     bx_in_ProjectionRouter : in std_logic_vector(2 downto 0);
     -- For TrackletProjections memories
     TPROJ_L3PHIC_dataarray_data_V_wea       : in t_myarray8_1b;
@@ -386,6 +388,7 @@ END COMPONENT;
   signal bx_out_MatchEngine_vld : t_myarray8_1b;
   signal MatchEngine_done    : t_myarray8_1b; 
   signal MatchEngine_Alldone : std_logic := '0';
+  signal bx_out_MatchEngine_minus1_0 : std_logic_vector(2 downto 0);
   
   -- connecting MatchEngine output to CandidateMatches memories 
   signal CM_L3PHIC17to24_dataarray_data_V_wea       : t_myarray8_1b;
@@ -434,8 +437,8 @@ begin
     --if rising_edge(clk) then
       if ProjectionRouter_done = '1' then 
         MatchEngine_start <= '1'; 
-      --else
-      --  MatchEngine_start <= '0'; 
+      else
+        MatchEngine_start <= '0'; 
       end if;
     --end if;
   end process;
@@ -452,7 +455,14 @@ begin
       --  MatchCalculator_start <= '0'; 
       end if;
     --end if;
-  end process;                       
+  end process;
+
+  process(clk) -- Delay bx counter by one bx
+  begin
+    if rising_edge(clk) then
+      bx_out_MatchEngine_minus1_0 <= std_logic_vector(unsigned(bx_out_MatchEngine(0)) - "001");
+    end if;
+  end process;  
 
 
   --------------------------------------------------------------
@@ -517,7 +527,7 @@ begin
       ap_rst   => reset,
       ap_start => en_proc,
       ap_done  => ProjectionRouter_done,
-      ap_idle  => open,
+      ap_idle  => idle_proc,
       ap_ready => open,
       bx_V     => bx_in_ProjectionRouter,
       proj1in_dataarray_data_V_address0 => TPROJ_L3PHIC_dataarray_data_V_readaddr(0),
@@ -1185,7 +1195,7 @@ begin
       ap_done  => MatchCalculator_done,
       ap_idle  => open,
       ap_ready => open,
-      bx_V     => bx_out_MatchEngine(0), -- All MEs should have the same counter value
+      bx_V     => bx_out_MatchEngine_minus1_0, -- All MEs should have the same counter value
       match1_dataarray_data_V_address0 => CM_L3PHIC17to24_dataarray_data_V_readaddr(0),
       match1_dataarray_data_V_ce0      => CM_L3PHIC17to24_dataarray_data_V_enb(0),
       match1_dataarray_data_V_q0       => CM_L3PHIC17to24_dataarray_data_V_dout(0),

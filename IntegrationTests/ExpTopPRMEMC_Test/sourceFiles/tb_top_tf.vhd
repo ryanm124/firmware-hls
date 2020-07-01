@@ -78,9 +78,10 @@ architecture behavior of tb_top_tf is
 
 	-- ########################### Signals ###########################
 	-- ### UUT signals ###
-  signal clk     : std_logic := '0';
-  signal reset   : std_logic := '1';
-  signal en_proc : std_logic := '0';
+  signal clk       : std_logic := '0';
+  signal reset     : std_logic := '1';
+  signal en_proc   : std_logic := '0';
+  signal idle_proc : std_logic;
   signal bx_in_ProjectionRouter : std_logic_vector(2 downto 0) := (others => '0');
   -- For TrackletProjections memories
   signal TPROJ_L3PHIC_dataarray_data_V_wea       : t_myarray8_1b   := (others => '0');
@@ -205,7 +206,7 @@ begin
 		variable v_last_bin                : boolean := false; -- Last bin tag
 	begin
 		wait for CLK_PERIOD; -- Let the read process finish
-		reset <= '0';        -- Relase reset
+		reset <= '0';           -- Reset cycle
 		l_BX : for v_bx_cnt in -1 to MAX_EVENTS+1 loop -- -1 (to write the first memories before starting) to 101
 		  bx_cnt         <= v_bx_cnt;       -- Update the signal
 		  v_page_cnt2_d0 := v_bx_cnt mod 2;          -- mod 2
@@ -229,7 +230,11 @@ begin
 					end if;
 					-- VMSME
 					if (v_bx_cnt>=VMSME_DELAY and v_bx_cnt<MAX_EVENTS-1) then -- Start after delay of BXs
-						en_proc <= '1'; -- Start the chain
+						if (idle_proc='0') then -- Control PR start
+							en_proc <= '0';
+						else
+							en_proc <= '1';
+						end if;
 						VMSME_L3PHIC17to24n1_dataarray_data_V_wea(cp) <= '1';                                     -- Default assigment
 				    VMSME_L3PHIC17to24n1_nentries_V_we            <= (others => (others => (others => '1'))); -- Default assigment
 						if v_bin_cnt(cp)<=N_MEM_BINS-1 then -- Valid bin
@@ -366,9 +371,10 @@ begin
 	i_top_tf : if INST_TOP_TF = 1 generate
 		uut : entity work.top_tf
 			port map(
-		    clk     => clk,
-		    reset   => reset,
-	    	en_proc => en_proc,
+		    clk       => clk,
+		    reset     => reset,
+	    	en_proc   => en_proc,
+	    	idle_proc => idle_proc,
 		    bx_in_ProjectionRouter => bx_in_ProjectionRouter,
 		    -- For TrackletProjections memories
 		    TPROJ_L3PHIC_dataarray_data_V_wea       => TPROJ_L3PHIC_dataarray_data_V_wea,
