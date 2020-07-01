@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="tb_top_tf_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="mytypes_pkg" />
+            <top_module name="tb_top_tf" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="6850001fs"></ZoomEndTime>
+      <Cursor1Time time="897773fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="431"></NameColumnWidth>
+      <ValueColumnWidth column_width="172"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="25" />
+   <wave_markers>
+      <marker label="" time="1381029" />
+   </wave_markers>
+   <wvobject type="other" fp_name="/tb_top_tf/bx_cnt">
+      <obj_property name="ElementShortName">bx_cnt</obj_property>
+      <obj_property name="ObjectShortName">bx_cnt</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider293" type="divider">
+      <obj_property name="label">PR</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/PR_L3PHIC/ap_clk">
+      <obj_property name="ElementShortName">ap_clk</obj_property>
+      <obj_property name="ObjectShortName">ap_clk</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/PR_L3PHIC/ap_rst">
+      <obj_property name="ElementShortName">ap_rst</obj_property>
+      <obj_property name="ObjectShortName">ap_rst</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/PR_L3PHIC/ap_ready">
+      <obj_property name="ElementShortName">ap_ready</obj_property>
+      <obj_property name="ObjectShortName">ap_ready</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/PR_L3PHIC/ap_start">
+      <obj_property name="ElementShortName">ap_start</obj_property>
+      <obj_property name="ObjectShortName">ap_start</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/PR_L3PHIC/ap_idle">
+      <obj_property name="ElementShortName">ap_idle</obj_property>
+      <obj_property name="ObjectShortName">ap_idle</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/ProjectionRouter_done">
+      <obj_property name="ElementShortName">ProjectionRouter_done</obj_property>
+      <obj_property name="ObjectShortName">ProjectionRouter_done</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/bx_in_ProjectionRouter">
+      <obj_property name="ElementShortName">bx_in_ProjectionRouter[2:0]</obj_property>
+      <obj_property name="ObjectShortName">bx_in_ProjectionRouter[2:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/bx_out_ProjectionRouter">
+      <obj_property name="ElementShortName">bx_out_ProjectionRouter[2:0]</obj_property>
+      <obj_property name="ObjectShortName">bx_out_ProjectionRouter[2:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/bx_out_ProjectionRouter_vld">
+      <obj_property name="ElementShortName">bx_out_ProjectionRouter_vld</obj_property>
+      <obj_property name="ObjectShortName">bx_out_ProjectionRouter_vld</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider294" type="divider">
+      <obj_property name="label">ME/ME3</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/\gen_MatchEngines(3)\/me_i/ap_ready">
+      <obj_property name="ElementShortName">ap_ready</obj_property>
+      <obj_property name="ObjectShortName">ap_ready</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/MatchEngine_start">
+      <obj_property name="ElementShortName">MatchEngine_start</obj_property>
+      <obj_property name="ObjectShortName">MatchEngine_start</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/\gen_MatchEngines(3)\/me_i/ap_idle">
+      <obj_property name="ElementShortName">ap_idle</obj_property>
+      <obj_property name="ObjectShortName">ap_idle</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/MatchEngine_Alldone">
+      <obj_property name="ElementShortName">MatchEngine_Alldone</obj_property>
+      <obj_property name="ObjectShortName">MatchEngine_Alldone</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/bx_out_MatchEngine">
+      <obj_property name="ElementShortName">bx_out_MatchEngine[7:0][2:0]</obj_property>
+      <obj_property name="ObjectShortName">bx_out_MatchEngine[7:0][2:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/bx_out_MatchEngine_vld">
+      <obj_property name="ElementShortName">bx_out_MatchEngine_vld[7:0]</obj_property>
+      <obj_property name="ObjectShortName">bx_out_MatchEngine_vld[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider295" type="divider">
+      <obj_property name="label">MC</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/MC_L3PHIC/ap_ready">
+      <obj_property name="ElementShortName">ap_ready</obj_property>
+      <obj_property name="ObjectShortName">ap_ready</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/MatchCalculator_start">
+      <obj_property name="ElementShortName">MatchCalculator_start</obj_property>
+      <obj_property name="ObjectShortName">MatchCalculator_start</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/MC_L3PHIC/ap_idle">
+      <obj_property name="ElementShortName">ap_idle</obj_property>
+      <obj_property name="ObjectShortName">ap_idle</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/MatchCalculator_done">
+      <obj_property name="ElementShortName">MatchCalculator_done</obj_property>
+      <obj_property name="ObjectShortName">MatchCalculator_done</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/bx_out_MatchCalculator">
+      <obj_property name="ElementShortName">bx_out_MatchCalculator[2:0]</obj_property>
+      <obj_property name="ObjectShortName">bx_out_MatchCalculator[2:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/bx_out_MatchCalculator_vld">
+      <obj_property name="ElementShortName">bx_out_MatchCalculator_vld</obj_property>
+      <obj_property name="ObjectShortName">bx_out_MatchCalculator_vld</obj_property>
+   </wvobject>
+</wave_config>
