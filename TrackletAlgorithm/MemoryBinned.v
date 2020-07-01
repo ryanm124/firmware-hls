@@ -127,100 +127,100 @@ module myMemoryBinned #(
   output [3:0] 			nent_3_o7, // Num entries for page 3 [4 bits each]
   input [3:0]       nent_4_i0, // Num entries received
   input       nent_4_we0, // Write enable
-  output [3:0]      nent_4_o0, // Num entries for page 0 [4 bits each]
+  output [3:0]      nent_4_o0, // Num entries for page 4 [4 bits each]
   input [3:0]       nent_4_i1, // Num entries received
   input       nent_4_we1, // Write enable
-  output [3:0]      nent_4_o1, // Num entries for page 0 [4 bits each]
+  output [3:0]      nent_4_o1, // Num entries for page 4 [4 bits each]
   input [3:0]       nent_4_i2, // Num entries received
   input       nent_4_we2, // Write enable
-  output [3:0]      nent_4_o2, // Num entries for page 0 [4 bits each]
+  output [3:0]      nent_4_o2, // Num entries for page 4 [4 bits each]
   input [3:0]       nent_4_i3, // Num entries received
   input       nent_4_we3, // Write enable
-  output [3:0]      nent_4_o3, // Num entries for page 0 [4 bits each]      
+  output [3:0]      nent_4_o3, // Num entries for page 4 [4 bits each]      
   input [3:0]       nent_4_i4, // Num entries received
   input       nent_4_we4, // Write enable
-  output [3:0]      nent_4_o4, // Num entries for page 0 [4 bits each]      
+  output [3:0]      nent_4_o4, // Num entries for page 4 [4 bits each]      
   input [3:0]       nent_4_i5, // Num entries received
   input       nent_4_we5, // Write enable
-  output [3:0]      nent_4_o5, // Num entries for page 0 [4 bits each]      
+  output [3:0]      nent_4_o5, // Num entries for page 4 [4 bits each]      
   input [3:0]       nent_4_i6, // Num entries received
   input       nent_4_we6, // Write enable
-  output [3:0]      nent_4_o6, // Num entries for page 0 [4 bits each]      
+  output [3:0]      nent_4_o6, // Num entries for page 4 [4 bits each]      
   input [3:0]       nent_4_i7, // Num entries received
   input       nent_4_we7, // Write enable
-  output [3:0]      nent_4_o7, // Num entries for page 0 [4 bits each]      
+  output [3:0]      nent_4_o7, // Num entries for page 4 [4 bits each]      
   input [3:0]       nent_5_i0, // Num entries received
   input       nent_5_we0, // Write enable
-  output [3:0]      nent_5_o0, // Num entries for page 1 [4 bits each]
+  output [3:0]      nent_5_o0, // Num entries for page 5 [4 bits each]
   input [3:0]       nent_5_i1, // Num entries received
   input       nent_5_we1, // Write enable
-  output [3:0]      nent_5_o1, // Num entries for page 1 [4 bits each]
+  output [3:0]      nent_5_o1, // Num entries for page 5 [4 bits each]
   input [3:0]       nent_5_i2, // Num entries received
   input       nent_5_we2, // Write enable
-  output [3:0]      nent_5_o2, // Num entries for page 1 [4 bits each]
+  output [3:0]      nent_5_o2, // Num entries for page 5 [4 bits each]
   input [3:0]       nent_5_i3, // Num entries received
   input       nent_5_we3, // Write enable
-  output [3:0]      nent_5_o3, // Num entries for page 1 [4 bits each]
+  output [3:0]      nent_5_o3, // Num entries for page 5 [4 bits each]
   input [3:0]       nent_5_i4, // Num entries received
   input       nent_5_we4, // Write enable
-  output [3:0]      nent_5_o4, // Num entries for page 1 [4 bits each]
+  output [3:0]      nent_5_o4, // Num entries for page 5 [4 bits each]
   input [3:0]       nent_5_i5, // Num entries received
   input       nent_5_we5, // Write enable
-  output [3:0]      nent_5_o5, // Num entries for page 1 [4 bits each]
+  output [3:0]      nent_5_o5, // Num entries for page 5 [4 bits each]
   input [3:0]       nent_5_i6, // Num entries received
   input       nent_5_we6, // Write enable
-  output [3:0]      nent_5_o6, // Num entries for page 1 [4 bits each]
+  output [3:0]      nent_5_o6, // Num entries for page 5 [4 bits each]
   input [3:0]       nent_5_i7, // Num entries received
   input       nent_5_we7, // Write enable
-  output [3:0]      nent_5_o7, // Num entries for page 1 [4 bits each]
+  output [3:0]      nent_5_o7, // Num entries for page 5 [4 bits each]
   input [3:0]       nent_6_i0, // Num entries received
   input       nent_6_we0, // Write enable
-  output [3:0]      nent_6_o0, // Num entries for page 2 [4 bits each]
+  output [3:0]      nent_6_o0, // Num entries for page 6 [4 bits each]
   input [3:0]       nent_6_i1, // Num entries received
   input       nent_6_we1, // Write enable
-  output [3:0]      nent_6_o1, // Num entries for page 2 [4 bits each]
+  output [3:0]      nent_6_o1, // Num entries for page 6 [4 bits each]
   input [3:0]       nent_6_i2, // Num entries received
   input       nent_6_we2, // Write enable
-  output [3:0]      nent_6_o2, // Num entries for page 2 [4 bits each]
+  output [3:0]      nent_6_o2, // Num entries for page 6 [4 bits each]
   input [3:0]       nent_6_i3, // Num entries received
   input       nent_6_we3, // Write enable
-  output [3:0]      nent_6_o3, // Num entries for page 2 [4 bits each]
+  output [3:0]      nent_6_o3, // Num entries for page 6 [4 bits each]
   input [3:0]       nent_6_i4, // Num entries received
   input       nent_6_we4, // Write enable
-  output [3:0]      nent_6_o4, // Num entries for page 2 [4 bits each]
+  output [3:0]      nent_6_o4, // Num entries for page 6 [4 bits each]
   input [3:0]       nent_6_i5, // Num entries received
   input       nent_6_we5, // Write enable
-  output [3:0]      nent_6_o5, // Num entries for page 2 [4 bits each]
+  output [3:0]      nent_6_o5, // Num entries for page 6 [4 bits each]
   input [3:0]       nent_6_i6, // Num entries received
   input       nent_6_we6, // Write enable
-  output [3:0]      nent_6_o6, // Num entries for page 2 [4 bits each]
+  output [3:0]      nent_6_o6, // Num entries for page 6 [4 bits each]
   input [3:0]       nent_6_i7, // Num entries received
   input       nent_6_we7, // Write enable
-  output [3:0]      nent_6_o7, // Num entries for page 2 [4 bits each]
+  output [3:0]      nent_6_o7, // Num entries for page 6 [4 bits each]
   input [3:0]       nent_7_i0, // Num entries received
   input       nent_7_we0, // Write enable
-  output [3:0]      nent_7_o0, // Num entries for page 3 [4 bits each]
+  output [3:0]      nent_7_o0, // Num entries for page 7 [4 bits each]
   input [3:0]       nent_7_i1, // Num entries received
   input       nent_7_we1, // Write enable
-  output [3:0]      nent_7_o1, // Num entries for page 3 [4 bits each]
+  output [3:0]      nent_7_o1, // Num entries for page 7 [4 bits each]
   input [3:0]       nent_7_i2, // Num entries received
   input       nent_7_we2, // Write enable
-  output [3:0]      nent_7_o2, // Num entries for page 3 [4 bits each]
+  output [3:0]      nent_7_o2, // Num entries for page 7 [4 bits each]
   input [3:0]       nent_7_i3, // Num entries received
   input       nent_7_we3, // Write enable
-  output [3:0]      nent_7_o3, // Num entries for page 3 [4 bits each]
+  output [3:0]      nent_7_o3, // Num entries for page 7 [4 bits each]
   input [3:0]       nent_7_i4, // Num entries received
   input       nent_7_we4, // Write enable
-  output [3:0]      nent_7_o4, // Num entries for page 3 [4 bits each]
+  output [3:0]      nent_7_o4, // Num entries for page 7 [4 bits each]
   input [3:0]       nent_7_i5, // Num entries received
   input       nent_7_we5, // Write enable
-  output [3:0]      nent_7_o5, // Num entries for page 3 [4 bits each]
+  output [3:0]      nent_7_o5, // Num entries for page 7 [4 bits each]
   input [3:0]       nent_7_i6, // Num entries received
   input       nent_7_we6, // Write enable
-  output [3:0]      nent_7_o6, // Num entries for page 3 [4 bits each]
+  output [3:0]      nent_7_o6, // Num entries for page 7 [4 bits each]
   input [3:0]       nent_7_i7, // Num entries received
   input       nent_7_we7, // Write enable
-  output [3:0]      nent_7_o7, // Num entries for page 3 [4 bits each] 
+  output [3:0]      nent_7_o7, // Num entries for page 7 [4 bits each] 
   output [RAM_WIDTH-1:0] 	doutb         // RAM output data
 );
 

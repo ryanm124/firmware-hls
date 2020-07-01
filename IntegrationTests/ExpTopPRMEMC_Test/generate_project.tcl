@@ -31,8 +31,7 @@ set files [list \
  [file normalize "${origin_dir}/../../TrackletAlgorithm/MemoryBinned.v"] \
  [file normalize "${origin_dir}/sourceFiles/mytypes_pkg.vhd"] \
  [file normalize "${origin_dir}/sourceFiles/top_tf.vhd"] \
- [file normalize "${origin_dir}/sourceFiles/prmemc.vhd"] \
-]
+] 
 add_files -norecurse -fileset $obj $files
 
 # Create 'sim_1' fileset (if not found)
@@ -58,10 +57,10 @@ set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "file_type" -value "VHDL" -objects $file_obj
 
-set file "${origin_dir}/sourceFiles/prmemc.vhd"
-set file [file normalize $file]
-set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
-set_property -name "file_type" -value "VHDL" -objects $file_obj
+# set file "${origin_dir}/sourceFiles/prmemc.vhd"
+# set file [file normalize $file]
+# set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+# set_property -name "file_type" -value "VHDL" -objects $file_obj
 
 set file "${origin_dir}/sourceFiles/tb_top_tf.vhd"
 set file [file normalize $file]
@@ -79,7 +78,13 @@ puts "INFO: Project created:${_xil_proj_name_}"
 launch_simulation
 
 
-exit
+open_wave_config {./prmemc.wcfg}
+open_wave_config {./start_bx.wcfg}
+open_wave_config {./top_tf.wcfg}
+restart
+run 50 us
+
+#exit
 
 #set_property SOURCE_SET sources_1 [get_filesets sim_1]
 #add_files -fileset sim_1 -norecurse {/home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/endian_h.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/regexp_h.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/stdio_h_2args.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/strings_h.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/ctype_h.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/debugio_h.vhd /home/vivado/local_mount/firmware-hls/IntegrationTests/ExpTopPRMEMC_Test/sourceFiles/stdio/stdlib_h.vhd}

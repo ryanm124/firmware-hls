@@ -237,100 +237,100 @@ PORT (
   nent_3_o7  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
   nent_4_i0  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_4_we0 : in std_logic;                                         -- Write enable
-  nent_4_o0  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_4_o0  : out std_logic_vector(3 downto 0);                     -- Num entries for page 4 [4 bits each]
   nent_4_i1  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_4_we1 : in std_logic;                                         -- Write enable
-  nent_4_o1  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_4_o1  : out std_logic_vector(3 downto 0);                     -- Num entries for page 4 [4 bits each]
   nent_4_i2  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_4_we2 : in std_logic;                                         -- Write enable
-  nent_4_o2  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_4_o2  : out std_logic_vector(3 downto 0);                     -- Num entries for page 4 [4 bits each]
   nent_4_i3  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_4_we3 : in std_logic;                                         -- Write enable
-  nent_4_o3  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_4_o3  : out std_logic_vector(3 downto 0);                     -- Num entries for page 4 [4 bits each]
   nent_4_i4  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_4_we4 : in std_logic;                                         -- Write enable
-  nent_4_o4  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_4_o4  : out std_logic_vector(3 downto 0);                     -- Num entries for page 4 [4 bits each]
   nent_4_i5  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_4_we5 : in std_logic;                                         -- Write enable
-  nent_4_o5  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_4_o5  : out std_logic_vector(3 downto 0);                     -- Num entries for page 4 [4 bits each]
   nent_4_i6  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_4_we6 : in std_logic;                                         -- Write enable
-  nent_4_o6  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_4_o6  : out std_logic_vector(3 downto 0);                     -- Num entries for page 4 [4 bits each]
   nent_4_i7  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_4_we7 : in std_logic;                                         -- Write enable
-  nent_4_o7  : out std_logic_vector(3 downto 0);                     -- Num entries for page 0 [4 bits each]
+  nent_4_o7  : out std_logic_vector(3 downto 0);                     -- Num entries for page 4 [4 bits each]
   nent_5_i0  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_5_we0 : in std_logic;                                         -- Write enable
-  nent_5_o0  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_5_o0  : out std_logic_vector(3 downto 0);                     -- Num entries for page 5 [4 bits each]
   nent_5_i1  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_5_we1 : in std_logic;                                         -- Write enable
-  nent_5_o1  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_5_o1  : out std_logic_vector(3 downto 0);                     -- Num entries for page 5 [4 bits each]
   nent_5_i2  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_5_we2 : in std_logic;                                         -- Write enable
-  nent_5_o2  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_5_o2  : out std_logic_vector(3 downto 0);                     -- Num entries for page 5 [4 bits each]
   nent_5_i3  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_5_we3 : in std_logic;                                         -- Write enable
-  nent_5_o3  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_5_o3  : out std_logic_vector(3 downto 0);                     -- Num entries for page 5 [4 bits each]
   nent_5_i4  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_5_we4 : in std_logic;                                         -- Write enable
-  nent_5_o4  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_5_o4  : out std_logic_vector(3 downto 0);                     -- Num entries for page 5 [4 bits each]
   nent_5_i5  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_5_we5 : in std_logic;                                         -- Write enable
-  nent_5_o5  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_5_o5  : out std_logic_vector(3 downto 0);                     -- Num entries for page 5 [4 bits each]
   nent_5_i6  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_5_we6 : in std_logic;                                         -- Write enable
-  nent_5_o6  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_5_o6  : out std_logic_vector(3 downto 0);                     -- Num entries for page 5 [4 bits each]
   nent_5_i7  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_5_we7 : in std_logic;                                         -- Write enable
-  nent_5_o7  : out std_logic_vector(3 downto 0);                     -- Num entries for page 1 [4 bits each]
+  nent_5_o7  : out std_logic_vector(3 downto 0);                     -- Num entries for page 5 [4 bits each]
   nent_6_i0  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_6_we0 : in std_logic;                                         -- Write enable
-  nent_6_o0  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_6_o0  : out std_logic_vector(3 downto 0);                     -- Num entries for page 6 [4 bits each]
   nent_6_i1  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_6_we1 : in std_logic;                                         -- Write enable
-  nent_6_o1  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_6_o1  : out std_logic_vector(3 downto 0);                     -- Num entries for page 6 [4 bits each]
   nent_6_i2  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_6_we2 : in std_logic;                                         -- Write enable
-  nent_6_o2  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_6_o2  : out std_logic_vector(3 downto 0);                     -- Num entries for page 6 [4 bits each]
   nent_6_i3  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_6_we3 : in std_logic;                                         -- Write enable
-  nent_6_o3  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_6_o3  : out std_logic_vector(3 downto 0);                     -- Num entries for page 6 [4 bits each]
   nent_6_i4  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_6_we4 : in std_logic;                                         -- Write enable
-  nent_6_o4  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_6_o4  : out std_logic_vector(3 downto 0);                     -- Num entries for page 6 [4 bits each]
   nent_6_i5  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_6_we5 : in std_logic;                                         -- Write enable
-  nent_6_o5  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_6_o5  : out std_logic_vector(3 downto 0);                     -- Num entries for page 6 [4 bits each]
   nent_6_i6  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_6_we6 : in std_logic;                                         -- Write enable
-  nent_6_o6  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_6_o6  : out std_logic_vector(3 downto 0);                     -- Num entries for page 6 [4 bits each]
   nent_6_i7  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_6_we7 : in std_logic;                                         -- Write enable
-  nent_6_o7  : out std_logic_vector(3 downto 0);                     -- Num entries for page 2 [4 bits each]
+  nent_6_o7  : out std_logic_vector(3 downto 0);                     -- Num entries for page 6 [4 bits each]
   nent_7_i0  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_7_we0 : in std_logic;                                         -- Write enable
-  nent_7_o0  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_7_o0  : out std_logic_vector(3 downto 0);                     -- Num entries for page 7 [4 bits each]
   nent_7_i1  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_7_we1 : in std_logic;                                         -- Write enable
-  nent_7_o1  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_7_o1  : out std_logic_vector(3 downto 0);                     -- Num entries for page 7 [4 bits each]
   nent_7_i2  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_7_we2 : in std_logic;                                         -- Write enable
-  nent_7_o2  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_7_o2  : out std_logic_vector(3 downto 0);                     -- Num entries for page 7 [4 bits each]
   nent_7_i3  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_7_we3 : in std_logic;                                         -- Write enable
-  nent_7_o3  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_7_o3  : out std_logic_vector(3 downto 0);                     -- Num entries for page 7 [4 bits each]
   nent_7_i4  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_7_we4 : in std_logic;                                         -- Write enable
-  nent_7_o4  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_7_o4  : out std_logic_vector(3 downto 0);                     -- Num entries for page 7 [4 bits each]
   nent_7_i5  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_7_we5 : in std_logic;                                         -- Write enable
-  nent_7_o5  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_7_o5  : out std_logic_vector(3 downto 0);                     -- Num entries for page 7 [4 bits each]
   nent_7_i6  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_7_we6 : in std_logic;                                         -- Write enable
-  nent_7_o6  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_7_o6  : out std_logic_vector(3 downto 0);                     -- Num entries for page 7 [4 bits each]
   nent_7_i7  : in std_logic_vector(3 downto 0);                      -- Num entries received
   nent_7_we7 : in std_logic;                                         -- Write enable
-  nent_7_o7  : out std_logic_vector(3 downto 0);                     -- Num entries for page 3 [4 bits each]
+  nent_7_o7  : out std_logic_vector(3 downto 0);                     -- Num entries for page 7 [4 bits each]
   doutb      : out std_logic_vector(RAM_WIDTH-1 downto 0)            -- RAM output data
   );
 END COMPONENT;
@@ -431,7 +431,13 @@ begin
 
   process(ProjectionRouter_done)
   begin
-    if ProjectionRouter_done = '1' then MatchEngine_start <= '1'; end if;
+    --if rising_edge(clk) then
+      if ProjectionRouter_done = '1' then 
+        MatchEngine_start <= '1'; 
+      --else
+      --  MatchEngine_start <= '0'; 
+      end if;
+    --end if;
   end process;
   
   MatchEngine_Alldone <= MatchEngine_done(0) and MatchEngine_done(1) and MatchEngine_done(2) and MatchEngine_done(3) and
@@ -439,7 +445,13 @@ begin
   
   process(MatchEngine_Alldone)
   begin
-    if MatchEngine_Alldone = '1' then MatchCalculator_start <= '1'; end if;
+    --if rising_edge(clk) then
+      if MatchEngine_Alldone = '1' then 
+        MatchCalculator_start <= '1'; 
+      --else
+      --  MatchCalculator_start <= '0'; 
+      end if;
+    --end if;
   end process;                       
 
 
@@ -1173,7 +1185,7 @@ begin
       ap_done  => MatchCalculator_done,
       ap_idle  => open,
       ap_ready => open,
-      bx_V     => bx_out_MatchEngine(0),
+      bx_V     => bx_out_MatchEngine(0), -- All MEs should have the same counter value
       match1_dataarray_data_V_address0 => CM_L3PHIC17to24_dataarray_data_V_readaddr(0),
       match1_dataarray_data_V_ce0      => CM_L3PHIC17to24_dataarray_data_V_enb(0),
       match1_dataarray_data_V_q0       => CM_L3PHIC17to24_dataarray_data_V_dout(0),
