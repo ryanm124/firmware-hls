@@ -457,11 +457,11 @@ begin
     --end if;
   end process;
 
-  process(clk) -- Delay bx counter by one bx
+  process(bx_out_MatchEngine(0)) -- Delay bx counter by one bx
   begin
-    if rising_edge(clk) then
+    --if rising_edge(clk) then
       bx_out_MatchEngine_minus1_0 <= std_logic_vector(unsigned(bx_out_MatchEngine(0)) - "001");
-    end if;
+    --end if;
   end process;  
 
 
