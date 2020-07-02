@@ -132,9 +132,9 @@ begin
 	--! @brief Clock process ---------------------------------------
 	CLK_process : process
 	begin
-		clk <= '0';
-		wait for CLK_PERIOD/2;
 		clk <= '1';
+		wait for CLK_PERIOD/2;
+		clk <= '0';
 		wait for CLK_PERIOD/2;
 	end process CLK_process;
 	
@@ -338,7 +338,7 @@ begin
 				end if;
 				FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr+(PAGE_OFFSET*(v_bx_cnt mod 2)),FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr'length));
 				FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr+(PAGE_OFFSET*(v_bx_cnt mod 2)),FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr'length));
-				wait for 0 ns; -- Update signals0
+				wait for 0 ns; -- Update signals
 				-- Other writes ---------------------------------------
 				if (addr >= MEM_READ_DELAY) then -- Take read dealy into account
 	        write(v_line, NOW, right, 12); -- NOW = current simulation time
