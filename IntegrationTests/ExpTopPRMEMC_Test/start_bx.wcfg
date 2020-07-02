@@ -13,17 +13,14 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="6890001fs"></ZoomEndTime>
-      <Cursor1Time time="1793463fs"></Cursor1Time>
+      <ZoomEndTime time="4705001fs"></ZoomEndTime>
+      <Cursor1Time time="1804311fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="431"></NameColumnWidth>
-      <ValueColumnWidth column_width="168"></ValueColumnWidth>
+      <NameColumnWidth column_width="271"></NameColumnWidth>
+      <ValueColumnWidth column_width="111"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="26" />
-   <wave_markers>
-      <marker label="" time="1381029" />
-   </wave_markers>
    <wvobject type="other" fp_name="/tb_top_tf/bx_cnt">
       <obj_property name="ElementShortName">bx_cnt</obj_property>
       <obj_property name="ObjectShortName">bx_cnt</obj_property>
