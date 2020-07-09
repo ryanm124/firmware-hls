@@ -17,9 +17,10 @@ entity top_tf is
   port(
     clk       : in std_logic;
     reset     : in std_logic;
-    en_proc   : in std_logic;
-    idle_proc : out std_logic;
-    bx_in_ProjectionRouter : in std_logic_vector(2 downto 0);
+    PR_start  : in std_logic;
+    PR_idle   : out std_logic;
+    PR_ready  : out std_logic;
+    PR_bx_in  : in std_logic_vector(2 downto 0);
     -- For TrackletProjections memories
     TPROJ_L3PHIC_dataarray_data_V_wea       : in t_myarray8_1b;
     TPROJ_L3PHIC_dataarray_data_V_writeaddr : in t_myarray8_8b;
@@ -48,9 +49,9 @@ entity top_tf is
     FM_L5L6XX_L3PHIC_dataarray_data_V_dout     : out std_logic_vector(44 downto 0);
     FM_L5L6XX_L3PHIC_nentries_V_dout : out t_myarray2_8b;
     -- MatchCalculator outputs
-    bx_out_MatchCalculator     : out std_logic_vector(2 downto 0);
-    bx_out_MatchCalculator_vld : out std_logic;
-    MatchCalculator_done       : out std_logic
+    MC_bx_out     : out std_logic_vector(2 downto 0);
+    MC_bx_out_vld : out std_logic;
+    MC_done       : out std_logic
     );
 
 end top_tf;
@@ -345,9 +346,9 @@ END COMPONENT;
   signal TPROJ_L3PHIC_nentries_V_dout : t_myarray2_8_8b;
   
   -- ProjectionRouter signals
-  signal ProjectionRouter_done       : std_logic := '0';
-  signal bx_out_ProjectionRouter     : std_logic_vector(2 downto 0);
-  signal bx_out_ProjectionRouter_vld : std_logic;
+  signal PR_done       : std_logic := '0';
+  signal PR_bx_out     : std_logic_vector(2 downto 0);
+  signal PR_bx_out_vld : std_logic;
   
   -- connecting ProjectionRouter output to AllProjection memories
   signal AP_L3PHIC_dataarray_data_V_wea       : std_logic;
@@ -383,12 +384,13 @@ END COMPONENT;
   attribute dont_touch of VMSME_L3PHIC17to24n1_nentries_V_dout : signal is "true";
   
   -- MatchEngine signals
-  signal MatchEngine_start : std_logic := '0';
-  signal bx_out_MatchEngine     : t_myarray8_3b;
-  signal bx_out_MatchEngine_vld : t_myarray8_1b;
-  signal MatchEngine_done    : t_myarray8_1b; 
-  signal MatchEngine_Alldone : std_logic := '0';
-  signal bx_out_MatchEngine_minus1_0 : std_logic_vector(2 downto 0);
+  signal ME_start : std_logic := '0';
+  signal ME_done  : t_myarray8_1b := (others => '0');
+  signal ME_idle  : std_logic := '0';
+  signal ME_ready : std_logic := '0';
+  signal ME_bx_out     : t_myarray8_3b;
+  signal ME_bx_out_vld : t_myarray8_1b;
+  signal ME_all_done   : std_logic := '0';
   
   -- connecting MatchEngine output to CandidateMatches memories 
   signal CM_L3PHIC17to24_dataarray_data_V_wea       : t_myarray8_1b;
@@ -416,7 +418,9 @@ END COMPONENT;
   signal CM_L3PHIC17to24_nentries_V_dout : t_myarray2_8_8b;
 
   -- MatchCalculator signals
-  signal MatchCalculator_start : std_logic := '0';
+  signal MC_start : std_logic := '0';
+  signal MC_idle  : std_logic := '0';
+  signal MC_ready : std_logic := '0';
 
   -- connecting MatchCalculator output to FullMatches memories
   signal FM_L1L2XX_L3PHIC_dataarray_data_V_wea       : std_logic; 
@@ -432,38 +436,40 @@ END COMPONENT;
     
 begin
 
-  process(ProjectionRouter_done)
+  --------------------------------------------------------------
+  -- Signaling section
+  --------------------------------------------------------------
+  p_ME_start : process(clk)
   begin
-    --if rising_edge(clk) then
-      if ProjectionRouter_done = '1' then 
-        MatchEngine_start <= '1'; 
+    if rising_edge(clk) then
+      if PR_done = '1' then 
+        if (ME_ready='1' or ME_idle='1') then
+          ME_start <= '1'; 
+        else
+          ME_start <= '0';
+        end if;
       else
-        MatchEngine_start <= '0'; 
+        ME_start <= '0';
       end if;
-    --end if;
+    end if;
   end process;
   
-  MatchEngine_Alldone <= MatchEngine_done(0) and MatchEngine_done(1) and MatchEngine_done(2) and MatchEngine_done(3) and
-                         MatchEngine_done(4) and MatchEngine_done(5) and MatchEngine_done(6) and MatchEngine_done(7);
+  ME_all_done <= ME_done(0) and ME_done(1) and ME_done(2) and ME_done(3) and ME_done(4) and ME_done(5) and ME_done(6) and ME_done(7);
   
-  process(MatchEngine_Alldone)
+  p_MC_start : process(clk)
   begin
-    --if rising_edge(clk) then
-      if MatchEngine_Alldone = '1' then 
-        MatchCalculator_start <= '1'; 
-      --else
-      --  MatchCalculator_start <= '0'; 
+    if rising_edge(clk) then
+      if ME_all_done = '1' then 
+        if (MC_ready='1' or MC_idle='1') then
+          MC_start <= '1'; 
+        else
+          MC_start <= '0';
+        end if;
+      else
+        MC_start <= '0';
       end if;
-    --end if;
+    end if;
   end process;
-
-  process(bx_out_MatchEngine(0)) -- Delay bx counter by one bx
-  begin
-    --if rising_edge(clk) then
-      bx_out_MatchEngine_minus1_0 <= std_logic_vector(unsigned(bx_out_MatchEngine(0)) - "001");
-    --end if;
-  end process;  
-
 
   --------------------------------------------------------------
   -- TrackletProjection memories
@@ -525,11 +531,11 @@ begin
     port map (  
       ap_clk   => clk,
       ap_rst   => reset,
-      ap_start => en_proc,
-      ap_done  => ProjectionRouter_done,
-      ap_idle  => idle_proc,
-      ap_ready => open,
-      bx_V     => bx_in_ProjectionRouter,
+      ap_start => PR_start,
+      ap_done  => PR_done,
+      ap_idle  => PR_idle,
+      ap_ready => PR_ready,
+      bx_V     => PR_bx_in,
       proj1in_dataarray_data_V_address0 => TPROJ_L3PHIC_dataarray_data_V_readaddr(0),
       proj1in_dataarray_data_V_ce0      => TPROJ_L3PHIC_dataarray_data_V_enb(0),
       proj1in_dataarray_data_V_q0       => TPROJ_L3PHIC_dataarray_data_V_dout(0),
@@ -570,8 +576,8 @@ begin
       proj8in_dataarray_data_V_q0       => TPROJ_L3PHIC_dataarray_data_V_dout(7),
       proj8in_nentries_0_V              => TPROJ_L3PHIC_nentries_V_dout(0)(7),
       proj8in_nentries_1_V              => TPROJ_L3PHIC_nentries_V_dout(1)(7),
-      bx_o_V        => bx_out_ProjectionRouter,
-      bx_o_V_ap_vld => bx_out_ProjectionRouter_vld,
+      bx_o_V        => PR_bx_out,
+      bx_o_V_ap_vld => PR_bx_out_vld,
       allprojout_dataarray_data_V_address0 => AP_L3PHIC_dataarray_data_V_writeaddr,
       allprojout_dataarray_data_V_ce0      => open,
       allprojout_dataarray_data_V_we0      => AP_L3PHIC_dataarray_data_V_wea,
@@ -985,19 +991,19 @@ begin
   --------------------------------------------------------------
   -- MatchEngine
   --------------------------------------------------------------
-  gen_MatchEngines : for meidx in 7 downto 0 generate
+  gen_ME : for meidx in 7 downto 0 generate
   begin
-    me_i : entity work.MatchEngineTopL3_0
+    i_ME : entity work.MatchEngineTopL3_0
       port map (
         ap_clk   => clk,
         ap_rst   => reset,
-        ap_start => MatchEngine_start,
-        ap_done  => MatchEngine_done(meidx),
-        ap_idle  => open,
-        ap_ready => open,
-        bx_V          => bx_out_ProjectionRouter,
-        bx_o_V        => bx_out_MatchEngine(meidx),
-        bx_o_V_ap_vld => bx_out_MatchEngine_vld(meidx),
+        ap_start => ME_start,
+        ap_done  => ME_done(meidx),
+        ap_idle  => ME_idle,
+        ap_ready => ME_ready,
+        bx_V          => PR_bx_out,
+        bx_o_V        => ME_bx_out(meidx),
+        bx_o_V_ap_vld => ME_bx_out_vld(meidx),
         inputStubData_dataarray_data_V_address0 => VMSME_L3PHIC17to24n1_dataarray_data_V_readaddr(meidx),
         inputStubData_dataarray_data_V_ce0      => VMSME_L3PHIC17to24n1_dataarray_data_V_enb(meidx),
         inputStubData_dataarray_data_V_q0       => VMSME_L3PHIC17to24n1_dataarray_data_V_dout(meidx)(12 downto 0),
@@ -1080,7 +1086,7 @@ begin
         outputCandidateMatch_nentries_1_V_ap_vld =>  CM_L3PHIC17to24_nentries_V_we(1)(meidx)
         );
         
-  end generate gen_MatchEngines;
+  end generate gen_ME;
 
   --------------------------------------------------------------
   -- AllStubs memory
@@ -1191,11 +1197,11 @@ begin
     port map (
       ap_clk   => clk,
       ap_rst   => reset,
-      ap_start => MatchCalculator_start,
-      ap_done  => MatchCalculator_done,
-      ap_idle  => open,
-      ap_ready => open,
-      bx_V     => bx_out_MatchEngine_minus1_0, -- All MEs should have the same counter value
+      ap_start => MC_start,
+      ap_done  => MC_done,
+      ap_idle  => MC_idle,
+      ap_ready => MC_ready,
+      bx_V     => ME_bx_out(0), -- All MEs should have the same counter value
       match1_dataarray_data_V_address0 => CM_L3PHIC17to24_dataarray_data_V_readaddr(0),
       match1_dataarray_data_V_ce0      => CM_L3PHIC17to24_dataarray_data_V_enb(0),
       match1_dataarray_data_V_q0       => CM_L3PHIC17to24_dataarray_data_V_dout(0),
@@ -1258,8 +1264,8 @@ begin
       --allproj_nentries_5_V => (others=>'0'),
       --allproj_nentries_6_V => (others=>'0'),
       --allproj_nentries_7_V => (others=>'0'),
-      bx_o_V        => bx_out_MatchCalculator,
-      bx_o_V_ap_vld => bx_out_MatchCalculator_vld,
+      bx_o_V        => MC_bx_out,
+      bx_o_V_ap_vld => MC_bx_out_vld,
       fullmatch1_dataarray_data_V_address0 => FM_L1L2XX_L3PHIC_dataarray_data_V_writeaddr,
       fullmatch1_dataarray_data_V_ce0      => open,
       fullmatch1_dataarray_data_V_we0      => FM_L1L2XX_L3PHIC_dataarray_data_V_wea,

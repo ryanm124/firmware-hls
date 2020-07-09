@@ -206,9 +206,11 @@ void MatchEngine(const BXType bx, BXType& bx_o,
 					  << "\tistub:" << istub << std::endl;
 #endif
 		}
+
+		if (istep==kMaxProc-9-1) bx_o = bx;
+
 	}
 
-	bx_o = bx;
 }
 
 void MatchEngineTop(const BXType bx, BXType& bx_o,
