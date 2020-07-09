@@ -41,7 +41,7 @@ void merger(
 ){
 
 #pragma HLS inline 
-#pragma HLS pipeline II=1 rewind
+#pragma HLS pipeline II=1 //rewind
 #pragma HLS interface ap_ctrl_none port=return 
 #pragma HLS interface ap_ctrl_none port=inA,validA,inB,validB,out,vout,inread,A,vA,sA,B,vB,sB 
 #pragma HLS interface ap_ctrl_none port=Anext,Bnext,vAnext,vBnext,sAnext,sBnext,voutnext 
@@ -407,7 +407,7 @@ void MatchCalculator(BXType bx,
   int nmcout6 = 0;
   int nmcout7 = 0;
   int nmcout8 = 0;  
-  MC_LOOP: for (ap_uint<kNBits_MemAddr> istep = 0; istep < kMaxProc; istep++)
+  MC_LOOP: for (ap_uint<kNBits_MemAddr> istep = 0; istep < kMaxProc-9; istep++)
   {
 
 #pragma HLS PIPELINE II=1 
@@ -855,7 +855,7 @@ void MatchCalculator(BXType bx,
     goodmatch      = goodmatch_next;
     projseed       = projseed_next;
 
-    if (istep==kMaxProc-1) bx_o = bx;
+    if (istep==kMaxProc-9-1) bx_o = bx;
 
   }// end MC_LOOP 
 
