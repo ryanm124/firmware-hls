@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
+# https://github.com/aehart/cmssw/tree/hex_format
+memprints_url="https://cernbox.cern.ch/index.php/s/CipX7CfTXIj1lcK/download"
+luts_url="https://cernbox.cern.ch/index.php/s/UDSvClVZksBr1Pq/download"
+
 # fw_synch_200515
-tarball_url="https://cernbox.cern.ch/index.php/s/tsxTkilHDVhnbYF/download"
+#tarball_url="https://cernbox.cern.ch/index.php/s/tsxTkilHDVhnbYF/download"
 
 # The following modules will have dedicated directories of test-bench files
 # prepared for them.
@@ -52,9 +56,12 @@ then
 fi
 
 # Download and unpack the tarball.
-wget -O MemPrints.tar.gz --quiet ${tarball_url}
+wget -O MemPrints.tar.gz --quiet ${memprints_url}
 tar -xzf MemPrints.tar.gz
 rm -f MemPrints.tar.gz
+wget -O LUTs.tar.gz --quiet ${luts_url}
+tar -xzf LUTs.tar.gz
+rm -f LUTs.tar.gz
 
 # Needed in order for awk to run successfully:
 # https://forums.xilinx.com/t5/Installation-and-Licensing/Vivado-2016-4-on-Ubuntu-16-04-LTS-quot-awk-symbol-lookup-error/td-p/747165
@@ -75,7 +82,7 @@ do
   done
 
   # Table linking logic specific to each module type
-  table_location="MemPrints/Tables/"
+  table_location="LUTs/"
   table_target_dir="${module_type}/tables"
   if [[ ! -d "${table_target_dir}" ]]
   then
