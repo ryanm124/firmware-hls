@@ -8,7 +8,7 @@ variables:
 stages: # ---------------------------------------------------------------------
   - quality-check
   - hls-build
-  - topTF-build
+  - topTF-sim_synth
 
 # Job templates ---------------------------------------------------------------
 .job_template: &template_base
@@ -35,7 +35,6 @@ stages: # ---------------------------------------------------------------------
 .job_template: &template_hls-build
   <<: *template_base
   stage: hls-build
-  when: always
   script:
     - cd project
     - pwd; ls -la; # Debug
@@ -48,9 +47,9 @@ stages: # ---------------------------------------------------------------------
       - ./emData/
     expire_in: 1 week
 
-.job_template: &template_topTF-build
+.job_template: &template_topTF-sim_synth
   <<: *template_base
-  stage: topTF-build
+  stage: topTF-sim_synth
   script:
     - cd IntegrationTests/ExpTopPRMEMC_Test
     - pwd; ls -la; #debug
@@ -67,18 +66,6 @@ stages: # ---------------------------------------------------------------------
     expire_in: 1 week
 # Jobs ------------------------------------------------------------------------
 # Quality checks ------------
-VMR-quality-check:
-  <<: *template_quality-check
-  variables:
-    CLANG_TIDY_FILES: '../TestBenches/VMRouter_test.cpp ../TrackletAlgorithm/VMRouterTop.cc'
-TE-quality-check:
-  <<: *template_quality-check
-  variables:
-    CLANG_TIDY_FILES: '../TestBenches/TrackletEngine_test.cpp ../TrackletAlgorithm/TrackletEngineTop.cc'
-TC-quality-check:
-  <<: *template_quality-check
-  variables:
-    CLANG_TIDY_FILES: '../TestBenches/TrackletCalculator_* ../TrackletAlgorithm/TrackletCalculator.cc'
 PR-quality-check:
   <<: *template_quality-check
   variables:
@@ -107,7 +94,8 @@ MC-hls-build:
   variables:
     VIVADO_VERSION: "2019.2"
     PROJ_NAME: "MC"
-topPRMEMC-build:
-  <<: *template_topTF-build
+# FW sim_synth ---------------
+topPRMEMC-sim_synth:
+  <<: *template_topTF-sim_synth
   variables:
     VIVADO_VERSION: "2019.2"
