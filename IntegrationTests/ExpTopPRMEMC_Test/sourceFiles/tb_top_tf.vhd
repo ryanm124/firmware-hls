@@ -209,7 +209,7 @@ begin
   begin
     wait for CLK_PERIOD; -- Let the read process finish
     reset <= '0';           -- Reset cycle
-    l_BX : for v_bx_cnt in -1 to MAX_EVENTS+1 loop -- -1 (to write the first memories before starting) to 101
+    l_BX : for v_bx_cnt in -1 to MAX_EVENTS+10 loop -- -1 (to write the first memories before starting) to 110 (+10 to let later modules and write finish)
       bx_cnt         <= v_bx_cnt;       -- Update the signal
       v_page_cnt2_d0 := v_bx_cnt mod 2;          -- mod 2
       v_page_cnt2_d1 := (v_bx_cnt+1) mod 2;      -- mod 2
@@ -230,7 +230,8 @@ begin
             TPROJ_L3PHIC_dataarray_data_V_din(cp)       <= TPROJ_L3PHICn4_data_arr(cp)(v_bx_cnt+1,addr+PAGE_OFFSET*v_page_cnt2_d1) (TPROJ_L3PHIC_dataarray_data_V_din(0)'length-1 downto 0);
             TPROJ_L3PHIC_nentries_V_din(v_page_cnt2_d1)(cp) <= std_logic_vector(to_unsigned(TPROJ_L3PHICn4_n_entries_arr(cp)(v_bx_cnt+1), TPROJ_L3PHIC_nentries_V_din(0)(0)'length));
           end if;
-          -- VMSME
+          -- VMSME & PR_start
+          PR_start <= '0'; -- Default assigment
           if (v_bx_cnt>=VMSME_DELAY and v_bx_cnt<MAX_EVENTS-1) then -- Start after delay of BXs
             if (PR_ready='1' or PR_idle='1') and PR_start_tmp='0' then -- Control PR start
               PR_start_tmp <= '1';
