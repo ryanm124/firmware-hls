@@ -8,8 +8,7 @@ variables:
 stages: # ---------------------------------------------------------------------
   - quality-check
   - hls-build
-  - download
-  - topTF-build
+  - topTF-sim_synth
 
 # Job templates ---------------------------------------------------------------
 .job_template: &template_base
@@ -36,7 +35,6 @@ stages: # ---------------------------------------------------------------------
 .job_template: &template_hls-build
   <<: *template_base
   stage: hls-build
-  when: always
   script:
     - cd project
     - pwd; ls -la; # Debug
@@ -49,9 +47,9 @@ stages: # ---------------------------------------------------------------------
       - ./emData/
     expire_in: 1 week
 
-.job_template: &template_topTF-build
+.job_template: &template_topTF-sim_synth
   <<: *template_base
-  stage: topTF-build
+  stage: topTF-sim_synth
   script:
     - cd IntegrationTests/ExpTopPRMEMC_Test
     - pwd; ls -la; #debug
@@ -67,6 +65,20 @@ stages: # ---------------------------------------------------------------------
       - ./IntegrationTests/ExpTopPRMEMC_Test/ExpTopPRMEMC_Test/ExpTopPRMEMC_Test.runs/synth_1/*.rpt
     expire_in: 1 week
 # Jobs ------------------------------------------------------------------------
+# Quality checks ------------
+PR-quality-check:
+  <<: *template_quality-check
+  variables:
+    CLANG_TIDY_FILES: '../TestBenches/ProjectionRouter_test.cpp ../TrackletAlgorithm/ProjectionRouterTop.cc'
+ME-quality-check:
+  <<: *template_quality-check
+  variables:
+    CLANG_TIDY_FILES: '../TestBenches/MatchEngine_test.cpp ../TrackletAlgorithm/MatchEngine.cc'
+MC-quality-check:
+  <<: *template_quality-check
+  variables:
+    CLANG_TIDY_FILES: '../TestBenches/MatchCalculator_test.cpp ../TrackletAlgorithm/MatchCalculatorTop.cc'
+# HLS builds ---------------
 PR-hls-build:
   <<: *template_hls-build
   variables:
@@ -97,5 +109,8 @@ Testdata-download: # Download needed data files to populate initial memories and
     expire_in: 1 week
 topPRMEMC-build:
   <<: *template_topTF-build
+# FW sim_synth ---------------
+topPRMEMC-sim_synth:
+  <<: *template_topTF-sim_synth
   variables:
     VIVADO_VERSION: "2019.2"
