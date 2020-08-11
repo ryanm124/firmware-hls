@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 
+# https://github.com/aehart/cmssw/tree/hex_format
+memprints_url="https://cernbox.cern.ch/index.php/s/CipX7CfTXIj1lcK/download"
+luts_url="https://cernbox.cern.ch/index.php/s/UDSvClVZksBr1Pq/download"
+
 # fw_synch_200515
-tarball_url="https://cernbox.cern.ch/index.php/s/tsxTkilHDVhnbYF/download"
+#tarball_url="https://cernbox.cern.ch/index.php/s/tsxTkilHDVhnbYF/download"
 
 # The following modules will have dedicated directories of test-bench files
 # prepared for them.
 declare -a processing_modules=(
   # VMRouter
   "VMR_L1PHIE"
+  "VMR_D1PHIA"
 
   # TrackletEngine
   "TE_L1PHIE18_L2PHIC17"
@@ -51,9 +56,12 @@ then
 fi
 
 # Download and unpack the tarball.
-wget -O MemPrints.tar.gz --quiet ${tarball_url}
+wget -O MemPrints.tar.gz --quiet ${memprints_url}
 tar -xzf MemPrints.tar.gz
 rm -f MemPrints.tar.gz
+wget -O LUTs.tar.gz --quiet ${luts_url}
+tar -xzf LUTs.tar.gz
+rm -f LUTs.tar.gz
 
 # Needed in order for awk to run successfully:
 # https://forums.xilinx.com/t5/Installation-and-Licensing/Vivado-2016-4-on-Ubuntu-16-04-LTS-quot-awk-symbol-lookup-error/td-p/747165
@@ -74,7 +82,7 @@ do
   done
 
   # Table linking logic specific to each module type
-  table_location="MemPrints/Tables/"
+  table_location="LUTs/"
   table_target_dir="${module_type}/tables"
   if [[ ! -d "${table_target_dir}" ]]
   then
@@ -89,8 +97,17 @@ do
   then
           layer=`echo ${module} | sed "s/.*_\(L[1-9]\).*$/\1/g"`
           find ${table_location} -type f -name "METable_${layer}.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
-  elif [[ ${module_type} == "VMR" ]] || [[ ${module_type} == "MC" ]] || [[ ${module_type} == "TE" ]]
+  elif [[ ${module_type} == "MC" ]] || [[ ${module_type} == "TE" ]]
   then
           find ${table_location} -type f -name "${module}_*.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
+  elif [[ ${module_type} == "VMR" ]]
+  then
+          layer=`echo ${module} | sed "s/VMR_\(..\).*/\1/g"`
+          find ${table_location} -type f -name "${module}_*.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
+          find ${table_location} -type f -name "VM*${layer}*" ! -name "*PHI*" -exec ln -sf ../../{} ${table_target_dir}/ \;
+          for mem in `grep "${module}\." wires_hourglass.dat | awk '{print $1}' | sort -u`;
+          do
+            find ${table_location} -type f -name "${mem}*.tab" -exec ln -s ../../{} ${table_target_dir}/ \;
+          done
   fi
 done
