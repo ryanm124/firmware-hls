@@ -374,7 +374,7 @@ END COMPONENT;
   signal VMSME_L3PHIC17to24n1_dataarray_data_V_enb      : t_myarray8_1b;
   signal VMSME_L3PHIC17to24n1_dataarray_data_V_readaddr : t_myarray8_10b;
   signal VMSME_L3PHIC17to24n1_dataarray_data_V_dout     : t_myarray8_14b;
-  signal VMSME_L3PHIC17to24n1_nentries_V_dout : t_myarray8_8_8_5b;
+  signal VMSME_L3PHIC17to24n1_nentries_V_dout           : t_myarray8_8_8_5b := (others => (others => (others => (others => '0')))); -- (#page, #bin, #mem); set MSbit to zero
   
   -- Note: myMemoryBinned class allocates 4-bits for nentries in each bin, while
   -- MatchEngine ports are expecting 5-bits. Leaving the 5th bit unconnected seems

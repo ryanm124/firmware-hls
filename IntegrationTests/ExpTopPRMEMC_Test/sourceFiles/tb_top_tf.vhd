@@ -202,10 +202,11 @@ begin
     variable v_page_cnt2_d0            : integer := 0; -- Page counter 
     variable v_page_cnt2_d1            : integer := 0; -- Page counter delayed by one
     variable v_page_cnt8               : integer := 0; -- Page counter
-    variable v_VMSME_n_entries_bin     : t_myarray_1d_int(0 to N_ENTRIES_PER_MEM_BINS-1) := (others => 0); -- Number of VMSME entries per bin
-    variable v_VMSME_n_entries_bin_cnt : t_myarray_1d_int(0 to N_ENTRIES_PER_MEM_BINS-1) := (others => 0); -- Counter of VMSME entries per bin
+    variable v_VMSME_n_entries_bin     : t_myarray_1d_int(0 to N_ME_IN_CHAIN-1) := (others => 0); -- Number of VMSME entries per bin
+    variable v_VMSME_n_entries_bin_cnt : t_myarray_1d_int(0 to N_ME_IN_CHAIN-1) := (others => 0); -- Counter of VMSME entries per bin
     variable v_bin_cnt                 : t_myarray_1d_int(0 to N_ME_IN_CHAIN-1) := (others => 0); -- Bin counter
     variable v_last_bin                : boolean := false; -- Last bin tag
+    variable v_line_in : line; -- Line for debug
   begin
     wait for CLK_PERIOD; -- Let the read process finish
     reset <= '0';           -- Reset cycle
@@ -255,8 +256,10 @@ begin
               end if;
             end loop l_bin_empty;
             if v_bin_cnt(cp)<=N_MEM_BINS-1 then -- Valid bin
-              VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(cp) <= std_logic_vector(to_unsigned((v_bin_cnt(cp)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS)), VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(0)'length));
+              VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(cp) <=                            std_logic_vector(to_unsigned((v_bin_cnt(cp)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS)), VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(0)'length));
               VMSME_L3PHIC17to24n1_dataarray_data_V_din(cp)       <= VMSME_L3PHIC17to24n1_data_arr(cp)(v_bx_cnt-VMSME_DELAY, (v_bin_cnt(cp)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS))) (VMSME_L3PHIC17to24n1_dataarray_data_V_din(0)'length-1 downto 0);
+              --if DEBUG=true then write(v_line_in, string'("VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(cp): ")); write(v_line_in, ((v_bin_cnt(cp)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS)))); writeline(output, v_line_in); end if;
+              --if DEBUG=true then write(v_line_in, string'("VMSME_L3PHIC17to24n1_dataarray_data_V_din(cp): ")); hwrite(v_line_in, VMSME_L3PHIC17to24n1_data_arr(cp)(v_bx_cnt-VMSME_DELAY, (v_bin_cnt(cp)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS))) (VMSME_L3PHIC17to24n1_dataarray_data_V_din(0)'length-1 downto 0)); writeline(output, v_line_in); end if;
             end if;
             --if DEBUG=true then assert (addr>1 or v_bx_cnt>0) report "addr = " & integer'image(addr) & ";   cp = " & integer'image(addr) & ";   v_bin_cnt(0) = " & integer'image(v_bin_cnt(0)) & ";   v_VMSME_n_entries_bin_cnt(cp) = " & integer'image(v_VMSME_n_entries_bin_cnt(cp)) & ";   waddr = " & integer'image((v_bin_cnt(0)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS))) severity note; end if;
             if v_VMSME_n_entries_bin_cnt(cp)>=v_VMSME_n_entries_bin(cp)-1 then -- End of bin entries
