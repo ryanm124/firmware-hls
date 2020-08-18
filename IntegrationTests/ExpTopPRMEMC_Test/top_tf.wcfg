@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="5109970fs"></ZoomStartTime>
-      <ZoomEndTime time="5866971fs"></ZoomEndTime>
-      <Cursor1Time time="5394970fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="882001fs"></ZoomEndTime>
+      <Cursor1Time time="571000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="363"></NameColumnWidth>
-      <ValueColumnWidth column_width="157"></ValueColumnWidth>
+      <ValueColumnWidth column_width="153"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="127" />
+   <WVObjectSize size="128" />
    <wave_markers>
       <marker label="" time="5403302" />
    </wave_markers>
@@ -83,6 +83,10 @@
       <obj_property name="ObjectShortName">VMSME_L3PHIC17to24n1_dataarray_data_V_din[7:0][13:0]</obj_property>
       <obj_property name="isExpanded"></obj_property>
    </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/VMSME_L3PHIC17to24n1_n_entries_arr">
+      <obj_property name="ElementShortName">VMSME_L3PHIC17to24n1_n_entries_arr[0:7][0:99][0:7]</obj_property>
+      <obj_property name="ObjectShortName">VMSME_L3PHIC17to24n1_n_entries_arr[0:7][0:99][0:7]</obj_property>
+   </wvobject>
    <wvobject type="array" fp_name="/tb_top_tf/VMSME_L3PHIC17to24n1_nentries_V_we">
       <obj_property name="ElementShortName">VMSME_L3PHIC17to24n1_nentries_V_we[0:7][0:7][7:0]</obj_property>
       <obj_property name="ObjectShortName">VMSME_L3PHIC17to24n1_nentries_V_we[0:7][0:7][7:0]</obj_property>
@@ -90,6 +94,40 @@
    <wvobject type="array" fp_name="/tb_top_tf/VMSME_L3PHIC17to24n1_nentries_V_din">
       <obj_property name="ElementShortName">VMSME_L3PHIC17to24n1_nentries_V_din[0:7][0:7][7:0][3:0]</obj_property>
       <obj_property name="ObjectShortName">VMSME_L3PHIC17to24n1_nentries_V_din[0:7][0:7][7:0][3:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="array" fp_name="/tb_top_tf/VMSME_L3PHIC17to24n1_nentries_V_din[0]">
+         <obj_property name="ElementShortName">[0][0:7][7:0][3:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][0:7][7:0][3:0]</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_top_tf/VMSME_L3PHIC17to24n1_nentries_V_din[1]">
+         <obj_property name="ElementShortName">[1][0:7][7:0][3:0]</obj_property>
+         <obj_property name="ObjectShortName">[1][0:7][7:0][3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_top_tf/VMSME_L3PHIC17to24n1_nentries_V_din[2]">
+         <obj_property name="ElementShortName">[2][0:7][7:0][3:0]</obj_property>
+         <obj_property name="ObjectShortName">[2][0:7][7:0][3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_top_tf/VMSME_L3PHIC17to24n1_nentries_V_din[3]">
+         <obj_property name="ElementShortName">[3][0:7][7:0][3:0]</obj_property>
+         <obj_property name="ObjectShortName">[3][0:7][7:0][3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_top_tf/VMSME_L3PHIC17to24n1_nentries_V_din[4]">
+         <obj_property name="ElementShortName">[4][0:7][7:0][3:0]</obj_property>
+         <obj_property name="ObjectShortName">[4][0:7][7:0][3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_top_tf/VMSME_L3PHIC17to24n1_nentries_V_din[5]">
+         <obj_property name="ElementShortName">[5][0:7][7:0][3:0]</obj_property>
+         <obj_property name="ObjectShortName">[5][0:7][7:0][3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_top_tf/VMSME_L3PHIC17to24n1_nentries_V_din[6]">
+         <obj_property name="ElementShortName">[6][0:7][7:0][3:0]</obj_property>
+         <obj_property name="ObjectShortName">[6][0:7][7:0][3:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_top_tf/VMSME_L3PHIC17to24n1_nentries_V_din[7]">
+         <obj_property name="ElementShortName">[7][0:7][7:0][3:0]</obj_property>
+         <obj_property name="ObjectShortName">[7][0:7][7:0][3:0]</obj_property>
+      </wvobject>
    </wvobject>
    <wvobject type="logic" fp_name="/tb_top_tf/AS_L3PHICn4_dataarray_data_V_wea">
       <obj_property name="ElementShortName">AS_L3PHICn4_dataarray_data_V_wea</obj_property>
@@ -402,6 +440,7 @@
    <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/VMSME_L3PHIC17to24n1_nentries_V_dout">
       <obj_property name="ElementShortName">VMSME_L3PHIC17to24n1_nentries_V_dout[0:7][0:7][7:0][4:0]</obj_property>
       <obj_property name="ObjectShortName">VMSME_L3PHIC17to24n1_nentries_V_dout[0:7][0:7][7:0][4:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/CM_L3PHIC17to24_dataarray_data_V_wea">
       <obj_property name="ElementShortName">CM_L3PHIC17to24_dataarray_data_V_wea[7:0]</obj_property>

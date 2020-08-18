@@ -247,9 +247,10 @@ begin
               VMSME_L3PHIC17to24n1_nentries_V_din(((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS))(v_bin_cnt(cp))(cp) <= std_logic_vector(to_unsigned(v_VMSME_n_entries_bin(cp), VMSME_L3PHIC17to24n1_nentries_V_din(0)(0)(0)'length));
             end if;
             l_bin_empty : while (v_VMSME_n_entries_bin(cp)<=0) loop -- Bin empty
-              v_bin_cnt(cp)             := v_bin_cnt(cp) +1;
+              v_bin_cnt(cp)             := v_bin_cnt(cp) +1; -- Skip empty bin
               if v_bin_cnt(cp)<=N_MEM_BINS-1 then -- Valid bin
                 v_VMSME_n_entries_bin(cp) := VMSME_L3PHIC17to24n1_n_entries_arr(cp)(v_bx_cnt-VMSME_DELAY,v_bin_cnt(cp));
+                VMSME_L3PHIC17to24n1_nentries_V_din(((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS))(v_bin_cnt(cp))(cp) <= std_logic_vector(to_unsigned(v_VMSME_n_entries_bin(cp), VMSME_L3PHIC17to24n1_nentries_V_din(0)(0)(0)'length));
               else
                 v_bin_cnt(cp) := N_MEM_BINS;
                 exit;
