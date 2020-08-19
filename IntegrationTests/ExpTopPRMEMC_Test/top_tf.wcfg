@@ -13,14 +13,14 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="882001fs"></ZoomEndTime>
-      <Cursor1Time time="571000fs"></Cursor1Time>
+      <ZoomEndTime time="352001fs"></ZoomEndTime>
+      <Cursor1Time time="0fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="363"></NameColumnWidth>
-      <ValueColumnWidth column_width="153"></ValueColumnWidth>
+      <ValueColumnWidth column_width="210"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="128" />
+   <WVObjectSize size="139" />
    <wave_markers>
       <marker label="" time="5403302" />
    </wave_markers>
@@ -441,6 +441,40 @@
       <obj_property name="ElementShortName">VMSME_L3PHIC17to24n1_nentries_V_dout[0:7][0:7][7:0][4:0]</obj_property>
       <obj_property name="ObjectShortName">VMSME_L3PHIC17to24n1_nentries_V_dout[0:7][0:7][7:0][4:0]</obj_property>
       <obj_property name="isExpanded"></obj_property>
+      <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/VMSME_L3PHIC17to24n1_nentries_V_dout[0]">
+         <obj_property name="ElementShortName">[0][0:7][7:0][4:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][0:7][7:0][4:0]</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/VMSME_L3PHIC17to24n1_nentries_V_dout[1]">
+         <obj_property name="ElementShortName">[1][0:7][7:0][4:0]</obj_property>
+         <obj_property name="ObjectShortName">[1][0:7][7:0][4:0]</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/VMSME_L3PHIC17to24n1_nentries_V_dout[2]">
+         <obj_property name="ElementShortName">[2][0:7][7:0][4:0]</obj_property>
+         <obj_property name="ObjectShortName">[2][0:7][7:0][4:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/VMSME_L3PHIC17to24n1_nentries_V_dout[3]">
+         <obj_property name="ElementShortName">[3][0:7][7:0][4:0]</obj_property>
+         <obj_property name="ObjectShortName">[3][0:7][7:0][4:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/VMSME_L3PHIC17to24n1_nentries_V_dout[4]">
+         <obj_property name="ElementShortName">[4][0:7][7:0][4:0]</obj_property>
+         <obj_property name="ObjectShortName">[4][0:7][7:0][4:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/VMSME_L3PHIC17to24n1_nentries_V_dout[5]">
+         <obj_property name="ElementShortName">[5][0:7][7:0][4:0]</obj_property>
+         <obj_property name="ObjectShortName">[5][0:7][7:0][4:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/VMSME_L3PHIC17to24n1_nentries_V_dout[6]">
+         <obj_property name="ElementShortName">[6][0:7][7:0][4:0]</obj_property>
+         <obj_property name="ObjectShortName">[6][0:7][7:0][4:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/VMSME_L3PHIC17to24n1_nentries_V_dout[7]">
+         <obj_property name="ElementShortName">[7][0:7][7:0][4:0]</obj_property>
+         <obj_property name="ObjectShortName">[7][0:7][7:0][4:0]</obj_property>
+      </wvobject>
    </wvobject>
    <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/CM_L3PHIC17to24_dataarray_data_V_wea">
       <obj_property name="ElementShortName">CM_L3PHIC17to24_dataarray_data_V_wea[7:0]</obj_property>
@@ -586,5 +620,49 @@
    <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/FM_L5L6XX_L3PHIC_nentries_V_dout">
       <obj_property name="ElementShortName">FM_L5L6XX_L3PHIC_nentries_V_dout[1:0][7:0]</obj_property>
       <obj_property name="ObjectShortName">FM_L5L6XX_L3PHIC_nentries_V_dout[1:0][7:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/AS_L3PHICn4_dataarray_data_V_enb">
+      <obj_property name="ElementShortName">AS_L3PHICn4_dataarray_data_V_enb</obj_property>
+      <obj_property name="ObjectShortName">AS_L3PHICn4_dataarray_data_V_enb</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/AS_L3PHICn4_dataarray_data_V_readaddr">
+      <obj_property name="ElementShortName">AS_L3PHICn4_dataarray_data_V_readaddr[9:0]</obj_property>
+      <obj_property name="ObjectShortName">AS_L3PHICn4_dataarray_data_V_readaddr[9:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/AS_L3PHICn4_dataarray_data_V_dout">
+      <obj_property name="ElementShortName">AS_L3PHICn4_dataarray_data_V_dout[35:0]</obj_property>
+      <obj_property name="ObjectShortName">AS_L3PHICn4_dataarray_data_V_dout[35:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/AS_L3PHICn4_nentries_V_dout">
+      <obj_property name="ElementShortName">AS_L3PHICn4_nentries_V_dout[7:0][7:0]</obj_property>
+      <obj_property name="ObjectShortName">AS_L3PHICn4_nentries_V_dout[7:0][7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/CM_L3PHIC17to24_dataarray_data_V_enb">
+      <obj_property name="ElementShortName">CM_L3PHIC17to24_dataarray_data_V_enb[7:0]</obj_property>
+      <obj_property name="ObjectShortName">CM_L3PHIC17to24_dataarray_data_V_enb[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/CM_L3PHIC17to24_dataarray_data_V_readaddr">
+      <obj_property name="ElementShortName">CM_L3PHIC17to24_dataarray_data_V_readaddr[7:0][7:0]</obj_property>
+      <obj_property name="ObjectShortName">CM_L3PHIC17to24_dataarray_data_V_readaddr[7:0][7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/CM_L3PHIC17to24_dataarray_data_V_dout">
+      <obj_property name="ElementShortName">CM_L3PHIC17to24_dataarray_data_V_dout[7:0][13:0]</obj_property>
+      <obj_property name="ObjectShortName">CM_L3PHIC17to24_dataarray_data_V_dout[7:0][13:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_top_tf/i_top_tf/uut/AP_L3PHIC_dataarray_data_V_enb">
+      <obj_property name="ElementShortName">AP_L3PHIC_dataarray_data_V_enb</obj_property>
+      <obj_property name="ObjectShortName">AP_L3PHIC_dataarray_data_V_enb</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/AP_L3PHIC_dataarray_data_V_readaddr">
+      <obj_property name="ElementShortName">AP_L3PHIC_dataarray_data_V_readaddr[9:0]</obj_property>
+      <obj_property name="ObjectShortName">AP_L3PHIC_dataarray_data_V_readaddr[9:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/AP_L3PHIC_dataarray_data_V_dout">
+      <obj_property name="ElementShortName">AP_L3PHIC_dataarray_data_V_dout[59:0]</obj_property>
+      <obj_property name="ObjectShortName">AP_L3PHIC_dataarray_data_V_dout[59:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_top_tf/i_top_tf/uut/AP_L3PHIC_nentries_V_dout">
+      <obj_property name="ElementShortName">AP_L3PHIC_nentries_V_dout[7:0][7:0]</obj_property>
+      <obj_property name="ObjectShortName">AP_L3PHIC_nentries_V_dout[7:0][7:0]</obj_property>
    </wvobject>
 </wave_config>

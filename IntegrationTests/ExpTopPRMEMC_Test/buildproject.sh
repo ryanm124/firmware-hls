@@ -5,10 +5,10 @@ vivado_hls -f script_ME.tcl
 vivado_hls -f script_MC.tcl
 
 # Download needed data files to populate initial memories and compare final memories
-cd ../emData/TC
-. download.sh
+cd ../emData
+./download.sh
 
 # Open the Vivado GUI and initialize the project
-cd ../../IntegrationTests/ExpTopPRMEMC_Test
+cd ../IntegrationTests/ExpTopPRMEMC_Test
 vivado -mode tcl -source generate_project.tcl
 vivado -mode tcl -source synth.tcl
