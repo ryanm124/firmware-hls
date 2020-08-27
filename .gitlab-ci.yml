@@ -129,3 +129,5 @@ topPRMEMC-sim_synth:
 # Check FW results ---------------
 topPRMEMC-check-results:
   <<: *template_check-results
+  variables:
+    VIVADO_VERSION: "2019.2" # Vivado not needed but it is parth of the path that is called
