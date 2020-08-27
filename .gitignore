@@ -57,3 +57,6 @@ project
 *.exe
 *.out
 *.app
+
+# Integration tests
+./IntegrationTests/ExpTopPRMEMC_Test/*.txt
