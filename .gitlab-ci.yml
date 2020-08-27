@@ -67,6 +67,7 @@ stages: # ---------------------------------------------------------------------
     expire_in: 1 week
 
 .job_template: &template_check-results
+  <<: *template_base # to get on the correct runner
   stage: check-results
   script:
     - cd IntegrationTests/ExpTopPRMEMC_Test
