@@ -18,6 +18,9 @@ stages: # ---------------------------------------------------------------------
   script:
     - cd ulimit_test
     - pwd; ls -la; # Debug
+    - ulimit -a
+    - ulimit -S -n 2048
+    - ulimit -a
     - vivado_hls -f script_test.tcl
 
 # Jobs ------------------------------------------------------------------------
