@@ -1,0 +1,11 @@
+BX = 000 Event : 1
+0x00 0000011|0001011|10001000111101|010111010111|0001000111|000110100  0x031711eaeb88e34
+BX = 001 Event : 2
+BX = 010 Event : 3
+BX = 011 Event : 4
+BX = 100 Event : 5
+BX = 101 Event : 6
+BX = 110 Event : 7
+BX = 111 Event : 8
+BX = 000 Event : 9
+BX = 001 Event : 10
