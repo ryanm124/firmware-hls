@@ -63,13 +63,9 @@ def compare_full_matches(comparison_filename="", fail_on_error=False, file_locat
         #Parse the reference data
         reference_data = parse_reference_file(file_location+"/"+reference_filename)
 
-        # Read column names from file
+        # Read column names from file and add a column because the time and units are separated by a space (first two columns)
         column_names = list(pd.read_csv(file_location+"/"+comparison_filename,delim_whitespace=True,nrows=1))
         column_names.insert(1,"unit")
-        #column_names[2]=column_names[2][:-1]
-        column_names[4]=column_names[4]+".0"
-        column_names.insert(5,column_names[4]+".1")
-        column_names.insert(10,column_names[9]+".1")
         if verbose: print(column_names)
 
         #Open the comparison data
