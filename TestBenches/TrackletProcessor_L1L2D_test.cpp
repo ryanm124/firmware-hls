@@ -21,7 +21,7 @@ int main()
   // input memories
   static AllStubMemory<BARRELPS> innerStubs[2];
   static AllStubMemory<BARRELPS> outerStubs;
-  static VMStubTEOuterMemory<BARRELPS> inputvmstubsouter;
+  static VMStubTEOuterMemory<BARRELPS> outervmStubs;
 
 
   // output memories
@@ -127,15 +127,15 @@ int main()
 
     // read event and write to memories
     writeMemFromFile<AllStubMemory<BARRELPS> >(innerStubs[0], fin_innerStubs0, ievt);
-    writeMemFromFile<AllStubMemory<BARRELPS> >(innerStubs[1], fin_innerStubs, ievt);
+    writeMemFromFile<AllStubMemory<BARRELPS> >(innerStubs[1], fin_innerStubs1, ievt);
     writeMemFromFile<AllStubMemory<BARRELPS> >(outerStubs, fin_outerStubs, ievt);
-    writeMemFromFile<VMStubTEOuterMemor<BARRELPS> >(outervmStubs, fin_outervmStubs, ievt);
+    writeMemFromFile<VMStubTEOuterMemory<BARRELPS> >(outervmStubs, fin_outervmstubs, ievt);
 
     // bx
     BXType bx = ievt;
 
     // Unit Under Test
-    TrackletProcessor_L1L2D(bx, innerStubs, outerStubs, outervmStubs,
+    TrackletProcessor(bx, innerStubs, outerStubs, outervmStubs,
        &tpar,
        tproj_barrel_ps,
        tproj_barrel_2s,

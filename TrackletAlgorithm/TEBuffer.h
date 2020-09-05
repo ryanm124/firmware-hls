@@ -3,6 +3,7 @@
 
 #include "Constants.h"
 #include "MemoryTemplate.h"
+#include "AllStubMemory.h"
 
 class TEData {
 
@@ -18,7 +19,7 @@ class TEData {
     kTEDatarzdiffmaxLSB = kTEDatainnerfinephiMSB + 1,
     kTEDatarzdiffmaxMSB = kTEDatarzdiffmaxLSB + 3 - 1,
     kTEDatainnerbendLSB = kTEDatarzdiffmaxMSB + 1,
-    kTEDatainnerbendMSB = kTEDatainnerbendLSB + 3 - 1,
+    kTEDatainnerbendMSB = kTEDatainnerbendLSB + 3 - 1
   };
 
   typedef ap_uint<3> RZBINFIRST;
@@ -26,25 +27,31 @@ class TEData {
   typedef ap_uint<3> INNERFINEPHI;
   typedef ap_uint<3> RZDIFFMAX;
   typedef ap_uint<3> INNERBEND;
-  typedef ap_uint<kTEDatainnnerbindMSB+1> TEDATA;
+  typedef ap_uint<64+kTEDatainnerbendMSB+1+AllStub<BARRELPS>::kAllStubSize> TEDATA;
 
  TEData():
   data_(0)
     {}
   
  TEData(const TEData& tedata):
-  data_(tedata)
+  data_(tedata.data_)
   {}
   
- TEData( const ap_uint<64> nstub, const RZBINFIRST rzbinfirst, const START start, const INNERFINEPHI innerfinephi, const RZDIFFMAX rzdiffmax, const INNERBEND innerbend, const AllStubData stub):
-  data( ((((((nstub,rzbinfirst),start),innerfinephi),rzdiffmax),innerbend),stub) )
+ TEData( const ap_uint<64> nstub, 
+	 const RZBINFIRST rzbinfirst, 
+	 const START start, 
+	 const INNERFINEPHI innerfinephi, 
+	 const RZDIFFMAX rzdiffmax, 
+	 const INNERBEND innerbend, 
+	 const AllStub<BARRELPS>::AllStubData stub):
+  data_( ((((((nstub,rzbinfirst),start),innerfinephi),rzdiffmax),innerbend),stub) )
     {}
 
   TEDATA raw() const {return data_;}
   
  private:
 
-  ap_uint<120> data_;
+  TEDATA data_;
 
 };
   
@@ -68,7 +75,7 @@ class TEBuffer {
 
   void reset() {
     imem_=imembegin_;
-    itsub_=0;
+    istub_=0;
     writeptr_=0;
     readptr_=0;
   }
@@ -86,20 +93,20 @@ class TEBuffer {
   }
 
   bool full() {
-    return ((writeptr_+1)&((1<<bufferdepthbits)-1))==readptr;
+    return ((writeptr_+1)&((1<<bufferdepthbits)-1))==readptr_;
   }
 
 
   
 private:
 
-  const int bufferdepthbits=5;
+  static constexpr int bufferdepthbits=5;
 
   ap_uint<bufferdepthbits> writeptr_, readptr_;
   ap_uint<7> istub_;
   ap_uint<2> imem_, imembegin_, imemend_;
   
-  TEDATA buffer_[1<<bufferdepthbits];
+  TEData::TEDATA buffer_[1<<bufferdepthbits];
   
 };
 
