@@ -21,8 +21,8 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
 
  TrackletEngineUnit(const VMStubTEOuterMemory<VMSTEType> &outervmstubs): 
   outervmstubs_(outervmstubs) {
-  idle_ = true;
-}
+    idle_ = true;
+  }
 
 /*
 ~TrackletEngineUnit() {
@@ -39,7 +39,7 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
 #pragma HLS inline
   writeindex_ = 0;
   readindex_ = 0;
-  idle_ = false;
+  idle_ = true;
   bx_ = bxin;
   memindex_ = 0;
   istub_=0;
@@ -48,6 +48,13 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
   rzbinfirst_=rzbinfirst;
   rzbindiffmax_=rzbindiffmax;
 }
+ 
+
+ void reset() {
+   writeindex_ = 0;
+   readindex_ = 0;
+   idle_ = true;
+ }
 
 bool empty() {
 #pragma HLS inline  

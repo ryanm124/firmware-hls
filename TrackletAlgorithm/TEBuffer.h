@@ -1,3 +1,4 @@
+
 #ifndef TrackletAlgorithm_TEBuffer_h
 #define TrackletAlgorithm_TEBuffer_h
 
@@ -58,7 +59,8 @@ class TEData {
 
 // Data object definition
 class TEBuffer {
-  
+
+ public:
 
   // Constructors
  TEBuffer():

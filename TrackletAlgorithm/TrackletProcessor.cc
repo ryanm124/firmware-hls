@@ -26,8 +26,8 @@ void TrackletProcessor_L1L2D(
 #pragma HLS array_partition variable=projout_barrel_ps complete
 #pragma HLS array_partition variable=projout_barrel_2s complete
 #pragma HLS array_partition variable=projout_disk complete
-
-TC_L1L2D: TrackletCalculator<
+/*
+TC_L1L2D: TrackletProcessor<
   TC::L1L2,
   TC::D,
   InnerRegion<TC::L1L2>(),
@@ -45,6 +45,7 @@ TC_L1L2D: TrackletCalculator<
     projout_barrel_2s,
     projout_disk
   );
+*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
