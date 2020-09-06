@@ -501,13 +501,15 @@ TrackletProcessor(
     const BXType bx,
     const AllStubMemory<InnerRegion> innerStubs[NASMemInner],
     const AllStubMemory<OuterRegion>* outerStubs,
-    const VMStubTEOuter<OuterRegion>* outerVMStubs,
+    const VMStubTEOuterMemory<OuterRegion>* outerVMStubs,
     TrackletParameterMemory * const trackletParameters,
     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
     TrackletProjectionMemory<DISK> projout_disk[TC::N_PROJOUT_DISK]
 )
 {
+
+  /*
   static_assert(Seed == TC::L1L2, "Only L1L2 seeds have been implemented so far.");
 
   int npar = 0;
@@ -546,7 +548,9 @@ TrackletProcessor(
     tebuffer[i].reset();
 
 
-  TrackletEngineUnit<BARRELPS> teunits[NTEUnits];
+  TrackletEngineUnit<BARRELPS> tmpteunit(outerVMStubs);
+
+  std::vector<TrackletEngineUnit<BARRELPS> > teunits(NTEUnits,tmpteunit);
 
  reset_teunits: for (unsigned i = 0; i < NTEUnits; i++)
 #pragma HLS unroll
@@ -652,7 +656,7 @@ TrackletProcessor(
     }
     
   } //end of istep
-
+  */
 }
 
 #endif
