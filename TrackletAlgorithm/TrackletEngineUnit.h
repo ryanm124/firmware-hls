@@ -2,9 +2,7 @@
 #define TRACKLETENGINEUNIT_H
 
 #include "Constants.h"
-#include "VMStubTEMemory.h"
-
-template<int VMProjType> class TrackletEngineUnitBase {};
+#include "VMStubTEOuterMemory.h"
 
 class TrackletEngineUnitBase {
  public:
@@ -17,14 +15,14 @@ template<int VMSTEType>
 class TrackletEngineUnit : public TrackletEngineUnitBase {
 
  public:
-  typedef ap_uint<VMStubMEBase<VMSMEType>::kVMSMEIndexSize> STUBID;
+  typedef ap_uint<VMStubTEOuter<VMSTEType>::kVMSTEOIDSize+AllStub<BARRELPS>::kAllStubSize> STUBID;
   typedef ap_uint<kNBits_MemAddrBinned> NSTUBS;
-  typedef ap_uint<TrackletEngineUnitBase<VMProjType>::kNBitsBuffer> INDEX;
+  typedef ap_uint<TrackletEngineUnitBase::kNBitsBuffer> INDEX;
 
-TrackletEngineUnit() {
-  nstubs_=0;
-  idle_ = true;
-}
+ TrackletEngineUnit(const VMStubTEOuterMemory<VMSTEType> &outervmstubs): 
+  outervmstubs_(outervmstubs) {
+    idle_ = true;
+  }
 
 /*
 ~TrackletEngineUnit() {
@@ -32,21 +30,35 @@ TrackletEngineUnit() {
 }
 */
 
- inline void init(BXType bxin, ap_uint<36> innerstub ) {
+ inline void init(BXType bxin, 
+		  AllStub<BARRELPS>::AllStubData innerstub,
+		  ap_uint<3> slot,
+		  ap_uint<3> rzbinfirst,
+		  ap_uint<3> rzbindiffmax
+ ) {
 #pragma HLS inline
   writeindex_ = 0;
   readindex_ = 0;
-  idle_ = false;
+  idle_ = true;
   bx_ = bxin;
   memindex_ = 0;
   istub_=0;
   innerstub_=innerstub;
-
+  slot_=slot;
+  rzbinfirst_=rzbinfirst;
+  rzbindiffmax_=rzbindiffmax;
 }
+ 
+
+ void reset() {
+   writeindex_ = 0;
+   readindex_ = 0;
+   idle_ = true;
+ }
 
 bool empty() {
 #pragma HLS inline  
-  return (writeindex==readindex);
+  return (writeindex_==readindex_);
 }
 
 bool idle() {
@@ -54,9 +66,13 @@ bool idle() {
   return idle_;
 }
 
+bool full() {
+  return (writeindex_+1==readindex_);
+}
+
 STUBID read() {
 #pragma HLS inline  
-  return stubids_[readptr_++];
+  return stubids_[readindex_++];
 }
 
 inline void step() {
@@ -80,15 +96,37 @@ inline void step() {
 
   (ireg,next)=memindex_;
 
-  ap_uint<12> stubadd( ((ireg, slot+next),istub_) );
+  ap_uint<12> stubadd( ((ireg, slot_+next),istub_) );
   
-  auto& vmstub = outervmstubs.read_mem(bx,stubadd);
+  auto& outervmstub = outervmstubs_.read_mem(bx_,stubadd);
 
+  const auto& finephi = outervmstub.getFinePhi();
+  const auto& rzbin = (next, outervmstub.getFineZ()); 
+
+  ap_uint<2> iAllstub=1; //FIXME need to be template parameter
+  ap_uint<8> outerfinephi = ((iAllstub, ireg), finephi);
+
+  ap_uint<8> innerfinephi = innerstub_.getPhi().range(AllStubBase<BARRELPS>::kASPhiSize,AllStubBase<BARRELPS>::kASPhiSize-8+1);
+
+  int idphi =  outerfinephi - innerfinephi;
+  bool inrange = abs(idphi) < (1<<5);
+
+  if  (rzbin<rzbinfirst_ || rzbin > rzbinfirst_ + rzbindiffmax_)
+    return;
+
+  const auto& outerbend = outervmstub.getBend();
+  const auto& innerbend = innerstub_.getBend();
+
+  auto ptinnerindex = (idphi, innerbend);
+  auto ptouterindex = (idphi, outerbend);
+
+  if (inrange && ptinnerLUT_[ptinnerindex] && ptouterLUT_[ptouterindex])
+    write( (outervmstub.getID(), innerstub_) );
   
   
 
   istub_++;
-  if(istub==nstubs) {
+  if(istub_==nstubs) {
     istub_=0;
     memindex_++;
     if (memindex_==0) {
@@ -96,7 +134,7 @@ inline void step() {
     }
  
   } // if(buffernotempty)
-  return false;
+  return;
 
 } // end step
  
@@ -104,22 +142,27 @@ inline void step() {
 
  ap_uint<64> memstubs_;
  ap_uint<4> memindex_;
- 
- INDEX writeindex;
- INDEX readindex;
- NSTUBS nstubs;
+
+ ap_uint<3> slot_;
+ ap_uint<3> rzbinfirst_;
+ ap_uint<3> rzbindiffmax_;
+
+ AllStub<BARRELPS> innerstub_; 
+
+ const VMStubTEOuterMemory<VMSTEType> &outervmstubs_;
+
+ INDEX writeindex_;
+ INDEX readindex_;
+ //NSTUBS nstubs_;
  bool idle_;
- BXType bx;
+ BXType bx_;
  
- NSTUBS istub=0;
- STUBID stubids[1<<TrackletEngineUnitBase<VMProjType>::kNBitsBuffer];
- ap_int<5> projfinezadj; //FIXME Need replace 5 with const
- ProjectionRouterBuffer<BARREL>::TCID tcid;
- ProjectionRouterBuffer<BARREL>::PRHASSEC isPSseed;
- ProjectionRouterBuffer<BARREL>::VMPZBIN zbin;
- VMProjection<BARREL>::VMPRINV projrinv;
- VMProjection<BARREL>::VMPID projindex;
- 
+ NSTUBS istub_=0;
+ STUBID stubids_[1<<TrackletEngineUnitBase::kNBitsBuffer];
+
+ bool ptinnerLUT_[1<<8]; 
+ bool ptouterLUT_[1<<8]; 
+
 }; // end class
 
 
