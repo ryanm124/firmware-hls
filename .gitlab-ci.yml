@@ -71,11 +71,9 @@ stages: # ---------------------------------------------------------------------
   stage: check-results
   script:
     - cd IntegrationTests/ExpTopPRMEMC_Test
-    # 1. run to compare all events
+    # Compare HDL sim output with full machtes Mem/Prints
     - python3 CompareFullMatches.py -r ../../emData/MemPrints/Matches/FullMatches_FM_L1L2_L3PHIC_04.dat ../../emData/MemPrints/Matches/FullMatches_FM_L5L6_L3PHIC_04.dat
-    # 2. run w/ -f to throw an error (1. faulty event) if it fails
-    - python3 CompareFullMatches.py -f -r ../../emData/MemPrints/Matches/FullMatches_FM_L1L2_L3PHIC_04.dat ../../emData/MemPrints/Matches/FullMatches_FM_L5L6_L3PHIC_04.dat
-
+    
 # Jobs ------------------------------------------------------------------------
 # Quality checks ------------
 PR-quality-check:
