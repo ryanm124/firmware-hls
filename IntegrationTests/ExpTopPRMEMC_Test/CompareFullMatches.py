@@ -2,8 +2,9 @@
 
 import argparse
 import os
-import re
 import pandas as pd
+import re
+import sys
 
 # Python 2-3 compatibility
 try:
@@ -48,6 +49,9 @@ def compare_full_matches(comparison_filename="", fail_on_error=False, file_locat
     # Sanity checks
     if len(reference_filenames) == 0:
         raise Exception("No reference files were specified (-r). At least one reference file is needed to run the comparison.")
+
+    # Global error tracking
+    failed = 0
 
     for reference_filename in reference_filenames:
         # Define some counters
@@ -128,6 +132,9 @@ def compare_full_matches(comparison_filename="", fail_on_error=False, file_locat
             number_of_good_events += good
 
         print_results(len(reference_data),number_of_good_events,number_of_missing_events,number_of_event_length_mismatches,number_of_value_mismatches)
+        failed += len(reference_data)-number_of_good_events
+
+    sys.exit(failed)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="""
