@@ -1,4 +1,3 @@
-
 #ifndef TrackletAlgorithm_TEBuffer_h
 #define TrackletAlgorithm_TEBuffer_h
 
@@ -11,7 +10,9 @@ class TEData {
  public:
   enum BitLocations {
     // The location of the least significant bit (LSB) and most significant bit (MSB) in the ProjectionRouterBufferMemory word for different fields
-    kTEDatarzbinfirstLSB = 0,
+    kTEDataNStubLSB = 0,
+    kTEDataNStubMSB = kTEDataNStubLSB + 64 - 1,
+    kTEDatarzbinfirstLSB = kTEDataNStubMSB+1,
     kTEDatarzbinfirstMSB = kTEDatarzbinfirstLSB + 3 - 1,
     kTEDatastartLSB = kTEDatarzbinfirstMSB + 1,
     kTEDatastartMSB = kTEDatastartLSB + 3 - 1,
@@ -20,7 +21,11 @@ class TEData {
     kTEDatarzdiffmaxLSB = kTEDatainnerfinephiMSB + 1,
     kTEDatarzdiffmaxMSB = kTEDatarzdiffmaxLSB + 3 - 1,
     kTEDatainnerbendLSB = kTEDatarzdiffmaxMSB + 1,
-    kTEDatainnerbendMSB = kTEDatainnerbendLSB + 3 - 1
+    kTEDatainnerbendMSB = kTEDatainnerbendLSB + 3 - 1,
+    kTEDataAllStubLSB = kTEDatainnerbendMSB + 1,
+    kTEDataAllStubMSB = kTEDataAllStubLSB + AllStub<BARRELPS>::kAllStubSize - 1,
+    kTEDatafinephiLSB = kTEDataAllStubMSB + 1,
+    kTEDatafinephiMSB = kTEDatafinephiLSB + 8 - 1
   };
 
   typedef ap_uint<3> RZBINFIRST;
@@ -28,14 +33,43 @@ class TEData {
   typedef ap_uint<3> INNERFINEPHI;
   typedef ap_uint<3> RZDIFFMAX;
   typedef ap_uint<3> INNERBEND;
-  typedef ap_uint<64+kTEDatainnerbendMSB+1+AllStub<BARRELPS>::kAllStubSize> TEDATA;
+  typedef ap_uint<8> FINEPHI;
+  typedef ap_uint<kTEDatafinephiMSB+1> TEDATA;
 
  TEData():
   data_(0)
     {}
-  
+
+  AllStub<BARRELPS>::AllStubData getAllStub() const {
+    return data_.range(kTEDataAllStubMSB,kTEDataAllStubLSB);
+  }
+
+  START getStart() const {
+    return data_.range(kTEDatastartMSB,kTEDatastartLSB);
+  }
+
+  FINEPHI getfinephi() const {
+    return data_.range(kTEDatafinephiMSB,kTEDatafinephiLSB);
+  }
+
+  RZBINFIRST getrzbinfirst() const {
+    return data_.range(kTEDatarzbinfirstMSB,kTEDatarzbinfirstLSB);
+  }
+
+  RZDIFFMAX getrzdiffmax() const {
+    return data_.range(kTEDatarzdiffmaxMSB,kTEDatarzdiffmaxLSB);
+  }
+
+  ap_uint<64> getNStub() const {
+    return data_.range(kTEDataNStubMSB,kTEDataNStubLSB);
+  }
+
  TEData(const TEData& tedata):
   data_(tedata.data_)
+  {}
+
+ TEData(const TEDATA& tedata):
+  data_(tedata)
   {}
   
  TEData( const ap_uint<64> nstub, 
@@ -44,8 +78,9 @@ class TEData {
 	 const INNERFINEPHI innerfinephi, 
 	 const RZDIFFMAX rzdiffmax, 
 	 const INNERBEND innerbend, 
-	 const AllStub<BARRELPS>::AllStubData stub):
-  data_( ((((((nstub,rzbinfirst),start),innerfinephi),rzdiffmax),innerbend),stub) )
+	 const AllStub<BARRELPS>::AllStubData stub,
+	 const FINEPHI finephi):
+  data_( (((((((finephi,stub),innerbend),rzdiffmax),innerfinephi),start),rzbinfirst),nstub) )
     {}
 
   TEDATA raw() const {return data_;}
@@ -94,10 +129,25 @@ class TEBuffer {
     return istub_;
   }
 
-  bool full() {
+  void setIStub(ap_uint<7>& istub) {
+    istub_=istub;
+  }
+
+  void store(const TEData::TEDATA& tedata) {
+    buffer_[writeptr_++]=tedata;
+  }
+
+  TEData::TEDATA read() {
+    return buffer_[readptr_++];
+  }
+
+  bool full() const {
     return ((writeptr_+1)&((1<<bufferdepthbits)-1))==readptr_;
   }
 
+  bool empty() const {
+    return writeptr_==readptr_;
+  }
 
   
 private:

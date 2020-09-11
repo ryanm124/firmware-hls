@@ -42,7 +42,7 @@ public:
 
   NEntryT getEntries(BunchXingT bx, ap_uint<NBIT_BIN> ibin) const {
 #pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
-	return nentries_[bx][ibin];
+    return nentries_[bx][ibin];
   }
 
   const DataType (&get_mem() const)[1<<NBIT_BX][1<<NBIT_ADDR] {return dataarray_;}
@@ -70,7 +70,7 @@ public:
 	}
 	else {
 #ifndef __SYNTHESIS__
-	  std::cout << "Warning out of range" << std::endl;
+	  std::cout << "Warning out of range. nentry_ibx = "<<nentry_ibx<<" NBIT_ADDR-NBIT_BIN = "<<NBIT_ADDR-NBIT_BIN << std::endl;
 #endif
 	  return false;
 	}
