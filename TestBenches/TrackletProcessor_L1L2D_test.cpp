@@ -17,11 +17,26 @@ int main()
   // error counts
   int err = 0;
 
+  ap_uint<10> innervmtable[2048] =
+#include "../emData/TP/tables/TP_L1.tab"
+
+  ap_uint<8> useregion[2048] =
+#include "../emData/TP/tables/TP_L1L2D_usereg.tab"
+
+  ap_uint<1> stubptinner[256] =
+#include "../emData/TP/tables/TP_L1L2D_stubptinnercut.tab"
+
+  ap_uint<1> stubptouter[256] =
+#include "../emData/TP/tables/TP_L1L2D_stubptoutercut.tab"
+
+  ap_int<10> phicorr[64] =
+#include "../emData/TP/tables/VMPhiCorrL1.tab"
+
   ///////////////////////////
   // input memories
   static AllStubMemory<BARRELPS> innerStubs[2];
   static AllStubMemory<BARRELPS> outerStubs;
-  static VMStubTEOuterMemory<BARRELPS> outervmStubs;
+  static VMStubTEOuterMemoryCM<BARRELPS> outervmStubs;
 
 
   // output memories
@@ -129,13 +144,14 @@ int main()
     writeMemFromFile<AllStubMemory<BARRELPS> >(innerStubs[0], fin_innerStubs0, ievt);
     writeMemFromFile<AllStubMemory<BARRELPS> >(innerStubs[1], fin_innerStubs1, ievt);
     writeMemFromFile<AllStubMemory<BARRELPS> >(outerStubs, fin_outerStubs, ievt);
-    writeMemFromFile<VMStubTEOuterMemory<BARRELPS> >(outervmStubs, fin_outervmstubs, ievt);
+    cout << "Will read vmstubs"<<endl;
+    writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS> >(outervmStubs, fin_outervmstubs, ievt);
 
     // bx
     BXType bx = ievt;
 
     // Unit Under Test
-    TrackletProcessor<TC::L1L2, TC::D, 2, 4, BARRELPS, BARRELPS, 2, 108>(bx, innerStubs, &outerStubs, &outervmStubs,
+    TrackletProcessor<TC::L1L2, TC::D, 2, 6, BARRELPS, BARRELPS, 2, 108>(bx, innervmtable, useregion, stubptinner, stubptouter, phicorr, innerStubs, &outerStubs, &outervmStubs,
        &tpar,
        tproj_barrel_ps,
        tproj_barrel_2s,
@@ -143,6 +159,8 @@ int main()
     );
 
     bool truncate;
+
+    cout << "Start compare" << endl;
 
     // compare the computed outputs with the expected ones
     err += compareMemWithFile<TrackletParameterMemory>(tpar, fout_tpar, ievt,
