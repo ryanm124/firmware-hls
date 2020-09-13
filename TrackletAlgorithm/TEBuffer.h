@@ -3,7 +3,7 @@
 
 #include "Constants.h"
 #include "MemoryTemplate.h"
-#include "AllStubMemory.h"
+#include "AllStubInnerMemory.h"
 
 class TEData {
 
@@ -23,7 +23,7 @@ class TEData {
     kTEDatainnerbendLSB = kTEDatarzdiffmaxMSB + 1,
     kTEDatainnerbendMSB = kTEDatainnerbendLSB + 3 - 1,
     kTEDataAllStubLSB = kTEDatainnerbendMSB + 1,
-    kTEDataAllStubMSB = kTEDataAllStubLSB + AllStub<BARRELPS>::kAllStubSize - 1,
+    kTEDataAllStubMSB = kTEDataAllStubLSB + AllStubInner<BARRELPS>::kAllStubInnerSize - 1,
     kTEDatafinephiLSB = kTEDataAllStubMSB + 1,
     kTEDatafinephiMSB = kTEDatafinephiLSB + 8 - 1
   };
@@ -40,7 +40,7 @@ class TEData {
   data_(0)
     {}
 
-  AllStub<BARRELPS>::AllStubData getAllStub() const {
+  AllStubInner<BARRELPS>::AllStubInnerData getAllStub() const {
     return data_.range(kTEDataAllStubMSB,kTEDataAllStubLSB);
   }
 
@@ -78,7 +78,7 @@ class TEData {
 	 const INNERFINEPHI innerfinephi, 
 	 const RZDIFFMAX rzdiffmax, 
 	 const INNERBEND innerbend, 
-	 const AllStub<BARRELPS>::AllStubData stub,
+	 const AllStubInner<BARRELPS>::AllStubInnerData stub,
 	 const FINEPHI finephi):
   data_( (((((((finephi,stub),innerbend),rzdiffmax),innerfinephi),start),rzbinfirst),nstub) )
     {}
