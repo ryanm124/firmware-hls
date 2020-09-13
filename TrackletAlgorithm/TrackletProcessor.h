@@ -511,7 +511,6 @@ TrackletProcessor(
     const ap_uint<8> regionlut[2048],
     const ap_uint<1> stubptinnerlut[256],
     const ap_uint<1> stubptouterlut[256],
-    const ap_int<10> phicorrlut[64],
     const AllStubInnerMemory<InnerRegion> innerStubs[NASMemInner],
     const AllStubMemory<OuterRegion>* outerStubs,
     const VMStubTEOuterMemoryCM<OuterRegion>* outerVMStubs,
@@ -523,8 +522,6 @@ TrackletProcessor(
 {
 
   static_assert(Seed == TC::L1L2, "Only L1L2 seeds have been implemented so far.");
-
-  //std::cout << "Entered TP" << std::endl;
 
   int npar = 0;
   int nproj_barrel_ps[TC::N_PROJOUT_BARRELPS] = {0};
@@ -549,7 +546,6 @@ TrackletProcessor(
     if (TPROJMaskDisk<Seed, iTC>() & (0x1 << i))
       projout_disk[i].clear();
 
-  //std::cout << "In TP done with clear" << std::endl;
 
   TEBuffer tebuffer[NTEBuffer];
   //Need to generalize this
@@ -563,8 +559,6 @@ TrackletProcessor(
 #pragma HLS unroll
     tebuffer[i].reset();
 
-  //std::cout << "In TP done TEBufer init" << std::endl;
-
   TrackletEngineUnit<BARRELPS> tmpteunit(*outerVMStubs);
 
   std::vector<TrackletEngineUnit<BARRELPS> > teunits(NTEUnits,tmpteunit);
@@ -573,8 +567,6 @@ TrackletProcessor(
 #pragma HLS unroll
     teunits[i].reset();
 
-  //std::cout << "In TP done TEUnit init" << std::endl;
-  
   TrackletProjection<BARRELPS>::TProjTrackletIndex trackletIndex = 0;
 
   for(unsigned istep=0;istep<108;istep++) {
@@ -591,7 +583,7 @@ TrackletProcessor(
 #pragma HLS unroll
       auto& imem=tebuffer[i].getMem();
       auto imemend=tebuffer[i].getMemEnd();
-      if (imem>=imemend)  //could mkee just ==
+      if (imem>=imemend)  //could make just ==
 	continue;
       if (tebuffer[i].full())
 	continue;
@@ -605,22 +597,8 @@ TrackletProcessor(
       auto r=stub.getR();
       auto bend=stub.getBend();
 
-      int r1=(r+(1<<(r.length()-1)))>>(r.length()-3);
-      ap_uint<3> rlut(r1);
-
-      auto phicorr=phicorrlut[(bend,rlut)];
-
-      phi-=phicorr;
-
-      int nbitsfinephi=8;
-      auto innerfinephi=phi.range(phi.length()-1,phi.length()-nbitsfinephi);
-
-      assert(innerfinephi==stub.getFinePhi());
+      auto innerfinephi=stub.getFinePhi();
       
-      //std::cout << "innerfinephi allstubinner.finephi : "<<innerfinephi<<" "<<stub.getFinePhi()<<" "<<stub.getIndex()<<std::endl;
-
-      //std::cout << "imem istub innerbend innerfinephi: "<<imem<<" "<<istub<<" "<<bend<<" "<<innerfinephi<<"  phicorr:"<<phicorr<<std::endl;
-
       int nbitszfinebintable=7;
       auto indexz=z.range(z.length()-1,z.length()-nbitszfinebintable);
 
@@ -631,9 +609,6 @@ TrackletProcessor(
       ap_uint<1> usenext;
       ap_uint<3> start;
       ap_uint<3> rzdiffmax;
-
-      //std::cout << "lutval indexz indexr : " << lut[(indexz,indexr)] << " " << indexz << " " << indexr << std::endl;;
-
 
       (rzdiffmax,start, usenext, rzfinebinfirst) = lut[(indexz,indexr)];
       if (lut[(indexz,indexr)]!=1023) {
@@ -647,20 +622,13 @@ TrackletProcessor(
 #pragma HLS unroll
 	  if (!useregion.test(ireg))
 	    continue;
-	  //std::cout << "Use region : " << ireg << std::endl;
 	next_loop: for(unsigned inext=0;inext<=usenext;inext++) {
-	  ap_uint<1> next(inext);
+	    ap_uint<1> next(inext);
 #pragma HLS unroll
-	  unsigned ibin=start+next;
-	  ap_uint<4> numstubs=outerVMStubs->getEntries(bx,(ap_uint<3>(ireg),ap_uint<3>(ibin)));
-	  //std::cout << "Found VM in ireg ibin  nstubs = " << ireg << " " << ibin << " " <<
-	  //   numstubs << std::endl;
-	  if (numstubs!=0){
-	    assert(nmem!=8);
-	    if (nmem==8) {
-	      //std::cout << "ERROR OVERFLOW" <<std::endl;
-		nmem=7;
-	      }
+	    unsigned ibin=start+next;
+	    ap_uint<4> numstubs=outerVMStubs->getEntries(bx,(ap_uint<3>(ireg),ap_uint<3>(ibin)));
+	    if (numstubs!=0){
+	      assert(nmem!=8);
 	      nstubs.range(nmem*8+7,nmem*8)=((ap_uint<3>(ireg),next),numstubs);
 	      nmem++;
 	    }
@@ -668,8 +636,7 @@ TrackletProcessor(
 	}
 	
 	if (nmem!=0) { //FIXME - test
-	  //std::cout << "TP nstubs start : "<<nstubs.to_string(2) << " " << start << std::endl;
-	  TEData tedatatmp(nstubs,rzfinebinfirst,start,innerfinephi,rzdiffmax,bend,stub.raw(),innerfinephi);
+	  TEData tedatatmp(nstubs,rzfinebinfirst,start,rzdiffmax,stub.raw());
 	  tebuffer[i].store(tedatatmp.raw());
 	}
       }
@@ -690,11 +657,10 @@ TrackletProcessor(
     init_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
 #pragma HLS unroll
 	if (teunits[k].empty() && teunits[k].idle()) {
-	  std::cout << "istep = "<<istep<<" tebuffer " << i << " is not empty and initializing teunit " << k << std::endl; 
+	  //std::cout << "istep = "<<istep<<" tebuffer " << i << " is not empty and initializing teunit " << k << std::endl; 
 	  TEData tedatatmp(tebuffer[i].read());
 	  teunits[k].init(bx,
 			  tedatatmp.getAllStub(),
-			  tedatatmp.getfinephi(),
 			  tedatatmp.getNStub(),
 			  tedatatmp.getStart(),
 			  tedatatmp.getrzbinfirst(),
@@ -707,9 +673,7 @@ TrackletProcessor(
     int iTE=-1;
   process_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
 #pragma HLS unroll
-      //std::cout << "Will process TE unit : "<<k<<std::endl;
       teunits[k].step(stubptinnerlut,stubptouterlut);
-      //std::cout << "Done process TE unit : "<<k<<std::endl;
       if (!teunits[k].empty()){
 	iTE=k;
       }
@@ -722,15 +686,10 @@ TrackletProcessor(
       ap_uint<8> finephi;
       ap_uint<7> outerIndex;
       (outerIndex, innerStub, innerIndex, finephi)=teunits[iTE].read();
-      //std::cout << "istep = "<<istep<<" Found stubpair in TE unit : "<<iTE<<"  outerIndex innerstub "<<outerIndex<<" "<<innerStub<< std::endl;
 
       const TrackletProjection<BARRELPS>::TProjTCID TCID(3);
 
       const auto &outerStub = outerStubs->read_mem(bx, outerIndex);
-
-      //std::cout << "WILL CALCULATE TRACKLET outerIndex phi z r : " 
-      //		<< outerIndex<<" "<<outerStubs->getEntries(bx)<<" "
-      //	<<outerStub.getPhi()<<" "<<outerStub.getZ()<<" "<<outerStub.getR()<<std::endl;
 
       TC::processStubPair<Seed, InnerRegion, OuterRegion, TPROJMaskBarrel<Seed, iTC>(), TPROJMaskDisk<Seed, iTC>()>(bx, innerIndex, AllStub<BARRELPS>(innerStub), outerIndex, outerStub, TCID, trackletIndex, trackletParameters, projout_barrel_ps, projout_barrel_2s, projout_disk, npar, nproj_barrel_ps, nproj_barrel_2s, nproj_disk);
 
