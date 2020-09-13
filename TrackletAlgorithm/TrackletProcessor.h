@@ -577,7 +577,68 @@ TrackletProcessor(
     //}
     //std::cout <<std::endl;
 
+    //
+    // In this first step we check if there are stubs to be fit
+    //
+
+    int iTE=-1;
+  process_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
+#pragma HLS unroll
+      if (!teunits[k].empty()){
+	iTE=k;
+      }
+    }
+    
+    if (iTE!=-1) {
       
+      ap_uint<36> innerStub;
+      ap_uint<7> innerIndex;
+      ap_uint<8> finephi;
+      ap_uint<7> outerIndex;
+      (outerIndex, innerStub, innerIndex, finephi)=teunits[iTE].read();
+
+      const TrackletProjection<BARRELPS>::TProjTCID TCID(3);
+      
+      const auto &outerStub = outerStubs->read_mem(bx, outerIndex);
+      
+      TC::processStubPair<Seed, InnerRegion, OuterRegion, TPROJMaskBarrel<Seed, iTC>(), TPROJMaskDisk<Seed, iTC>()>(bx, innerIndex, AllStub<BARRELPS>(innerStub), outerIndex, outerStub, TCID, trackletIndex, trackletParameters, projout_barrel_ps, projout_barrel_2s, projout_disk, npar, nproj_barrel_ps, nproj_barrel_2s, nproj_disk);
+      
+    }
+     
+
+    //
+    // Second step
+    // 
+
+
+  check_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
+#pragma HLS unroll
+      if (tebuffer[i].empty())
+	continue;
+    init_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
+#pragma HLS unroll
+	if (teunits[k].idle()) {  //can remove empty here - but affects order
+	  //std::cout << "istep = "<<istep<<" tebuffer " << i << " is not empty and initializing teunit " << k << std::endl; 
+	  TEData tedatatmp(tebuffer[i].read());
+	  teunits[k].init(bx,
+			  tedatatmp.getAllStub(),
+			  tedatatmp.getNStub(),
+			  tedatatmp.getStart(),
+			  tedatatmp.getrzbinfirst(),
+			  tedatatmp.getrzdiffmax());
+	  break;
+	}
+      }
+    }
+
+  step_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
+#pragma HLS unroll
+      teunits[k].step(stubptinnerlut,stubptouterlut);
+    }
+
+    //
+    // Third step
+    //
 
   process_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
 #pragma HLS unroll
@@ -650,50 +711,6 @@ TrackletProcessor(
     }
 
     
-  check_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
-#pragma HLS unroll
-      if (tebuffer[i].empty())
-	continue;
-    init_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
-#pragma HLS unroll
-	if (teunits[k].empty() && teunits[k].idle()) {
-	  //std::cout << "istep = "<<istep<<" tebuffer " << i << " is not empty and initializing teunit " << k << std::endl; 
-	  TEData tedatatmp(tebuffer[i].read());
-	  teunits[k].init(bx,
-			  tedatatmp.getAllStub(),
-			  tedatatmp.getNStub(),
-			  tedatatmp.getStart(),
-			  tedatatmp.getrzbinfirst(),
-			  tedatatmp.getrzdiffmax());
-	  break;
-	}
-      }
-    }
-
-    int iTE=-1;
-  process_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
-#pragma HLS unroll
-      teunits[k].step(stubptinnerlut,stubptouterlut);
-      if (!teunits[k].empty()){
-	iTE=k;
-      }
-    }
-
-    if (iTE!=-1) {
-
-      ap_uint<36> innerStub;
-      ap_uint<7> innerIndex;
-      ap_uint<8> finephi;
-      ap_uint<7> outerIndex;
-      (outerIndex, innerStub, innerIndex, finephi)=teunits[iTE].read();
-
-      const TrackletProjection<BARRELPS>::TProjTCID TCID(3);
-
-      const auto &outerStub = outerStubs->read_mem(bx, outerIndex);
-
-      TC::processStubPair<Seed, InnerRegion, OuterRegion, TPROJMaskBarrel<Seed, iTC>(), TPROJMaskDisk<Seed, iTC>()>(bx, innerIndex, AllStub<BARRELPS>(innerStub), outerIndex, outerStub, TCID, trackletIndex, trackletParameters, projout_barrel_ps, projout_barrel_2s, projout_disk, npar, nproj_barrel_ps, nproj_barrel_2s, nproj_disk);
-
-    }
     
   } //end of istep
   
