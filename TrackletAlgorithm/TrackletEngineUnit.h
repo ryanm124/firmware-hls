@@ -26,7 +26,6 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
 
  inline void init(BXType bxin, 
 		  AllStubInner<BARRELPS>::AllStubInnerData innerstub,
-		  ap_uint<8> innerfinephi,
 		  ap_uint<64> memstubs,
 		  ap_uint<3> slot,
 		  ap_uint<3> rzbinfirst,
@@ -40,7 +39,7 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
   memindex_ = 0;
   istub_=0;
   innerstub_=innerstub;
-  innerfinephi_=innerfinephi;
+  //innerfinephi_=innerfinephi;
   slot_=slot;
   rzbinfirst_=rzbinfirst;
   rzbindiffmax_=rzbindiffmax;
@@ -90,9 +89,7 @@ void write(STUBID stubs) {
   ap_uint<1> next;
   ap_uint<4> nstubs;
 
-  ((ireg,next),nstubs)=memstubs_.range((memindex_*8)+7,memindex_*8);
-  
-  //std::cout << "TEUnit memindex_ nstubs : "<<memindex_<<" "<<nstubs<<" "<<memstubs_.to_string(2)<<std::endl;
+  (ireg, next, nstubs)=memstubs_.range((memindex_*8)+7,memindex_*8);
 
   if (nstubs==0) {
     idle_=true;
@@ -106,34 +103,20 @@ void write(STUBID stubs) {
 
   ap_uint<12> stubadd( ((ireg, ibin),istub_) );
 
-  //std::cout << "istub_ ireg, slot_ next : "<<istub_<<" "<<ireg<<" "<<slot_<<" "<<next<<" "<<(ireg, ibin)
-  //	    <<" nEntries : "<<outervmstubs_.getEntries(bx_,(ireg,ibin))<<std::endl;
-
   assert(nstubs==outervmstubs_.getEntries(bx_,(ireg,ibin)));
-  //if (nstubs!=outervmstubs_.getEntries(bx_,(ireg,ibin))) {
-  //  std::cout << "ERROR number of stubs not correct " << nstubs << " " << outervmstubs_.getEntries(bx_,(ireg,ibin)) << "ireg = "<<ireg<<" next = " << next<< " slot_ = "<<slot_<<" ibin = "<<ibin<<std::endl;
-  //}
 
   const auto& outervmstub = outervmstubs_.read_mem(bx_,stubadd);
-
 
   const auto& finephi = outervmstub.getFinePhi();
   const auto& rzbin = (next, outervmstub.getFineZ()); 
 
-  //std::cout << "finephi : "<<finephi<<std::endl;
-
   ap_uint<2> iAllstub=1; //FIXME need to be template parameter
   ap_uint<8> outerfinephi = ((iAllstub, ireg), finephi);
 
-  //ap_uint<8> innerfinephi = innerstub_.getPhi().range(AllStubBase<BARRELPS>::kASPhiSize-1,AllStubBase<BARRELPS>::kASPhiSize-8);
-
   int nbitsfinephidiff=5;
 
-  int idphi =  outerfinephi - innerfinephi_;
+  int idphi =  outerfinephi - AllStubInner<BARRELPS>(innerstub_).getFinePhi();
   bool inrange = abs(idphi) < (1<<(nbitsfinephidiff));
-
-  //std::cout << "TEUnit outerfinephi innerfinephi idphi inrange : " << outerfinephi<<" "<<innerfinephi_ 
-  //	    << " " << idphi<<" "<<inrange<<std::endl;
 
   if (idphi<0) idphi+=(1<<nbitsfinephidiff);
 
@@ -145,17 +128,10 @@ void write(STUBID stubs) {
     auto ptinnerindex = (idphi, innerbend);
     auto ptouterindex = (idphi, outerbend);
     
-    //std::cout << "TEUnit *** Will lookup ptinnerindex ptouterindex inrange innerLUT outerLUT: "
-    //	      <<ptinnerindex<<" "<<ptouterindex<<" "<<inrange<<" "
-    //	      << ptinnerLUT[ptinnerindex] << " " << ptouterLUT[ptouterindex]<<std::endl;
     if (inrange && ptinnerLUT[ptinnerindex] && ptouterLUT[ptouterindex]){
-      //std::cout << "TEUnit $$$$ Found valid stub pair outer vmstub index : " <<outervmstub.getIndex() 
-      //		<< " outervmstub = "<<outervmstub.raw().to_string(2)<<std::endl;
       write( (outervmstub.getIndex(), innerstub_.raw()) );
     }
   }
-    
-  //std::cout << "Done with TEUnit step" << std::endl;
 
   istub_++;
   if(istub_==nstubs) {
@@ -183,14 +159,12 @@ void write(STUBID stubs) {
  ap_uint<3> rzbinfirst_;
  ap_uint<3> rzbindiffmax_;
 
- ap_uint<8> innerfinephi_;
  AllStubInner<BARRELPS> innerstub_; 
 
  const VMStubTEOuterMemoryCM<VMSTEType> &outervmstubs_;
 
  INDEX writeindex_;
  INDEX readindex_;
- //NSTUBS nstubs_;
  bool idle_;
  BXType bx_;
  

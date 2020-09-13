@@ -16,25 +16,16 @@ class TEData {
     kTEDatarzbinfirstMSB = kTEDatarzbinfirstLSB + 3 - 1,
     kTEDatastartLSB = kTEDatarzbinfirstMSB + 1,
     kTEDatastartMSB = kTEDatastartLSB + 3 - 1,
-    kTEDatainnerfinephiLSB = kTEDatastartMSB + 1,
-    kTEDatainnerfinephiMSB = kTEDatainnerfinephiLSB + 3 - 1,
-    kTEDatarzdiffmaxLSB = kTEDatainnerfinephiMSB + 1,
+    kTEDatarzdiffmaxLSB = kTEDatastartMSB + 1,
     kTEDatarzdiffmaxMSB = kTEDatarzdiffmaxLSB + 3 - 1,
-    kTEDatainnerbendLSB = kTEDatarzdiffmaxMSB + 1,
-    kTEDatainnerbendMSB = kTEDatainnerbendLSB + 3 - 1,
-    kTEDataAllStubLSB = kTEDatainnerbendMSB + 1,
-    kTEDataAllStubMSB = kTEDataAllStubLSB + AllStubInner<BARRELPS>::kAllStubInnerSize - 1,
-    kTEDatafinephiLSB = kTEDataAllStubMSB + 1,
-    kTEDatafinephiMSB = kTEDatafinephiLSB + 8 - 1
+    kTEDataAllStubLSB = kTEDatarzdiffmaxMSB + 1,
+    kTEDataAllStubMSB = kTEDataAllStubLSB + AllStubInner<BARRELPS>::kAllStubInnerSize - 1
   };
 
   typedef ap_uint<3> RZBINFIRST;
   typedef ap_uint<3> START;
-  typedef ap_uint<3> INNERFINEPHI;
   typedef ap_uint<3> RZDIFFMAX;
-  typedef ap_uint<3> INNERBEND;
-  typedef ap_uint<8> FINEPHI;
-  typedef ap_uint<kTEDatafinephiMSB+1> TEDATA;
+  typedef ap_uint<kTEDataAllStubMSB+1> TEDATA;
 
  TEData():
   data_(0)
@@ -46,10 +37,6 @@ class TEData {
 
   START getStart() const {
     return data_.range(kTEDatastartMSB,kTEDatastartLSB);
-  }
-
-  FINEPHI getfinephi() const {
-    return data_.range(kTEDatafinephiMSB,kTEDatafinephiLSB);
   }
 
   RZBINFIRST getrzbinfirst() const {
@@ -75,12 +62,10 @@ class TEData {
  TEData( const ap_uint<64> nstub, 
 	 const RZBINFIRST rzbinfirst, 
 	 const START start, 
-	 const INNERFINEPHI innerfinephi, 
 	 const RZDIFFMAX rzdiffmax, 
-	 const INNERBEND innerbend, 
-	 const AllStubInner<BARRELPS>::AllStubInnerData stub,
-	 const FINEPHI finephi):
-  data_( (((((((finephi,stub),innerbend),rzdiffmax),innerfinephi),start),rzbinfirst),nstub) )
+	 const AllStubInner<BARRELPS>::AllStubInnerData stub
+	 ):
+  data_( (stub, rzdiffmax, start, rzbinfirst, nstub) )
     {}
 
   TEDATA raw() const {return data_;}
