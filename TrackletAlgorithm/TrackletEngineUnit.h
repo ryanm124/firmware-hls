@@ -159,6 +159,7 @@ void write(STUBID stubs) {
  ap_uint<3> rzbinfirst_;
  ap_uint<3> rzbindiffmax_;
 
+
  AllStubInner<BARRELPS> innerstub_; 
 
  const VMStubTEOuterMemoryCM<VMSTEType> &outervmstubs_;
