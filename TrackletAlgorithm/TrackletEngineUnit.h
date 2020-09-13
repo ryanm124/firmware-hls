@@ -15,7 +15,7 @@ template<int VMSTEType>
 class TrackletEngineUnit : public TrackletEngineUnitBase {
 
  public:
-  typedef ap_uint<VMStubTEOuter<VMSTEType>::kVMSTEOIDSize+AllStub<BARRELPS>::kAllStubSize> STUBID;
+  typedef ap_uint<VMStubTEOuter<VMSTEType>::kVMSTEOIDSize+AllStubInner<BARRELPS>::kAllStubInnerSize> STUBID;
   typedef ap_uint<kNBits_MemAddrBinned> NSTUBS;
   typedef ap_uint<TrackletEngineUnitBase::kNBitsBuffer> INDEX;
 
@@ -25,7 +25,7 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
   }
 
  inline void init(BXType bxin, 
-		  AllStub<BARRELPS>::AllStubData innerstub,
+		  AllStubInner<BARRELPS>::AllStubInnerData innerstub,
 		  ap_uint<8> innerfinephi,
 		  ap_uint<64> memstubs,
 		  ap_uint<3> slot,
@@ -36,7 +36,7 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
   idle_ = false;
   bx_ = bxin;
   memstubs_ = memstubs;
-  std::cout << "TEUnit::init memstubs = "<<memstubs.to_string(2)<<std::endl; 
+  //std::cout << "TEUnit::init memstubs = "<<memstubs.to_string(2)<<std::endl; 
   memindex_ = 0;
   istub_=0;
   innerstub_=innerstub;
@@ -69,13 +69,13 @@ bool full() {
 
 STUBID read() {
 #pragma HLS inline  
-  std::cout << "TEUNIT read: "<<this<<" "<<readindex_<<std::endl;
+  //std::cout << "TEUNIT read: "<<this<<" "<<readindex_<<std::endl;
   return stubids_[readindex_++];
 }
 
 void write(STUBID stubs) {
 #pragma HLS inline  
-  std::cout << "TEUNIT write: "<<this<<" "<<writeindex_<<std::endl;
+  //std::cout << "TEUNIT write: "<<this<<" "<<writeindex_<<std::endl;
   stubids_[writeindex_++]=stubs;
 }
 
@@ -92,7 +92,7 @@ void write(STUBID stubs) {
 
   ((ireg,next),nstubs)=memstubs_.range((memindex_*8)+7,memindex_*8);
   
-  std::cout << "TEUnit memindex_ nstubs : "<<memindex_<<" "<<nstubs<<" "<<memstubs_.to_string(2)<<std::endl;
+  //std::cout << "TEUnit memindex_ nstubs : "<<memindex_<<" "<<nstubs<<" "<<memstubs_.to_string(2)<<std::endl;
 
   if (nstubs==0) {
     idle_=true;
@@ -106,12 +106,13 @@ void write(STUBID stubs) {
 
   ap_uint<12> stubadd( ((ireg, ibin),istub_) );
 
-  std::cout << "istub_ ireg, slot_ next : "<<istub_<<" "<<ireg<<" "<<slot_<<" "<<next<<" "<<(ireg, ibin)
-	    <<" nEntries : "<<outervmstubs_.getEntries(bx_,(ireg,ibin))<<std::endl;
+  //std::cout << "istub_ ireg, slot_ next : "<<istub_<<" "<<ireg<<" "<<slot_<<" "<<next<<" "<<(ireg, ibin)
+  //	    <<" nEntries : "<<outervmstubs_.getEntries(bx_,(ireg,ibin))<<std::endl;
 
-  if (nstubs!=outervmstubs_.getEntries(bx_,(ireg,ibin))) {
-    std::cout << "ERROR number of stubs not correct " << nstubs << " " << outervmstubs_.getEntries(bx_,(ireg,ibin)) << "ireg = "<<ireg<<" next = " << next<< " slot_ = "<<slot_<<" ibin = "<<ibin<<std::endl;
-  }
+  assert(nstubs==outervmstubs_.getEntries(bx_,(ireg,ibin)));
+  //if (nstubs!=outervmstubs_.getEntries(bx_,(ireg,ibin))) {
+  //  std::cout << "ERROR number of stubs not correct " << nstubs << " " << outervmstubs_.getEntries(bx_,(ireg,ibin)) << "ireg = "<<ireg<<" next = " << next<< " slot_ = "<<slot_<<" ibin = "<<ibin<<std::endl;
+  //}
 
   const auto& outervmstub = outervmstubs_.read_mem(bx_,stubadd);
 
@@ -119,7 +120,7 @@ void write(STUBID stubs) {
   const auto& finephi = outervmstub.getFinePhi();
   const auto& rzbin = (next, outervmstub.getFineZ()); 
 
-  std::cout << "finephi : "<<finephi<<std::endl;
+  //std::cout << "finephi : "<<finephi<<std::endl;
 
   ap_uint<2> iAllstub=1; //FIXME need to be template parameter
   ap_uint<8> outerfinephi = ((iAllstub, ireg), finephi);
@@ -131,8 +132,8 @@ void write(STUBID stubs) {
   int idphi =  outerfinephi - innerfinephi_;
   bool inrange = abs(idphi) < (1<<(nbitsfinephidiff));
 
-  std::cout << "TEUnit outerfinephi innerfinephi idphi inrange : " << outerfinephi<<" "<<innerfinephi_ 
-	    << " " << idphi<<" "<<inrange<<std::endl;
+  //std::cout << "TEUnit outerfinephi innerfinephi idphi inrange : " << outerfinephi<<" "<<innerfinephi_ 
+  //	    << " " << idphi<<" "<<inrange<<std::endl;
 
   if (idphi<0) idphi+=(1<<nbitsfinephidiff);
 
@@ -144,17 +145,17 @@ void write(STUBID stubs) {
     auto ptinnerindex = (idphi, innerbend);
     auto ptouterindex = (idphi, outerbend);
     
-    std::cout << "TEUnit *** Will lookup ptinnerindex ptouterindex inrange innerLUT outerLUT: "
-	      <<ptinnerindex<<" "<<ptouterindex<<" "<<inrange<<" "
-	      << ptinnerLUT[ptinnerindex] << " " << ptouterLUT[ptouterindex]<<std::endl;
+    //std::cout << "TEUnit *** Will lookup ptinnerindex ptouterindex inrange innerLUT outerLUT: "
+    //	      <<ptinnerindex<<" "<<ptouterindex<<" "<<inrange<<" "
+    //	      << ptinnerLUT[ptinnerindex] << " " << ptouterLUT[ptouterindex]<<std::endl;
     if (inrange && ptinnerLUT[ptinnerindex] && ptouterLUT[ptouterindex]){
-      std::cout << "TEUnit $$$$ Found valid stub pair outer vmstub index : " <<outervmstub.getIndex() 
-		<< " outervmstub = "<<outervmstub.raw().to_string(2)<<std::endl;
+      //std::cout << "TEUnit $$$$ Found valid stub pair outer vmstub index : " <<outervmstub.getIndex() 
+      //		<< " outervmstub = "<<outervmstub.raw().to_string(2)<<std::endl;
       write( (outervmstub.getIndex(), innerstub_.raw()) );
     }
   }
     
-  std::cout << "Done with TEUnit step" << std::endl;
+  //std::cout << "Done with TEUnit step" << std::endl;
 
   istub_++;
   if(istub_==nstubs) {
@@ -162,6 +163,11 @@ void write(STUBID stubs) {
     memindex_++;
     if (memindex_==0) {
       idle_=true;
+    } else {
+      ((ireg,next),nstubs)=memstubs_.range((memindex_*8)+7,memindex_*8);
+      if (nstubs==0) {
+	idle_=true;
+      }
     }
   } // if(buffernotempty)
   return;
@@ -178,7 +184,7 @@ void write(STUBID stubs) {
  ap_uint<3> rzbindiffmax_;
 
  ap_uint<8> innerfinephi_;
- AllStub<BARRELPS> innerstub_; 
+ AllStubInner<BARRELPS> innerstub_; 
 
  const VMStubTEOuterMemoryCM<VMSTEType> &outervmstubs_;
 

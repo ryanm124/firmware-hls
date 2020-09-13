@@ -34,7 +34,7 @@ int main()
 
   ///////////////////////////
   // input memories
-  static AllStubMemory<BARRELPS> innerStubs[2];
+  static AllStubInnerMemory<BARRELPS> innerStubs[2];
   static AllStubMemory<BARRELPS> outerStubs;
   static VMStubTEOuterMemoryCM<BARRELPS> outervmStubs;
 
@@ -141,8 +141,8 @@ int main()
     cout << "Event: " << dec << ievt << endl;
 
     // read event and write to memories
-    writeMemFromFile<AllStubMemory<BARRELPS> >(innerStubs[0], fin_innerStubs0, ievt);
-    writeMemFromFile<AllStubMemory<BARRELPS> >(innerStubs[1], fin_innerStubs1, ievt);
+    writeMemFromFile<AllStubInnerMemory<BARRELPS> >(innerStubs[0], fin_innerStubs0, ievt);
+    writeMemFromFile<AllStubInnerMemory<BARRELPS> >(innerStubs[1], fin_innerStubs1, ievt);
     writeMemFromFile<AllStubMemory<BARRELPS> >(outerStubs, fin_outerStubs, ievt);
     cout << "Will read vmstubs"<<endl;
     writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS> >(outervmStubs, fin_outervmstubs, ievt);
