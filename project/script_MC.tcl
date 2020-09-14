@@ -22,7 +22,8 @@ add_files -tb ../emData/MC/
 
 csim_design -compiler gcc -mflags "-j8"
 csynth_design
-cosim_design 
+cosim_design -trace_level all -rtl vhdl
+# Start Vivado from the vhdl dir: xsim MatchCalculatorTop -gui -wdb MatchCalculatorTop.wdb -view MatchCalculatorTop.wcfg
 export_design -format ip_catalog
 # Adding "-flow impl" runs full Vivado implementation, providing accurate resource use numbers (very slow).
 #export_design -format ip_catalog -flow impl

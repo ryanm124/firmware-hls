@@ -68,13 +68,18 @@ architecture behavior of tb_top_tf is
                                                                        "../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC24n1_04.dat" );
   constant FILE_IN_AS        : string := "../../../../../../../emData/MemPrints/Stubs/AllStubs_AS_L3PHICn6_04.dat"; --! Input file
   constant FILE_OUT          : string := "../../../../../output.txt"; --! Output file
-  constant INST_TOP_TF       : integer := 1;          --! Instantiate top_tf or other
+  constant INST_TOP_TF       : integer := 1;          --! Instantiate top_tf or others
+                                                      --! 0: Generated prmemc chain
+                                                      --! 1: top_tf
+                                                      --! 2: top_tf_full
   constant CLK_PERIOD        : time    := 4.16667 ns; --! 240 MHz
   constant DEBUG             : boolean := true;       --! Debug off/on
   constant VMSME_DELAY       : integer := 1-1;        --! Number of BX delays (can be written early 8 pages)
---constant AS_DELAY          : integer := 2-1;        --! Number of BX delays (can be written early 8 pages)
-  constant AS_DELAY          : integer := -1;         --! Number of BX delays (can be written early 8 pages)
+  constant AS_DELAY          : integer := 2-1;        --! Number of BX delays (can be written early 8 pages)
   constant MEM_READ_DELAY    : integer := 2;          --! Number of memory read delay
+  constant FILE_OUT_VMP      : string := "../../../../../output_vmp.txt"; --! Output file for VMP
+  constant FILE_OUT_AP       : string := "../../../../../output_ap.txt";  --! Output file for AP
+  constant FILE_OUT_CM       : string := "../../../../../output_cm.txt";  --! Output file for CM
 
   -- ########################### Signals ###########################
   -- ### UUT signals ###
@@ -265,10 +270,10 @@ begin
             if v_bin_cnt(cp)<=N_MEM_BINS-1 then -- Valid bin
               VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(cp) <=                            std_logic_vector(to_unsigned((v_bin_cnt(cp)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS)), VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(0)'length));
               VMSME_L3PHIC17to24n1_dataarray_data_V_din(cp)       <= VMSME_L3PHIC17to24n1_data_arr(cp)(v_bx_cnt-VMSME_DELAY, (v_bin_cnt(cp)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS))) (VMSME_L3PHIC17to24n1_dataarray_data_V_din(0)'length-1 downto 0);
-if (DEBUG=true and ((v_bx_cnt=9 and cp=6) or (v_bx_cnt=23 and cp=4))) then write(v_line_in, string'("v_bx_cnt: ")); write(v_line_in, v_bx_cnt); write(v_line_in, string'(";   cp: ")); write(v_line_in, cp); writeline(output, v_line_in); end if;
-if (DEBUG=true and ((v_bx_cnt=9 and cp=6) or (v_bx_cnt=23 and cp=4))) then write(v_line_in, string'("VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(cp): ")); write(v_line_in, ((v_bin_cnt(cp)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS)))); writeline(output, v_line_in); end if;
-if (DEBUG=true and ((v_bx_cnt=9 and cp=6) or (v_bx_cnt=23 and cp=4))) then write(v_line_in, string'("VMSME_L3PHIC17to24n1_dataarray_data_V_din(cp): ")); hwrite(v_line_in, VMSME_L3PHIC17to24n1_data_arr(cp)(v_bx_cnt-VMSME_DELAY, (v_bin_cnt(cp)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS))) (VMSME_L3PHIC17to24n1_dataarray_data_V_din(0)'length-1 downto 0)); writeline(output, v_line_in); end if;
-if (DEBUG=true and ((v_bx_cnt=9 and cp=6) or (v_bx_cnt=23 and cp=4))) then write(v_line_in, string'("v_VMSME_n_entries_bin_cnt(cp): ")); write(v_line_in, v_VMSME_n_entries_bin_cnt(cp)); write(v_line_in, string'(";   v_VMSME_n_entries_bin(cp): ")); write(v_line_in, v_VMSME_n_entries_bin(cp)); write(v_line_in, string'(";   v_bin_cnt(cp): ")); write(v_line_in, v_bin_cnt(cp)); writeline(output, v_line_in); end if;
+              if (DEBUG=true and ((v_bx_cnt=9 and cp=6) or (v_bx_cnt=23 and cp=4))) then write(v_line_in, string'("v_bx_cnt: ")); write(v_line_in, v_bx_cnt); write(v_line_in, string'(";   cp: ")); write(v_line_in, cp); writeline(output, v_line_in); end if;
+              if (DEBUG=true and ((v_bx_cnt=9 and cp=6) or (v_bx_cnt=23 and cp=4))) then write(v_line_in, string'("VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr(cp): ")); write(v_line_in, ((v_bin_cnt(cp)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS)))); writeline(output, v_line_in); end if;
+              if (DEBUG=true and ((v_bx_cnt=9 and cp=6) or (v_bx_cnt=23 and cp=4))) then write(v_line_in, string'("VMSME_L3PHIC17to24n1_dataarray_data_V_din(cp): ")); hwrite(v_line_in, VMSME_L3PHIC17to24n1_data_arr(cp)(v_bx_cnt-VMSME_DELAY, (v_bin_cnt(cp)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS))) (VMSME_L3PHIC17to24n1_dataarray_data_V_din(0)'length-1 downto 0)); writeline(output, v_line_in); end if;
+              if (DEBUG=true and ((v_bx_cnt=9 and cp=6) or (v_bx_cnt=23 and cp=4))) then write(v_line_in, string'("v_VMSME_n_entries_bin_cnt(cp): ")); write(v_line_in, v_VMSME_n_entries_bin_cnt(cp)); write(v_line_in, string'(";   v_VMSME_n_entries_bin(cp): ")); write(v_line_in, v_VMSME_n_entries_bin(cp)); write(v_line_in, string'(";   v_bin_cnt(cp): ")); write(v_line_in, v_bin_cnt(cp)); writeline(output, v_line_in); end if;
             end if;
             --if DEBUG=true then assert (addr>1 or v_bx_cnt>0) report "addr = " & integer'image(addr) & ";   cp = " & integer'image(addr) & ";   v_bin_cnt(0) = " & integer'image(v_bin_cnt(0)) & ";   v_VMSME_n_entries_bin_cnt(cp) = " & integer'image(v_VMSME_n_entries_bin_cnt(cp)) & ";   waddr = " & integer'image((v_bin_cnt(0)*N_ENTRIES_PER_MEM_BINS+v_VMSME_n_entries_bin_cnt(cp)) + (PAGE_OFFSET*((v_page_cnt8-VMSME_DELAY) mod N_MEM_BINS))) severity note; end if;
             if v_VMSME_n_entries_bin_cnt(cp)>=v_VMSME_n_entries_bin(cp)-1 then -- End of bin entries
@@ -424,6 +429,51 @@ if (DEBUG=true and ((v_bx_cnt=9 and cp=6) or (v_bx_cnt=23 and cp=4))) then write
         AS_L3PHICn4_dataarray_data_V_din       => AS_L3PHICn4_dataarray_data_V_din,
         AS_L3PHICn4_nentries_V_we  => AS_L3PHICn4_nentries_V_we,
         AS_L3PHICn4_nentries_V_din => AS_L3PHICn4_nentries_V_din,
+        -- FullMatches output
+        FM_L1L2XX_L3PHIC_dataarray_data_V_enb      => FM_L1L2XX_L3PHIC_dataarray_data_V_enb, 
+        FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr => FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr,
+        FM_L1L2XX_L3PHIC_dataarray_data_V_dout     => FM_L1L2XX_L3PHIC_dataarray_data_V_dout,
+        FM_L1L2XX_L3PHIC_nentries_V_dout            => FM_L1L2XX_L3PHIC_nentries_V_dout,
+        FM_L5L6XX_L3PHIC_dataarray_data_V_enb      => FM_L5L6XX_L3PHIC_dataarray_data_V_enb,
+        FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr => FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr,
+        FM_L5L6XX_L3PHIC_dataarray_data_V_dout     => FM_L5L6XX_L3PHIC_dataarray_data_V_dout,
+        FM_L5L6XX_L3PHIC_nentries_V_dout            => FM_L5L6XX_L3PHIC_nentries_V_dout,
+        -- MatchCalculator outputs
+        MC_bx_out     => MC_bx_out,
+        MC_bx_out_vld => MC_bx_out_vld,
+        MC_done       => MC_done );
+  end generate;
+
+  i_top_tf_full : if INST_TOP_TF = 2 generate
+    uut : entity work.top_tf--_full
+      port map(
+        clk       => clk,
+        reset     => reset,
+        PR_start  => PR_start,
+        PR_idle   => PR_idle,
+        PR_ready  => PR_ready,
+        PR_bx_in  => PR_bx_in,
+        -- For TrackletProjections memories
+        TPROJ_L3PHIC_dataarray_data_V_wea       => TPROJ_L3PHIC_dataarray_data_V_wea,
+        TPROJ_L3PHIC_dataarray_data_V_writeaddr => TPROJ_L3PHIC_dataarray_data_V_writeaddr,
+        TPROJ_L3PHIC_dataarray_data_V_din       => TPROJ_L3PHIC_dataarray_data_V_din,
+        TPROJ_L3PHIC_nentries_V_we  => TPROJ_L3PHIC_nentries_V_we,
+        TPROJ_L3PHIC_nentries_V_din => TPROJ_L3PHIC_nentries_V_din,
+        -- For VMStubME memories
+        VMSME_L3PHIC17to24n1_dataarray_data_V_wea       => VMSME_L3PHIC17to24n1_dataarray_data_V_wea,
+        VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr => VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr,
+        VMSME_L3PHIC17to24n1_dataarray_data_V_din       => VMSME_L3PHIC17to24n1_dataarray_data_V_din,
+        VMSME_L3PHIC17to24n1_nentries_V_we  => VMSME_L3PHIC17to24n1_nentries_V_we,
+        VMSME_L3PHIC17to24n1_nentries_V_din => VMSME_L3PHIC17to24n1_nentries_V_din,
+        -- For AllStubs memories
+        AS_L3PHICn4_dataarray_data_V_wea       => AS_L3PHICn4_dataarray_data_V_wea,
+        AS_L3PHICn4_dataarray_data_V_writeaddr => AS_L3PHICn4_dataarray_data_V_writeaddr,
+        AS_L3PHICn4_dataarray_data_V_din       => AS_L3PHICn4_dataarray_data_V_din,
+        AS_L3PHICn4_nentries_V_we  => AS_L3PHICn4_nentries_V_we,
+        AS_L3PHICn4_nentries_V_din => AS_L3PHICn4_nentries_V_din,
+-- VMP
+-- AP
+-- CM
         -- FullMatches output
         FM_L1L2XX_L3PHIC_dataarray_data_V_enb      => FM_L1L2XX_L3PHIC_dataarray_data_V_enb, 
         FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr => FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr,
