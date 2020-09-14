@@ -19,10 +19,10 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
   typedef ap_uint<kNBits_MemAddrBinned> NSTUBS;
   typedef ap_uint<TrackletEngineUnitBase::kNBitsBuffer> INDEX;
 
- TrackletEngineUnit(const VMStubTEOuterMemoryCM<VMSTEType> &outervmstubs): 
-  outervmstubs_(outervmstubs) {
+ TrackletEngineUnit() {
     idle_ = true;
   }
+
 
  inline void init(BXType bxin, 
 		  AllStubInner<BARRELPS>::AllStubInnerData innerstub,
@@ -78,8 +78,9 @@ void write(STUBID stubs) {
   stubids_[writeindex_++]=stubs;
 }
 
- inline void step(const ap_uint<1> ptinnerLUT[256], 
-		  const ap_uint<1> ptouterLUT[256]) {
+ inline void step( const VMStubTEOuterMemoryCM<VMSTEType> &outervmstubs,
+		   const ap_uint<1> ptinnerLUT[256], 
+		   const ap_uint<1> ptouterLUT[256]) {
 #pragma HLS inline
 #pragma HLS PIPELINE II=1
 #pragma HLS dependence variable=istub intra WAR true
@@ -103,9 +104,11 @@ void write(STUBID stubs) {
 
   ap_uint<12> stubadd( ((ireg, ibin),istub_) );
 
-  assert(nstubs==outervmstubs_.getEntries(bx_,(ireg,ibin)));
+#ifndef __SYNTHESIS__
+  assert(nstubs==outervmstubs.getEntries(bx_,(ireg,ibin)));
+#endif
 
-  const auto& outervmstub = outervmstubs_.read_mem(bx_,stubadd);
+  const auto& outervmstub = outervmstubs.read_mem(bx_,stubadd);
 
   const auto& finephi = outervmstub.getFinePhi();
   const auto& rzbin = (next, outervmstub.getFineZ()); 
@@ -161,8 +164,6 @@ void write(STUBID stubs) {
 
 
  AllStubInner<BARRELPS> innerstub_; 
-
- const VMStubTEOuterMemoryCM<VMSTEType> &outervmstubs_;
 
  INDEX writeindex_;
  INDEX readindex_;

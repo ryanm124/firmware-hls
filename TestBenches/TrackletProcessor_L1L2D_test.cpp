@@ -148,12 +148,19 @@ int main()
     BXType bx = ievt;
 
     // Unit Under Test
-    TrackletProcessor<TC::L1L2, TC::D, 2, 6, BARRELPS, BARRELPS, 2, 108>(bx, innervmtable, useregion, stubptinner, stubptouter, innerStubs, &outerStubs, &outervmStubs,
-       &tpar,
-       tproj_barrel_ps,
-       tproj_barrel_2s,
-       tproj_disk
-    );
+    TrackletProcessor_L1L2D(bx, 
+			    innervmtable, 
+			    useregion, 
+			    stubptinner, 
+			    stubptouter, 
+			    innerStubs, 
+			    &outerStubs, 
+			    &outervmStubs,
+			    &tpar,
+			    tproj_barrel_ps,
+			    tproj_barrel_2s,
+			    tproj_disk
+			    );
 
     bool truncate;
 
@@ -210,6 +217,7 @@ int main()
 
   } // end of event loop
 
+  cout << "Number of errors : "<<err<<endl;
   return err;
 
 }
