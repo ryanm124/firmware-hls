@@ -12,8 +12,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 void TrackletProcessor_L1L2D(
     const BXType bx,
-    const AllStubMemory<BARRELPS> innerStubs[2],
+    const ap_uint<10> lut[2048],
+    const ap_uint<8> regionlut[2048],
+    const ap_uint<1> stubptinnerlut[256],
+    const ap_uint<1> stubptouterlut[256],
+    const AllStubInnerMemory<BARRELPS> innerStubs[2],
     const AllStubMemory<BARRELPS>* outerStubs,
+    const VMStubTEOuterMemoryCM<BARRELPS>* outerVMStubs,
     TrackletParameterMemory * trackletParameters,
     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
@@ -22,30 +27,31 @@ void TrackletProcessor_L1L2D(
 #pragma HLS inline recursive
 #pragma HLS resource variable=innerStubs.get_mem() latency=2
 #pragma HLS resource variable=outerStubs.get_mem() latency=2
-#pragma HLS resource variable=stubPairs.get_mem() latency=2
 #pragma HLS array_partition variable=projout_barrel_ps complete
 #pragma HLS array_partition variable=projout_barrel_2s complete
 #pragma HLS array_partition variable=projout_disk complete
-/*
-TC_L1L2D: TrackletProcessor<
-  TC::L1L2,
-  TC::D,
-  InnerRegion<TC::L1L2>(),
-  OuterRegion<TC::L1L2>(),
-  NASMemInner<TC::L1L2, TC::D>(),
-  NASMemOuter<TC::L1L2, TC::D>(),
-  NSPMem<TC::L1L2, TC::D>(),
-  kMaxProc
- >(
-    bx,
-    innerStubs,
-    outerStubs,
-    trackletParameters,
-    projout_barrel_ps,
-    projout_barrel_2s,
-    projout_disk
-  );
-*/
+
+ TP_L1L2D: TrackletProcessor<TC::L1L2, 
+			     TC::D, 
+			     2, 
+			     6, 
+			     BARRELPS, 
+			     BARRELPS, 
+			     2, 
+			     108>(bx, 
+				  lut, 
+				  regionlut, 
+				  stubptinnerlut, 
+				  stubptouterlut, 
+				  innerStubs, 
+				  outerStubs, 
+				  outerVMStubs,
+				  trackletParameters,
+				  projout_barrel_ps,
+				  projout_barrel_2s,
+				  projout_disk
+				  );
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////

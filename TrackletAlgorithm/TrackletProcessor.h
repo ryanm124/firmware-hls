@@ -182,18 +182,19 @@ template<TC::seed Seed, TC::itc iTC> constexpr uint16_t ASOuterMask();
 template<TC::seed Seed, TC::itc iTC> constexpr uint32_t TPROJMaskBarrel();
 template<TC::seed Seed, TC::itc iTC> constexpr uint32_t TPROJMaskDisk();
 
-/*
-void TrackletCalculator_L1L2D(
-    const BXType bx,
-    const AllStubInnerMemory<BARRELPS> innerStubs[2],
-    const AllStubMemory<BARRELPS> outerStubs[1],
-    const StubPairMemory stubPairs[13],
-    TrackletParameterMemory * trackletParameters,
-    TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TP::N_PROJOUT_BARRELPS],
-    TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TP::N_PROJOUT_BARREL2S],
-    TrackletProjectionMemory<DISK> projout_disk[TP::N_PROJOUT_DISK]
-);
-*/
+void TrackletProcessor_L1L2D(const BXType bx,
+			     const ap_uint<10> lut[2048],
+			     const ap_uint<8> regionlut[2048],
+			     const ap_uint<1> stubptinnerlut[256],
+			     const ap_uint<1> stubptouterlut[256],
+			     const AllStubInnerMemory<BARRELPS> innerStubs[2],
+			     const AllStubMemory<BARRELPS>* outerStubs,
+			     const VMStubTEOuterMemoryCM<BARRELPS>* outerVMStubs,
+			     TrackletParameterMemory * trackletParameters,
+			     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
+			     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
+			     TrackletProjectionMemory<DISK> projout_disk[TC::N_PROJOUT_DISK]
+			     );
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -559,13 +560,12 @@ TrackletProcessor(
 #pragma HLS unroll
     tebuffer[i].reset();
 
-  TrackletEngineUnit<BARRELPS> tmpteunit(*outerVMStubs);
+  TrackletEngineUnit<BARRELPS> teunits[NTEUnits];
 
-  std::vector<TrackletEngineUnit<BARRELPS> > teunits(NTEUnits,tmpteunit);
-
- reset_teunits: for (unsigned i = 0; i < NTEUnits; i++)
+ reset_teunits: for (unsigned i = 0; i < NTEUnits; i++) {
 #pragma HLS unroll
     teunits[i].reset();
+  }
 
   TrackletProjection<BARRELPS>::TProjTrackletIndex trackletIndex = 0;
 
@@ -633,7 +633,7 @@ TrackletProcessor(
 
   step_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
 #pragma HLS unroll
-      teunits[k].step(stubptinnerlut,stubptouterlut);
+      teunits[k].step(*outerVMStubs,stubptinnerlut,stubptouterlut);
     }
 
     //
@@ -689,7 +689,9 @@ TrackletProcessor(
 	    unsigned ibin=start+next;
 	    ap_uint<4> numstubs=outerVMStubs->getEntries(bx,(ap_uint<3>(ireg),ap_uint<3>(ibin)));
 	    if (numstubs!=0){
+#ifndef __SYNTHESIS__
 	      assert(nmem!=8);
+#endif
 	      nstubs.range(nmem*8+7,nmem*8)=((ap_uint<3>(ireg),next),numstubs);
 	      nmem++;
 	    }
