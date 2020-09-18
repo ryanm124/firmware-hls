@@ -34,6 +34,7 @@ void TrackletProcessor_L1L2D(
 #pragma HLS resource variable=outerVMStubs[3].get_mem() latency=2
 #pragma HLS resource variable=outerVMStubs[4].get_mem() latency=2
 #pragma HLS resource variable=outerVMStubs[5].get_mem() latency=2
+#pragma HLS array_partition variable=outerVMStubs complete dim=1
 #pragma HLS array_partition variable=projout_barrel_ps complete
 #pragma HLS array_partition variable=projout_barrel_2s complete
 #pragma HLS array_partition variable=projout_disk complete
