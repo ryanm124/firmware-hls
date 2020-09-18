@@ -40,8 +40,10 @@ end tb_top_tf;
 --! @brief TB
 architecture behavior of tb_top_tf is
   -- ########################### Types ###########################
-  type t_str_array_VMSME is array(natural range <>) of string(1 to 79); --! String array
+  type t_str_array_VMSME is array(natural range <>) of string(1 to 79);  --! String array
   type t_str_array_TPROJ is array(natural range <>) of string(1 to 103); --! String array
+  type t_str_array_VMP   is array(natural range <>) of string(1 to 31);  --! String array
+  type t_str_array_CM    is array(natural range <>) of string(1 to 30);  --! String array
   type t_myarray_1d_1d_int    is array(natural range <>) of t_myarray_1d_int(0 to MAX_EVENTS-1);                      --! 1x1D array of int
   type t_myarray_1d_2d_int    is array(natural range <>) of t_myarray_2d_int(0 to MAX_EVENTS-1,0 to N_MEM_BINS-1);    --! 1x2D array of int
   type t_myarray_1d_2d_slv_2p is array(natural range <>) of t_myarray_2d_slv(0 to MAX_EVENTS-1,0 to 2*PAGE_OFFSET-1); --! 1x2D array of slv
@@ -68,7 +70,7 @@ architecture behavior of tb_top_tf is
                                                                        "../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC24n1_04.dat" );
   constant FILE_IN_AS        : string := "../../../../../../../emData/MemPrints/Stubs/AllStubs_AS_L3PHICn6_04.dat"; --! Input file
   constant FILE_OUT          : string := "../../../../../output.txt"; --! Output file
-  constant INST_TOP_TF       : integer := 1;          --! Instantiate top_tf or others
+  constant INST_TOP_TF       : integer := 2;          --! Instantiate top_tf or others
                                                       --! 0: Generated prmemc chain
                                                       --! 1: top_tf
                                                       --! 2: top_tf_full
@@ -77,9 +79,23 @@ architecture behavior of tb_top_tf is
   constant VMSME_DELAY       : integer := 1-1;        --! Number of BX delays (can be written early 8 pages)
   constant AS_DELAY          : integer := 2-1;        --! Number of BX delays (can be written early 8 pages)
   constant MEM_READ_DELAY    : integer := 2;          --! Number of memory read delay
-  constant FILE_OUT_VMP      : string := "../../../../../output_vmp.txt"; --! Output file for VMP
+  constant FILE_OUT_VMP      : t_str_array_VMP(0 to N_ME_IN_CHAIN-1) := ("../../../../../output_vmp17.txt", --! Output file for VMP
+                                                                         "../../../../../output_vmp18.txt",
+                                                                         "../../../../../output_vmp19.txt",
+                                                                         "../../../../../output_vmp20.txt",
+                                                                         "../../../../../output_vmp21.txt",
+                                                                         "../../../../../output_vmp22.txt",
+                                                                         "../../../../../output_vmp23.txt",
+                                                                         "../../../../../output_vmp24.txt" );
   constant FILE_OUT_AP       : string := "../../../../../output_ap.txt";  --! Output file for AP
-  constant FILE_OUT_CM       : string := "../../../../../output_cm.txt";  --! Output file for CM
+  constant FILE_OUT_CM       : t_str_array_CM(0 to N_ME_IN_CHAIN-1) :=  ("../../../../../output_cm17.txt", --! Output file for CM
+                                                                         "../../../../../output_cm18.txt",
+                                                                         "../../../../../output_cm19.txt",
+                                                                         "../../../../../output_cm20.txt",
+                                                                         "../../../../../output_cm21.txt",
+                                                                         "../../../../../output_cm22.txt",
+                                                                         "../../../../../output_cm23.txt",
+                                                                         "../../../../../output_cm24.txt" );
 
   -- ########################### Signals ###########################
   -- ### UUT signals ###
@@ -131,6 +147,31 @@ architecture behavior of tb_top_tf is
   signal bx_cnt                             : integer := 0; -- BX counter
   signal page_cnt2                          : integer := 0; -- Page counter
   signal page_cnt8                          : integer := 0; -- Page counter
+  -- ### Signals for top_tf_full only (VHDL does not support conditional signal declaration) ###
+  -- ProjectionRouter outputs
+  signal PR_done       : std_logic := '0';
+  signal PR_bx_out     : std_logic_vector(2 downto 0);
+  signal PR_bx_out_vld : std_logic;
+  -- AllProjection output
+  signal AP_L3PHIC_dataarray_data_V_enb      : std_logic;
+  signal AP_L3PHIC_dataarray_data_V_readaddr : std_logic_vector(9 downto 0);
+  signal AP_L3PHIC_dataarray_data_V_dout     : std_logic_vector(59 downto 0);
+  signal AP_L3PHIC_nentries_V_dout : t_myarray8_8b;
+  -- VMProjection output
+  signal VMPROJ_L3PHIC17to24_dataarray_data_V_enb      : t_myarray8_1b;
+  signal VMPROJ_L3PHIC17to24_dataarray_data_V_readaddr : t_myarray8_8b;
+  signal VMPROJ_L3PHIC17to24_dataarray_data_V_dout     : t_myarray8_21b;
+  signal VMPROJ_L3PHIC17to24_nentries_V_dout : t_myarray2_8_8b;
+  -- MatchEngine output
+  signal ME_bx_out     : t_myarray8_3b;
+  signal ME_bx_out_vld : t_myarray8_1b;
+  signal ME_all_done   : std_logic := '0';
+  -- CandidateMatch output
+  signal CM_L3PHIC17to24_dataarray_data_V_enb      : t_myarray8_1b;
+  signal CM_L3PHIC17to24_dataarray_data_V_readaddr : t_myarray8_8b;
+  signal CM_L3PHIC17to24_dataarray_data_V_dout     : t_myarray8_14b;
+  signal CM_L3PHIC17to24_nentries_V_dout : t_myarray2_8_8b;
+
 
 begin
 
@@ -367,7 +408,7 @@ begin
           --write(v_line, string'("0x"), right, 4); hwrite(v_line, std_logic_vector(to_unsigned(addr,10)), right, 3);
           write(v_line, string'("0b"), right, 5);   write(v_line, reset, right, 1);
           write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L1L2XX_L3PHIC_nentries_V_dout(0), right, 2);
-          write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L1L2XX_L3PHIC_nentries_V_dout(1), right, 2); 
+          write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L1L2XX_L3PHIC_nentries_V_dout(1), right, 2);
           write(v_line, string'("0b"), right, 3);   write(v_line, v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-1), right, 1);
           write(v_line, string'("0x"), right, 7);  hwrite(v_line, std_logic_vector(unsigned(FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr)-to_unsigned(MEM_READ_DELAY,FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr'length)), right, 2);
           if (v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-1)='1') then -- Only write if enable (delayed): Switch off in complete read out mode
@@ -398,6 +439,26 @@ begin
     file_close(file_out);
     assert false report "Simulation finished!" severity FAILURE;
   end process write_result;
+  --! @brief TextIO process for writting the output ---------------------------------------
+  write_result_CM : process
+    variable varr_CM_L3PHIC17to24_dataarray_data_V_enb_d : t_myarray8_2b := (others => (others => '0')); -- Delay array
+  begin
+    wait until rising_edge(ME_all_done); -- Wait for first result
+    l_BX : for v_bx_cnt in 0 to MAX_EVENTS-1 loop -- 0 to 99
+      l_addr : for addr in 0 to MAX_ENTRIES-1+MEM_READ_DELAY loop -- 0 to 109
+-- put all of this in the copies loop below
+        write_emData_2p(FILE_OUT_CM(0), MEM_READ_DELAY, "CM_L3PHIC17to24_dataarray_data_V_dout(0)", CM_L3PHIC17to24_dataarray_data_V_dout(0),
+                        varr_CM_L3PHIC17to24_dataarray_data_V_enb_d(0)(MEM_READ_DELAY-1), CM_L3PHIC17to24_dataarray_data_V_readaddr(0),
+                        CM_L3PHIC17to24_nentries_V_dout(0)(0), CM_L3PHIC17to24_nentries_V_dout(1)(0),
+                        v_bx_cnt, reset, ME_all_done, ME_bx_out_vld(0), ME_bx_out(0));
+        l_copies_CM : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7
+          varr_CM_L3PHIC17to24_dataarray_data_V_enb_d(cp) := varr_CM_L3PHIC17to24_dataarray_data_V_enb_d(cp)(MEM_READ_DELAY-2 downto 0) & CM_L3PHIC17to24_dataarray_data_V_enb(cp); -- Required delay
+        end loop l_copies_CM;
+        wait for CLK_PERIOD; -- Main time control
+      end loop l_addr;
+    end loop l_BX;
+    wait;
+  end process write_result_CM;
 
 
   -- ########################### Instantiation ###########################
@@ -411,19 +472,19 @@ begin
         PR_idle   => PR_idle,
         PR_ready  => PR_ready,
         PR_bx_in  => PR_bx_in,
-        -- For TrackletProjections memories
+        -- TrackletProjections input
         TPROJ_L3PHIC_dataarray_data_V_wea       => TPROJ_L3PHIC_dataarray_data_V_wea,
         TPROJ_L3PHIC_dataarray_data_V_writeaddr => TPROJ_L3PHIC_dataarray_data_V_writeaddr,
         TPROJ_L3PHIC_dataarray_data_V_din       => TPROJ_L3PHIC_dataarray_data_V_din,
         TPROJ_L3PHIC_nentries_V_we  => TPROJ_L3PHIC_nentries_V_we,
         TPROJ_L3PHIC_nentries_V_din => TPROJ_L3PHIC_nentries_V_din,
-        -- For VMStubME memories
+        -- VMStubsME input
         VMSME_L3PHIC17to24n1_dataarray_data_V_wea       => VMSME_L3PHIC17to24n1_dataarray_data_V_wea,
         VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr => VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr,
         VMSME_L3PHIC17to24n1_dataarray_data_V_din       => VMSME_L3PHIC17to24n1_dataarray_data_V_din,
         VMSME_L3PHIC17to24n1_nentries_V_we  => VMSME_L3PHIC17to24n1_nentries_V_we,
         VMSME_L3PHIC17to24n1_nentries_V_din => VMSME_L3PHIC17to24n1_nentries_V_din,
-        -- For AllStubs memories
+        -- AllStubs input
         AS_L3PHICn4_dataarray_data_V_wea       => AS_L3PHICn4_dataarray_data_V_wea,
         AS_L3PHICn4_dataarray_data_V_writeaddr => AS_L3PHICn4_dataarray_data_V_writeaddr,
         AS_L3PHICn4_dataarray_data_V_din       => AS_L3PHICn4_dataarray_data_V_din,
@@ -438,14 +499,14 @@ begin
         FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr => FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr,
         FM_L5L6XX_L3PHIC_dataarray_data_V_dout     => FM_L5L6XX_L3PHIC_dataarray_data_V_dout,
         FM_L5L6XX_L3PHIC_nentries_V_dout            => FM_L5L6XX_L3PHIC_nentries_V_dout,
-        -- MatchCalculator outputs
+        -- MatchCalculator output
         MC_bx_out     => MC_bx_out,
         MC_bx_out_vld => MC_bx_out_vld,
         MC_done       => MC_done );
   end generate;
 
   i_top_tf_full : if INST_TOP_TF = 2 generate
-    uut : entity work.top_tf--_full
+    uut : entity work.top_tf_full
       port map(
         clk       => clk,
         reset     => reset,
@@ -453,37 +514,57 @@ begin
         PR_idle   => PR_idle,
         PR_ready  => PR_ready,
         PR_bx_in  => PR_bx_in,
-        -- For TrackletProjections memories
+        -- TrackletProjections input
         TPROJ_L3PHIC_dataarray_data_V_wea       => TPROJ_L3PHIC_dataarray_data_V_wea,
         TPROJ_L3PHIC_dataarray_data_V_writeaddr => TPROJ_L3PHIC_dataarray_data_V_writeaddr,
         TPROJ_L3PHIC_dataarray_data_V_din       => TPROJ_L3PHIC_dataarray_data_V_din,
         TPROJ_L3PHIC_nentries_V_we  => TPROJ_L3PHIC_nentries_V_we,
         TPROJ_L3PHIC_nentries_V_din => TPROJ_L3PHIC_nentries_V_din,
-        -- For VMStubME memories
+        -- VMStubsME input
         VMSME_L3PHIC17to24n1_dataarray_data_V_wea       => VMSME_L3PHIC17to24n1_dataarray_data_V_wea,
         VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr => VMSME_L3PHIC17to24n1_dataarray_data_V_writeaddr,
         VMSME_L3PHIC17to24n1_dataarray_data_V_din       => VMSME_L3PHIC17to24n1_dataarray_data_V_din,
         VMSME_L3PHIC17to24n1_nentries_V_we  => VMSME_L3PHIC17to24n1_nentries_V_we,
         VMSME_L3PHIC17to24n1_nentries_V_din => VMSME_L3PHIC17to24n1_nentries_V_din,
-        -- For AllStubs memories
+        -- AllStubs input
         AS_L3PHICn4_dataarray_data_V_wea       => AS_L3PHICn4_dataarray_data_V_wea,
         AS_L3PHICn4_dataarray_data_V_writeaddr => AS_L3PHICn4_dataarray_data_V_writeaddr,
         AS_L3PHICn4_dataarray_data_V_din       => AS_L3PHICn4_dataarray_data_V_din,
         AS_L3PHICn4_nentries_V_we  => AS_L3PHICn4_nentries_V_we,
         AS_L3PHICn4_nentries_V_din => AS_L3PHICn4_nentries_V_din,
--- VMP
--- AP
--- CM
+        -- VMProjection output
+        VMPROJ_L3PHIC17to24_dataarray_data_V_enb      => VMPROJ_L3PHIC17to24_dataarray_data_V_enb,
+        VMPROJ_L3PHIC17to24_dataarray_data_V_readaddr => VMPROJ_L3PHIC17to24_dataarray_data_V_readaddr,
+        VMPROJ_L3PHIC17to24_dataarray_data_V_dout     => VMPROJ_L3PHIC17to24_dataarray_data_V_dout,
+        VMPROJ_L3PHIC17to24_nentries_V_dout           => VMPROJ_L3PHIC17to24_nentries_V_dout,
+        -- AllProjection output
+        AP_L3PHIC_dataarray_data_V_enb      => AP_L3PHIC_dataarray_data_V_enb,
+        AP_L3PHIC_dataarray_data_V_readaddr => AP_L3PHIC_dataarray_data_V_readaddr,
+        AP_L3PHIC_dataarray_data_V_dout     => AP_L3PHIC_dataarray_data_V_dout,
+        AP_L3PHIC_nentries_V_dout           => AP_L3PHIC_nentries_V_dout,
+        -- ProjectionRouter output
+        PR_bx_out     => PR_bx_out,
+        PR_bx_out_vld => PR_bx_out_vld,
+        PR_done       => PR_done,
+        -- CandidateMatch output
+        CM_L3PHIC17to24_dataarray_data_V_enb      => CM_L3PHIC17to24_dataarray_data_V_enb,
+        CM_L3PHIC17to24_dataarray_data_V_readaddr => CM_L3PHIC17to24_dataarray_data_V_readaddr,
+        CM_L3PHIC17to24_dataarray_data_V_dout     => CM_L3PHIC17to24_dataarray_data_V_dout,
+        CM_L3PHIC17to24_nentries_V_dout           => CM_L3PHIC17to24_nentries_V_dout,
+        -- MatchEngine output
+        ME_bx_out     => ME_bx_out,
+        ME_bx_out_vld => ME_bx_out_vld,
+        ME_all_done   => ME_all_done,
         -- FullMatches output
         FM_L1L2XX_L3PHIC_dataarray_data_V_enb      => FM_L1L2XX_L3PHIC_dataarray_data_V_enb, 
         FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr => FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr,
         FM_L1L2XX_L3PHIC_dataarray_data_V_dout     => FM_L1L2XX_L3PHIC_dataarray_data_V_dout,
-        FM_L1L2XX_L3PHIC_nentries_V_dout            => FM_L1L2XX_L3PHIC_nentries_V_dout,
+        FM_L1L2XX_L3PHIC_nentries_V_dout           => FM_L1L2XX_L3PHIC_nentries_V_dout,
         FM_L5L6XX_L3PHIC_dataarray_data_V_enb      => FM_L5L6XX_L3PHIC_dataarray_data_V_enb,
         FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr => FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr,
         FM_L5L6XX_L3PHIC_dataarray_data_V_dout     => FM_L5L6XX_L3PHIC_dataarray_data_V_dout,
-        FM_L5L6XX_L3PHIC_nentries_V_dout            => FM_L5L6XX_L3PHIC_nentries_V_dout,
-        -- MatchCalculator outputs
+        FM_L5L6XX_L3PHIC_nentries_V_dout           => FM_L5L6XX_L3PHIC_nentries_V_dout,
+        -- MatchCalculator output
         MC_bx_out     => MC_bx_out,
         MC_bx_out_vld => MC_bx_out_vld,
         MC_done       => MC_done );
