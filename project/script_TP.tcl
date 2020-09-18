@@ -24,7 +24,7 @@ add_files -tb ../emData/TP/TP_L1L2D/
 csim_design
 
 #csim_design -compiler gcc -mflags "-j8"
-#csynth_design
+csynth_design
 #cosim_design 
 #export_design -format ip_catalog
 
