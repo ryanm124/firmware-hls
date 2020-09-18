@@ -39,10 +39,10 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
   memindex_ = 0;
   istub_=0;
   innerstub_=innerstub;
-  //innerfinephi_=innerfinephi;
   slot_=slot;
   rzbinfirst_=rzbinfirst;
   rzbindiffmax_=rzbindiffmax;
+  (ireg_, next_, nstubs_)=memstubs_.range(7,0);
 }
  
 
@@ -63,7 +63,13 @@ bool idle() {
 }
 
 bool full() {
+#pragma HLS inline  
   return (writeindex_+1==readindex_);
+}
+
+bool nearfull() {
+#pragma HLS inline  
+  return ((writeindex_+2==readindex_)||(writeindex_+1==readindex_));
 }
 
 STUBID read() {
@@ -84,37 +90,45 @@ void write(STUBID stubs) {
 #pragma HLS inline
 #pragma HLS PIPELINE II=1
 #pragma HLS dependence variable=istub intra WAR true
-  if(idle()) return;
+#pragma HLS dependence variable=writeindex_ intra false
+#pragma HLS dependence variable=readindex_ intra false
+#pragma HLS dependence variable=idle_ intra false
 
-  ap_uint<3> ireg;
-  ap_uint<1> next;
-  ap_uint<4> nstubs;
+   if(idle()||nearfull()) return;
+   
+   ap_uint<2> iAllstub=1; //FIXME need to be template parameter
+   ap_uint<5> iAllstub_ireg =  (iAllstub, ireg_);
 
-  (ireg, next, nstubs)=memstubs_.range((memindex_*8)+7,memindex_*8);
-
-  if (nstubs==0) {
-    idle_=true;
-    return;
-  }
-
-  if (full())
-    return;
-
-  ap_uint<3> ibin(slot_+next);
-
-  ap_uint<12> stubadd( ((ireg, ibin),istub_) );
+   ap_uint<3> ibin(slot_+next_);
+   ap_uint<12> stubadd( (ireg_, ibin,istub_) );
+   ap_uint<1> current_next=next_;
 
 #ifndef __SYNTHESIS__
-  assert(nstubs==outervmstubs.getEntries(bx_,(ireg,ibin)));
+   assert(nstubs_!=0);
+   assert(nstubs_==outervmstubs.getEntries(bx_,(ireg_,ibin)));
 #endif
+
+  istub_++;
+  if(istub_==nstubs_) {
+    istub_=0;
+    memindex_++;
+    if (memindex_==0) {
+      idle_=true;
+    } else {
+      (ireg_, next_, nstubs_)=memstubs_.range((memindex_*8)+7,memindex_*8);
+      if (nstubs_==0) {
+	idle_=true;
+      }
+    }
+  } 
+
 
   const auto& outervmstub = outervmstubs.read_mem(bx_,stubadd);
 
   const auto& finephi = outervmstub.getFinePhi();
-  const auto& rzbin = (next, outervmstub.getFineZ()); 
+  const auto& rzbin = (current_next, outervmstub.getFineZ()); 
 
-  ap_uint<2> iAllstub=1; //FIXME need to be template parameter
-  ap_uint<8> outerfinephi = ((iAllstub, ireg), finephi);
+  ap_uint<8> outerfinephi = (iAllstub_ireg, finephi);
 
   int nbitsfinephidiff=5;
 
@@ -136,24 +150,10 @@ void write(STUBID stubs) {
     }
   }
 
-  istub_++;
-  if(istub_==nstubs) {
-    istub_=0;
-    memindex_++;
-    if (memindex_==0) {
-      idle_=true;
-    } else {
-      ((ireg,next),nstubs)=memstubs_.range((memindex_*8)+7,memindex_*8);
-      if (nstubs==0) {
-	idle_=true;
-      }
-    }
-  } // if(buffernotempty)
   return;
 
 } // end step
  
- private:
 
  ap_uint<64> memstubs_;
  ap_uint<3> memindex_;
@@ -161,6 +161,11 @@ void write(STUBID stubs) {
  ap_uint<3> slot_;
  ap_uint<3> rzbinfirst_;
  ap_uint<3> rzbindiffmax_;
+
+ ap_uint<3> ireg_;
+ ap_uint<1> next_;
+ ap_uint<4> nstubs_;
+ 
 
 
  AllStubInner<BARRELPS> innerstub_; 
@@ -172,6 +177,8 @@ void write(STUBID stubs) {
  
  NSTUBS istub_=0;
  STUBID stubids_[1<<TrackletEngineUnitBase::kNBitsBuffer];
+
+ private:
 
 }; // end class
 

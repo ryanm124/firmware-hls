@@ -18,23 +18,32 @@ void TrackletProcessor_L1L2D(
     const ap_uint<1> stubptouterlut[256],
     const AllStubInnerMemory<BARRELPS> innerStubs[2],
     const AllStubMemory<BARRELPS>* outerStubs,
-    const VMStubTEOuterMemoryCM<BARRELPS>* outerVMStubs,
+    const VMStubTEOuterMemoryCM<BARRELPS> outerVMStubs[6],
     TrackletParameterMemory * trackletParameters,
     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
     TrackletProjectionMemory<DISK> projout_disk[TC::N_PROJOUT_DISK]
 ) {
 #pragma HLS inline recursive
-#pragma HLS resource variable=innerStubs.get_mem() latency=2
-#pragma HLS resource variable=outerStubs.get_mem() latency=2
+#pragma HLS resource variable=innerStubs[0].get_mem() latency=2
+#pragma HLS resource variable=innerStubs[1].get_mem() latency=2
+#pragma HLS resource variable=outerStubs->get_mem() latency=2
+#pragma HLS resource variable=outerVMStubs[0].get_mem() latency=2
+#pragma HLS resource variable=outerVMStubs[1].get_mem() latency=2
+#pragma HLS resource variable=outerVMStubs[2].get_mem() latency=2
+#pragma HLS resource variable=outerVMStubs[3].get_mem() latency=2
+#pragma HLS resource variable=outerVMStubs[4].get_mem() latency=2
+#pragma HLS resource variable=outerVMStubs[5].get_mem() latency=2
 #pragma HLS array_partition variable=projout_barrel_ps complete
 #pragma HLS array_partition variable=projout_barrel_2s complete
 #pragma HLS array_partition variable=projout_disk complete
+  //#pragma HLS resource variable=stubptinnerlut core=ROM_1P_LUTRAM
+  //#pragma HLS resource variable=stubptouterlut core=ROM_1P_LUTRAM
 
  TP_L1L2D: TrackletProcessor<TC::L1L2, 
 			     TC::D, 
 			     2, 
-			     6, 
+			     6,
 			     BARRELPS, 
 			     BARRELPS, 
 			     2, 

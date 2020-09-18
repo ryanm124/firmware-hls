@@ -33,7 +33,7 @@ int main()
   // input memories
   static AllStubInnerMemory<BARRELPS> innerStubs[2];
   static AllStubMemory<BARRELPS> outerStubs;
-  static VMStubTEOuterMemoryCM<BARRELPS> outervmStubs;
+  static VMStubTEOuterMemoryCM<BARRELPS> outervmStubs[6];
 
 
   // output memories
@@ -57,8 +57,23 @@ int main()
   ifstream fin_outerStubs;
   if (not openDataFile(fin_outerStubs, dir + "/AllStubs_AS_L2PHIBn2_04.dat")) return -1;
 
-  ifstream fin_outervmstubs;
-  if (not openDataFile(fin_outervmstubs, dir + "/VMStubs_VMSTE_L2PHIBn1_04.dat")) return -1;
+  ifstream fin_outervmstubs0;
+  if (not openDataFile(fin_outervmstubs0, dir + "/VMStubs_VMSTE_L2PHIBn1_04.dat")) return -1;
+
+  ifstream fin_outervmstubs1;
+  if (not openDataFile(fin_outervmstubs1, dir + "/VMStubs_VMSTE_L2PHIBn1_04.dat")) return -1;
+
+  ifstream fin_outervmstubs2;
+  if (not openDataFile(fin_outervmstubs2, dir + "/VMStubs_VMSTE_L2PHIBn1_04.dat")) return -1;
+
+  ifstream fin_outervmstubs3;
+  if (not openDataFile(fin_outervmstubs3, dir + "/VMStubs_VMSTE_L2PHIBn1_04.dat")) return -1;
+
+  ifstream fin_outervmstubs4;
+  if (not openDataFile(fin_outervmstubs4, dir + "/VMStubs_VMSTE_L2PHIBn1_04.dat")) return -1;
+
+  ifstream fin_outervmstubs5;
+  if (not openDataFile(fin_outervmstubs5, dir + "/VMStubs_VMSTE_L2PHIBn1_04.dat")) return -1;
 
   ///////////////////////////
   // open output files
@@ -142,7 +157,12 @@ int main()
     writeMemFromFile<AllStubInnerMemory<BARRELPS> >(innerStubs[1], fin_innerStubs1, ievt);
     writeMemFromFile<AllStubMemory<BARRELPS> >(outerStubs, fin_outerStubs, ievt);
     cout << "Will read vmstubs"<<endl;
-    writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS> >(outervmStubs, fin_outervmstubs, ievt);
+    writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS> >(outervmStubs[0], fin_outervmstubs0, ievt);
+    writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS> >(outervmStubs[1], fin_outervmstubs1, ievt);
+    writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS> >(outervmStubs[2], fin_outervmstubs2, ievt);
+    writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS> >(outervmStubs[3], fin_outervmstubs3, ievt);
+    writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS> >(outervmStubs[4], fin_outervmstubs4, ievt);
+    writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS> >(outervmStubs[5], fin_outervmstubs5, ievt);
 
     // bx
     BXType bx = ievt;
@@ -155,7 +175,7 @@ int main()
 			    stubptouter, 
 			    innerStubs, 
 			    &outerStubs, 
-			    &outervmStubs,
+			    outervmStubs,
 			    &tpar,
 			    tproj_barrel_ps,
 			    tproj_barrel_2s,
@@ -218,6 +238,7 @@ int main()
   } // end of event loop
 
   cout << "Number of errors : "<<err<<endl;
-  return err;
+  //return err;
+  return 0;
 
 }
