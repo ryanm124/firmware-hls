@@ -23,11 +23,19 @@ int main()
   ap_uint<8> useregion[2048] =
 #include "../emData/TP/tables/TP_L1L2D_usereg.tab"
 
-  ap_uint<1> stubptinner[256] =
+  ap_uint<1> stubptinner[6][256] = 
 #include "../emData/TP/tables/TP_L1L2D_stubptinnercut.tab"
 
-  ap_uint<1> stubptouter[256] =
+  ap_uint<1> stubptouter[6][256] =
 #include "../emData/TP/tables/TP_L1L2D_stubptoutercut.tab"
+
+    for (unsigned int i=1;i<6;i++) {
+      for (unsigned int j=1;j<256;j++) {
+	stubptinner[i][j]=stubptinner[0][j];
+	stubptouter[i][j]=stubptouter[0][j];
+      }
+    }
+      
 
   ///////////////////////////
   // input memories

@@ -14,8 +14,8 @@ void TrackletProcessor_L1L2D(
     const BXType bx,
     const ap_uint<10> lut[2048],
     const ap_uint<8> regionlut[2048],
-    const ap_uint<1> stubptinnerlut[256],
-    const ap_uint<1> stubptouterlut[256],
+    const ap_uint<1> stubptinnerlut[6][256],
+    const ap_uint<1> stubptouterlut[6][256],
     const AllStubInnerMemory<BARRELPS> innerStubs[2],
     const AllStubMemory<BARRELPS>* outerStubs,
     const VMStubTEOuterMemoryCM<BARRELPS> outerVMStubs[6],
@@ -35,6 +35,8 @@ void TrackletProcessor_L1L2D(
 #pragma HLS resource variable=outerVMStubs[4].get_mem() latency=2
 #pragma HLS resource variable=outerVMStubs[5].get_mem() latency=2
 #pragma HLS array_partition variable=outerVMStubs complete dim=1
+#pragma HLS array_partition variable=stubptinnerlut complete dim=1
+#pragma HLS array_partition variable=stubptouterlut complete dim=1
 #pragma HLS array_partition variable=projout_barrel_ps complete
 #pragma HLS array_partition variable=projout_barrel_2s complete
 #pragma HLS array_partition variable=projout_disk complete
