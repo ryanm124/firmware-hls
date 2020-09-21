@@ -57,24 +57,18 @@ package mytypes_pkg is
   type t_myarray8_21b is array(7 downto 0) of std_logic_vector(20 downto 0);
   type t_myarray8_60b is array(7 downto 0) of std_logic_vector(59 downto 0);
   -- 3D
-  --type t_myarray2_8_1b is array(0 to 1, 7 downto 0) of std_logic;
   type t_myarray2_8_1b is array(0 to 1) of t_myarray8_1b;
-  --type t_myarray2_8_8b is array(0 to 1, 7 downto 0) of std_logic_vector(7 downto 0);
   type t_myarray2_8_8b is array(0 to 1) of t_myarray8_8b;
   type t_myarray8_8_1b is array(0 to 7) of t_myarray8_1b;
   type t_myarray8_8_4b is array(0 to 7) of t_myarray8_4b;
   type t_myarray8_8_5b is array(0 to 7) of t_myarray8_5b;
   -- 4D
-  --type t_myarray8_8_8_1b is array(0 to 7, 0 to 7, 7 downto 0) of std_logic;
   type t_myarray8_8_8_1b is array(0 to 7) of t_myarray8_8_1b;
-  --type t_myarray8_8_8_4b is array(0 to 7, 0 to 7, 7 downto 0) of std_logic_vector(3 downto 0);
   type t_myarray8_8_8_4b is array(0 to 7) of t_myarray8_8_4b;
-  --type t_myarray8_8_8_5b is array(0 to 7, 0 to 7, 7 downto 0) of std_logic_vector(4 downto 0);
   type t_myarray8_8_8_5b is array(0 to 7) of t_myarray8_8_5b;
   -- Others
    type t_myarray_1d_int is array(natural range <>) of integer;                  --! 1D array of int
    type t_myarray_2d_int is array(natural range <>,natural range <>) of integer; --! 2D array of int
-  --type t_myarray_1d_slv is array(natural range <>) of std_logic_vector(integer(ceil(log2(real(MAX_ENTRIES)))) downto 0); --! 1D array of slv
   type t_myarray_2d_slv is array(natural range <>, natural range <>) of std_logic_vector(EMDATA_WIDTH-1 downto 0); --! 2D array of slv
 
   -- ########################### Procedures #######################
@@ -104,11 +98,10 @@ package mytypes_pkg is
   );
   procedure write_emData_2p (
     file_path       : in string;           --! File path as string
-    mem_read_delay  : in integer;          --! Number of memory read delay
     signal_name     : in string;           --! Signal name that will be printed in output file
     mem_data        : in std_logic_vector; --! Data write values
     mem_enb_d       : in std_logic;        --! DELAYED enable of data
-    mem_addr        : in std_logic_vector; --! Memory address
+    mem_addr_d      : in std_logic_vector; --! DELAYED memory address
     n_entries_p0    : in std_logic_vector; --! Number of entries page 0
     n_entries_p1    : in std_logic_vector; --! Number of entries page 1
     bx_cnt          : in integer;          --! BX counter
@@ -419,11 +412,10 @@ package body mytypes_pkg is
   --! @brief TextIO procedure to write emData for non-binned memories one line per clock cycle
   procedure write_emData_2p (
     file_path       : in string;           --! File path as string
-    mem_read_delay  : in integer;          --! Number of memory read delay
     signal_name     : in string;           --! Signal name that will be printed in output file
     mem_data        : in std_logic_vector; --! Data write values
     mem_enb_d       : in std_logic;        --! DELAYED enable of data
-    mem_addr        : in std_logic_vector; --! Memory address
+    mem_addr_d      : in std_logic_vector; --! DELAYED memory address
     n_entries_p0    : in std_logic_vector; --! Number of entries page 0
     n_entries_p1    : in std_logic_vector; --! Number of entries page 1
     bx_cnt          : in integer;          --! BX counter
@@ -444,87 +436,35 @@ package body mytypes_pkg is
   variable i_wr_col        : integer;           -- Write column index
   variable v_zero          : std_logic_vector(mem_data'length-1 downto 0) := (others => '0');  -- Zero vector
   begin
-    if (bx_cnt = 0) and (unsigned(mem_addr)=0) then -- (Over)write file header only once
+    if (bx_cnt = 0) and (unsigned(mem_addr_d)=0) then -- (Over)write file header only once
       file_open(file_out, file_path, WRITE_MODE);
       write(line_out, string'("time"), right, 12); write(line_out, string'("BX#"), right, 4);
       write(line_out, string'("reset"), right, 6);
       write(line_out, string'("n_ent_p0"), right, 9); write(line_out, string'("n_ent_p1"), right, 9); write(line_out, string'("enb"), right, 4);
-      write(line_out, string'("mem_addr"), right, 9);  write(line_out, signal_name, right, signal_name'length+1); 
+      write(line_out, string'("mem_addr_d"), right, 11);  write(line_out, signal_name, right, signal_name'length+1); 
       write(line_out, string'("done"), right, 5);  write(line_out, string'("bx_out_vld"), right, 11); write(line_out, string'("bx_out"), right, 7);
       writeline (file_out, line_out); -- Write line
       file_close(file_out);
     end if;
-    -- Append one new line each call (clock cycle)
-    if (to_integer(unsigned(mem_addr)) >= mem_read_delay) then -- Take read dealy into account
-      file_open(file_out, file_path, APPEND_MODE);
-      write(line_out, NOW, right, 12); write(line_out, bx_cnt, right, 4);
-      write(line_out, string'("0b"), right, 5);   write(line_out, reset, right, 1);
-      write(line_out, string'("0x"), right, 7);  hwrite(line_out, n_entries_p0, right, 2);
-      write(line_out, string'("0x"), right, 7);  hwrite(line_out, n_entries_p1, right, 2);
-      write(line_out, string'("0b"), right, 3);   write(line_out, mem_enb_d, right, 1);
-      write(line_out, string'("0x"), right, 7);  hwrite(line_out, std_logic_vector(unsigned(mem_addr)-to_unsigned(mem_read_delay,mem_addr'length)), right, 2);
-      if (mem_enb_d='1') then -- Only write if enable (delayed): Switch off in complete read out mode
-        write(line_out, string'("0x"), right, signal_name'length+1-(mem_data'length+3)/4); hwrite(line_out, mem_data, right, (mem_data'length+3)/4);
-      else
-        write(line_out, string'("0x"), right, signal_name'length+1-(mem_data'length+3)/4); hwrite(line_out, v_zero,   right, (mem_data'length+3)/4);
-      end if;
-      write(line_out, string'("0b"), right, 4);   write(line_out, done,       right, 1);
-      write(line_out, string'("0b"), right, 10);  write(line_out, bx_out_vld, right, 1);
-      write(line_out, string'("0x"), right, 6);  hwrite(line_out, bx_out,     right, (bx_out'length+3)/4);
-      writeline (file_out, line_out); -- Write line
-      file_close(file_out);
+--    else -- Append one new line each call (clock cycle)
+    file_open(file_out, file_path, APPEND_MODE);
+    write(line_out, NOW, right, 12); write(line_out, bx_cnt, right, 4);
+    write(line_out, string'("0b"), right, 5);   write(line_out, reset, right, 1);
+    write(line_out, string'("0x"), right, 7);  hwrite(line_out, n_entries_p0, right, 2);
+    write(line_out, string'("0x"), right, 7);  hwrite(line_out, n_entries_p1, right, 2);
+    write(line_out, string'("0b"), right, 3);   write(line_out, mem_enb_d, right, 1);
+    write(line_out, string'("0x"), right, 7);  hwrite(line_out, std_logic_vector(unsigned(mem_addr_d)), right, 2);
+    if (mem_enb_d='1') then -- Only write if enable (delayed): Switch off in complete read out mode
+      write(line_out, string'("0x"), right, signal_name'length+1-(mem_data'length+3)/4); hwrite(line_out, mem_data, right, (mem_data'length+3)/4);
+    else
+      write(line_out, string'("0x"), right, signal_name'length+1-(mem_data'length+3)/4); hwrite(line_out, v_zero,   right, (mem_data'length+3)/4);
     end if;
-
---    wait until rising_edge(MC_done); -- Wait for first result
---    l_BX : for v_bx_cnt in 0 to MAX_EVENTS-1 loop -- 0 to 99
---      l_addr : for addr in 0 to MAX_ENTRIES-1+mem_read_delay loop -- 0 to 109
---        if (addr <= MAX_ENTRIES-1) then -- w/o mem_read_delay
----- todo: write all 256 addr to file; pause playback and en_proc (wait for readout done)
---          if (v_bx_cnt mod 2)=0 then -- 1. page
---            if (addr < (to_integer(unsigned(FM_L1L2XX_L3PHIC_nentries_V_dout(0))))) then -- Only read number of entries: Switch off in complete read out mode
---              FM_L1L2XX_L3PHIC_dataarray_data_V_enb <= '1';
---            else
---              FM_L1L2XX_L3PHIC_dataarray_data_V_enb <= '0';
---            end if;
---          else                       -- 2. page
---            if (addr < (to_integer(unsigned(FM_L1L2XX_L3PHIC_nentries_V_dout(1))))) then -- Only read number of entries: Switch off in complete read out mode
---              FM_L1L2XX_L3PHIC_dataarray_data_V_enb <= '1';
---            else
---              FM_L1L2XX_L3PHIC_dataarray_data_V_enb <= '0';
---            end if;
---          end if;
---        end if;
---        FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr <= std_logic_vector(to_unsigned(addr+(PAGE_OFFSET*(v_bx_cnt mod 2)),FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr'length));
---        wait for 0 ns; -- Update signals
---        -- Other writes ---------------------------------------
---        if (addr >= mem_read_delay) then -- Take read dealy into account
---          write(line_out, NOW, right, 12); -- NOW = current simulation time
---          write(line_out, v_bx_cnt, right, 4);
---          --write(line_out, string'("0x"), right, 4); hwrite(line_out, std_logic_vector(to_unsigned(addr,10)), right, 3);
---          write(line_out, string'("0b"), right, 5);   write(line_out, reset, right, 1);
---          write(line_out, string'("0x"), right, 7);  hwrite(line_out, FM_L1L2XX_L3PHIC_nentries_V_dout(0), right, 2);
---          write(line_out, string'("0x"), right, 7);  hwrite(line_out, FM_L1L2XX_L3PHIC_nentries_V_dout(1), right, 2);
---          write(line_out, string'("0b"), right, 3);   write(line_out, v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d(mem_read_delay-1), right, 1);
---          write(line_out, string'("0x"), right, 7);  hwrite(line_out, std_logic_vector(unsigned(FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr)-to_unsigned(mem_read_delay,FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr'length)), right, 2);
---          if (v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d(mem_read_delay-1)='1') then -- Only write if enable (delayed): Switch off in complete read out mode
---            write(line_out, string'("0x"), right, 12); hwrite(line_out, FM_L1L2XX_L3PHIC_dataarray_data_V_dout, right, 12);
---          else
---            write(line_out, string'("0x"), right, 12);  write(line_out, string'("000000000000"), right, 12);
---          end if;
---          write(line_out, string'("0b"), right, 8);   write(line_out, MC_done, right, 1);
---          write(line_out, string'("0b"), right, 3);   write(line_out, MC_bx_out_vld, right, 1);
---          write(line_out, string'("0x"), right, 9);  hwrite(line_out, MC_bx_out, right, 1);
---          writeline (file_out, line_out); -- Write line
---        end if;
---        v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d :=  v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d(mem_read_delay-2 downto 0) & FM_L1L2XX_L3PHIC_dataarray_data_V_enb; -- Required delay
---        if (DEBUG=true and v_bx_cnt<=5 and addr<=10) then write(line_out, string'("v_bx_cnt: ")); write(line_out, v_bx_cnt); write(line_out, string'("   FM_L1L2XX_L3PHIC readaddr: ")); hwrite(line_out, FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr); write(line_out, string'(", dout: ")); hwrite(line_out, FM_L1L2XX_L3PHIC_dataarray_data_V_dout); writeline(output, line_out); end if;
---        wait for CLK_PERIOD; -- Main time control
---      end loop l_addr;
---    end loop l_BX;
---    file_close(file_out);
---    assert false report "Simulation finished!" severity FAILURE;
---  end process write_result;
-
+    write(line_out, string'("0b"), right, 4);   write(line_out, done,       right, 1);
+    write(line_out, string'("0b"), right, 10);  write(line_out, bx_out_vld, right, 1);
+    write(line_out, string'("0x"), right, 6);  hwrite(line_out, bx_out,     right, (bx_out'length+3)/4);
+    writeline (file_out, line_out); -- Write line
+    file_close(file_out);
+--    end if;
   end write_emData_2p;
 
 end package body mytypes_pkg;
