@@ -441,18 +441,22 @@ begin
   end process write_result;
   --! @brief TextIO process for writting the output ---------------------------------------
   write_result_CM : process
-    variable varr_CM_L3PHIC17to24_dataarray_data_V_enb_d : t_myarray8_2b := (others => (others => '0')); -- Delay array
+    variable varr_CM_L3PHIC17to24_dataarray_data_V_readaddr_d : t_myarray2_8_8b := (others => (others => (others => '1'))); -- Delay array
+    variable varr_CM_L3PHIC17to24_dataarray_data_V_enb_d      : t_myarray8_2b   := (others => (others => '1')); -- Delay array
   begin
     wait until rising_edge(ME_all_done); -- Wait for first result
+--    wait for CLK_PERIOD * MEM_READ_DELAY; -- Wait for first result memory delay
     l_BX : for v_bx_cnt in 0 to MAX_EVENTS-1 loop -- 0 to 99
       l_addr : for addr in 0 to MAX_ENTRIES-1+MEM_READ_DELAY loop -- 0 to 109
 -- put all of this in the copies loop below
-        write_emData_2p(FILE_OUT_CM(0), MEM_READ_DELAY, "CM_L3PHIC17to24_dataarray_data_V_dout(0)", CM_L3PHIC17to24_dataarray_data_V_dout(0),
-                        varr_CM_L3PHIC17to24_dataarray_data_V_enb_d(0)(MEM_READ_DELAY-1), CM_L3PHIC17to24_dataarray_data_V_readaddr(0),
+        write_emData_2p(FILE_OUT_CM(0), "CM_L3PHIC17to24_dataarray_data_V_dout(0)", CM_L3PHIC17to24_dataarray_data_V_dout(0),
+                        varr_CM_L3PHIC17to24_dataarray_data_V_enb_d(0)(MEM_READ_DELAY-1), varr_CM_L3PHIC17to24_dataarray_data_V_readaddr_d(MEM_READ_DELAY-1)(0),
                         CM_L3PHIC17to24_nentries_V_dout(0)(0), CM_L3PHIC17to24_nentries_V_dout(1)(0),
                         v_bx_cnt, reset, ME_all_done, ME_bx_out_vld(0), ME_bx_out(0));
         l_copies_CM : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7
-          varr_CM_L3PHIC17to24_dataarray_data_V_enb_d(cp) := varr_CM_L3PHIC17to24_dataarray_data_V_enb_d(cp)(MEM_READ_DELAY-2 downto 0) & CM_L3PHIC17to24_dataarray_data_V_enb(cp); -- Required delay
+          varr_CM_L3PHIC17to24_dataarray_data_V_readaddr_d(1)(cp) := varr_CM_L3PHIC17to24_dataarray_data_V_readaddr_d(0)(cp); -- Required delay 1. part
+          varr_CM_L3PHIC17to24_dataarray_data_V_readaddr_d(0)(cp) := CM_L3PHIC17to24_dataarray_data_V_readaddr(cp);           -- Required delay 2. part
+          varr_CM_L3PHIC17to24_dataarray_data_V_enb_d(cp)         := varr_CM_L3PHIC17to24_dataarray_data_V_enb_d(cp)(MEM_READ_DELAY-2 downto 0) & CM_L3PHIC17to24_dataarray_data_V_enb(cp); -- Required delay
         end loop l_copies_CM;
         wait for CLK_PERIOD; -- Main time control
       end loop l_addr;
