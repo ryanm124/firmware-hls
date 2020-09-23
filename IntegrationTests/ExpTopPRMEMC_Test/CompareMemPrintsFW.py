@@ -14,8 +14,11 @@ except ImportError as error:
         raise ImportError("Unable to import the python2/3 compatibility modules (future, builtins, past, six)")
 
 class ReferenceType(Enum):
-    FM = 'FullMatches'
-    CM = 'CandidateMatches'
+    AP     = 'AllProjections'
+    CM     = 'CandidateMatches'
+    FM     = 'FullMatches'
+    VMPROJ = 'VMProjections'
+
 
     def __str__(self):
         return '{0}'.format(self.name)
@@ -72,15 +75,21 @@ def compare(comparison_filename="", fail_on_error=False, file_location='/', refe
         number_of_good_events=0
 
         # Find the type of MemPrint being used
-        reference_type_string = re.search("(_[A-Z][A-Z]_)",reference_filename).group(0)[1:-1]
-        reference_type = ReferenceType[reference_type_string]
+        try:
+            reference_type_string = re.search("(_[A-Z][A-Z]_)",reference_filename).group(0)[1:-1]
+        except AttributeError:
+            reference_type_string = reference_filename.split('_')[1]
+        except IndexError:
+            raise IndexError("Unable to determine the reference file type from the file name")
+        finally:
+            reference_type = ReferenceType[reference_type_string]
         print("Comparing " + reference_type.FullName() + " values ... ")
 
         # Find the layer names for the reference file
         if reference_type == ReferenceType.FM:
             layers = re.search("(L[0-9]L[0-9])",reference_filename).group(0)
             print("Comparing the values for layers "+str(layers)+" to the reference file "+str(reference_filename)+" ... ")
-        elif reference_type == ReferenceType.CM:
+        elif reference_type in [ReferenceType.AP,ReferenceType.CM,ReferenceType.VMPROJ] :
             layers = re.search("(L[0-9])",reference_filename).group(0)
         else:
             raise TypeError("Unknown type of the reference file (implemented options: FullMatches, CandidateMatches)")
@@ -96,7 +105,7 @@ def compare(comparison_filename="", fail_on_error=False, file_location='/', refe
         # Open the comparison data
         if reference_type == ReferenceType.FM:
             column_selections = ['BX#','enb','readaddr',reference_type.name+"_"]
-        elif reference_type == ReferenceType.CM:
+        elif reference_type in [ReferenceType.AP,ReferenceType.CM,ReferenceType.VMPROJ]:
             column_selections = ['BX#','wea','mem_addr',reference_type.name+"_"]
         else:
             raise TypeError("Unknown type of the reference file (implemented options: FullMatches, CandidateMatches)")
@@ -173,9 +182,10 @@ The main dependency is the module 'pandas', though to make sure this program is 
 Examples:
 =========
 python3 CompareMemPrintsFW.py --help
+python3 CompareMemPrintsFW.py -l testData/ -r CandidateMatches_CM_L3PHIC17_04.dat -c CM_L3PHIC17.txt
 python3 CompareMemPrintsFW.py -l testData/ -r FullMatches_FM_L1L2_L3PHIC_04.dat -c FM_L1L2XX_L3PHIC.txt
 python3 CompareMemPrintsFW.py -l testData/ -r FullMatches_FM_L5L6_L3PHIC_04.dat -c FM_L5L6XX_L3PHIC.txt
-python3 CompareMemPrintsFW.py -l testData/ -r CandidateMatches_CM_L3PHIC17_04.dat -c CM_L3PHIC17.txt
+python3 CompareMemPrintsFW.py -l testData/ -r VMProjections_VMPROJ_L3PHIC17_04.dat -c VMPROJ_L3PHIC17.txt
 """,
                                     epilog="",
                                     formatter_class=argparse.RawDescriptionHelpFormatter)
