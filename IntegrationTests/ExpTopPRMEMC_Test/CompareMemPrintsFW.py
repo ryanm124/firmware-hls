@@ -5,12 +5,23 @@ import os
 import pandas as pd
 import re
 import sys
+from enum import Enum
 
 # Python 2-3 compatibility
 try:
         import future, builtins, past, six
 except ImportError as error:
         raise ImportError("Unable to import the python2/3 compatibility modules (future, builtins, past, six)")
+
+class ReferenceType(Enum):
+    FM = 'FullMatches'
+    CM = 'CandidateMatches'
+
+    def __str__(self):
+        return '{0}'.format(self.name)
+
+    def FullName(self):
+        return '{0}'.format(self.value)
 
 def parse_reference_file(filename):
     events = []
@@ -45,7 +56,7 @@ def print_results(total_number_of_events, number_of_good_events, number_of_missi
     print("\tLength mismatches: "+str(number_of_event_length_mismatches))
     print("\tValue mismatches: "+str(number_of_value_mismatches)+"\n\n")
 
-def compare_full_matches(comparison_filename="", fail_on_error=False, file_location='/', reference_filenames=[], verbose=False):
+def compare(comparison_filename="", fail_on_error=False, file_location='/', reference_filenames=[], verbose=False):
     # Sanity checks
     if len(reference_filenames) == 0:
         raise Exception("No reference files were specified (-r). At least one reference file is needed to run the comparison.")
@@ -60,11 +71,21 @@ def compare_full_matches(comparison_filename="", fail_on_error=False, file_locat
         number_of_value_mismatches=0 # The number of times the values between the testbench output and the reference output don't match
         number_of_good_events=0
 
-        #Find the layer names for the reference file
-        layers = re.search("(L[0-9]L[0-9])",reference_filename).group(0)
-        print("Comparing the values for layers "+str(layers)+" to the reference file "+str(reference_filename)+" ... ")
+        # Find the type of MemPrint being used
+        reference_type_string = re.search("(_[A-Z][A-Z]_)",reference_filename).group(0)[1:-1]
+        reference_type = ReferenceType[reference_type_string]
+        print("Comparing " + reference_type.FullName() + " values ... ")
 
-        #Parse the reference data
+        # Find the layer names for the reference file
+        if reference_type == ReferenceType.FM:
+            layers = re.search("(L[0-9]L[0-9])",reference_filename).group(0)
+            print("Comparing the values for layers "+str(layers)+" to the reference file "+str(reference_filename)+" ... ")
+        elif reference_type == ReferenceType.CM:
+            layers = re.search("(L[0-9])",reference_filename).group(0)
+        else:
+            raise TypeError("Unknown type of the reference file (implemented options: FullMatches, CandidateMatches)")
+
+        # Parse the reference data
         reference_data = parse_reference_file(file_location+"/"+reference_filename)
 
         # Read column names from file and add a column because the time and units are separated by a space (first two columns)
@@ -72,12 +93,17 @@ def compare_full_matches(comparison_filename="", fail_on_error=False, file_locat
         column_names.insert(1,"unit")
         if verbose: print(column_names)
 
-        #Open the comparison data
-        column_selections = ['BX#','enb','readaddr','FM_']
+        # Open the comparison data
+        if reference_type == ReferenceType.FM:
+            column_selections = ['BX#','enb','readaddr',reference_type.name+"_"]
+        elif reference_type == ReferenceType.CM:
+            column_selections = ['BX#','wea','mem_addr',reference_type.name+"_"]
+        else:
+            raise TypeError("Unknown type of the reference file (implemented options: FullMatches, CandidateMatches)")
         data = pd.read_csv(file_location+"/"+comparison_filename,delim_whitespace=True,header=0,names=column_names,usecols=[i for i in column_names if any(select in i for select in column_selections)])
         if verbose: print(data) # Can also just do data.head()
 
-        #Get the column index for the correct columns of data
+        # Get the column index for the correct columns of data
         value_index = get_column_index(layers,data)
         address_index = value_index-1
         valid_index = value_index-2
@@ -146,8 +172,10 @@ The main dependency is the module 'pandas', though to make sure this program is 
 
 Examples:
 =========
-python3 CompareFullMatches.py --help
-python3 CompareFullMatches.py -l ~/Downloads/ -r FullMatches_FM_L1L2_L3PHIC_04.dat FullMatches_FM_L5L6_L3PHIC_04.dat
+python3 CompareMemPrintsFW.py --help
+python3 CompareMemPrintsFW.py -l testData/ -r FullMatches_FM_L1L2_L3PHIC_04.dat -c FM_L1L2XX_L3PHIC.txt
+python3 CompareMemPrintsFW.py -l testData/ -r FullMatches_FM_L5L6_L3PHIC_04.dat -c FM_L5L6XX_L3PHIC.txt
+python3 CompareMemPrintsFW.py -l testData/ -r CandidateMatches_CM_L3PHIC17_04.dat -c CM_L3PHIC17.txt
 """,
                                     epilog="",
                                     formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -159,4 +187,4 @@ python3 CompareFullMatches.py -l ~/Downloads/ -r FullMatches_FM_L1L2_L3PHIC_04.d
 
     args = parser.parse_args()
 
-    compare_full_matches(**vars(args))
+    compare(**vars(args))
