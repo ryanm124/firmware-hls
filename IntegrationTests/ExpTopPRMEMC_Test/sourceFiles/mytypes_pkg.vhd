@@ -96,19 +96,23 @@ package mytypes_pkg is
     data_arr      : out   t_myarray_2d_slv(0 to MAX_EVENTS-1,0 to 8*PAGE_OFFSET-1); --! Dataarray with read values
     n_entries_arr : inout t_myarray_2d_int(0 to MAX_EVENTS-1,0 to N_MEM_BINS-1)     --! Number of entries per event
   );
-  procedure write_emData_2p (
+  procedure write_header_line_2p (
+    file_path       : in string;           --! File path as string
+    signal_name     : in string            --! Signal name that will be printed in output file
+  );
+  procedure write_emData_line_2p (
+    reset           : in std_logic;        --! HDL (global) reset
+    bx_cnt          : in integer;          --! HDL (global) counter
+    done            : in std_logic;        --! HLS module done
+    bx_out          : in std_logic_vector; --! HLS module BX counter
+    bx_out_vld      : in std_logic;        --! HLS module BX counter valid
     file_path       : in string;           --! File path as string
     signal_name     : in string;           --! Signal name that will be printed in output file
     mem_data        : in std_logic_vector; --! Data write values
-    mem_enb_d       : in std_logic;        --! DELAYED enable of data
-    mem_addr_d      : in std_logic_vector; --! DELAYED memory address
-    n_entries_p0    : in std_logic_vector; --! Number of entries page 0
-    n_entries_p1    : in std_logic_vector; --! Number of entries page 1
-    bx_cnt          : in integer;          --! BX counter
-    reset           : in std_logic;        --! HDL reset
-    done            : in std_logic;        --! HLS module done
-    bx_out_vld      : in std_logic;        --! HLS module BX counter valid
-    bx_out          : in std_logic_vector  --! HLS module BX counter
+    mem_wea         : in std_logic;        --! Write enable of data
+    mem_addr        : in std_logic_vector; --! Memory address
+    n_entries_p2    : in t_myarray2_8b;    --! Number of entries per page
+    n_entries_p2_we : in t_myarray2_1b     --! Number of entries per page write enable
   );
 
 end package mytypes_pkg;
@@ -410,51 +414,57 @@ package body mytypes_pkg is
   end read_emData_8p_bin;
 
   --! @brief TextIO procedure to write emData for non-binned memories one line per clock cycle
-  procedure write_emData_2p (
+  procedure write_header_line_2p (
+    file_path       : in string;           --! File path as string
+    signal_name     : in string            --! Signal name that will be printed in output file
+  ) is
+  constant N_PAGES  : integer := 2;      --! Number of pages
+  file     file_out : text is file_path; -- Text - a file of character strings
+  variable line_out : line;              -- Line - one string from a text file
+  begin
+    file_open(file_out, file_path, WRITE_MODE);
+    write(line_out, string'("time"), right, 20); write(line_out, string'("BX#"), right, 4);
+    write(line_out, string'("reset"), right, 6);
+    l_pages : for i in 0 to N_PAGES-1 loop
+    	write(line_out, string'("we_p"),    right, 5); write(line_out, i, right, 1);
+    	write(line_out, string'("n_ent_p"), right, 8); write(line_out, i, right, 1);
+    end loop l_pages;
+    write(line_out, string'("wea"), right, 4); write(line_out, string'("mem_addr"), right, 9);
+    write(line_out, signal_name, right, signal_name'length+1); 
+    write(line_out, string'("done"), right, 5);  write(line_out, string'("bx_out_vld"), right, 11); write(line_out, string'("bx_out"), right, 7);
+    writeline (file_out, line_out); -- Write line
+    file_close(file_out);
+  end write_header_line_2p;
+  --! @brief TextIO procedure to write emData for non-binned memories one line per clock cycle
+  procedure write_emData_line_2p (
+    reset           : in std_logic;        --! HDL (global) reset
+    bx_cnt          : in integer;          --! HDL (global) counter
+    done            : in std_logic;        --! HLS module done
+    bx_out          : in std_logic_vector; --! HLS module BX counter
+    bx_out_vld      : in std_logic;        --! HLS module BX counter valid
     file_path       : in string;           --! File path as string
     signal_name     : in string;           --! Signal name that will be printed in output file
     mem_data        : in std_logic_vector; --! Data write values
-    mem_enb_d       : in std_logic;        --! DELAYED enable of data
-    mem_addr_d      : in std_logic_vector; --! DELAYED memory address
-    n_entries_p0    : in std_logic_vector; --! Number of entries page 0
-    n_entries_p1    : in std_logic_vector; --! Number of entries page 1
-    bx_cnt          : in integer;          --! BX counter
-    reset           : in std_logic;        --! HDL reset
-    done            : in std_logic;        --! HLS module done
-    bx_out_vld      : in std_logic;        --! HLS module BX counter valid
-    bx_out          : in std_logic_vector  --! HLS module BX counter
---i_bx_row        : inout integer             --! Write row index (as port to be non-volatile)
+    mem_wea         : in std_logic;        --! Write enable of data
+    mem_addr        : in std_logic_vector; --! Memory address
+    n_entries_p2    : in t_myarray2_8b;    --! Number of entries per page
+    n_entries_p2_we : in t_myarray2_1b     --! Number of entries per page write enable
   ) is
---signal FM_L1L2XX_L3PHIC_dataarray_data_V_enb      : std_logic                     := '0'; 
---signal FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr : std_logic_vector(7 downto 0)  := (others => '0');
---signal FM_L1L2XX_L3PHIC_dataarray_data_V_dout     : std_logic_vector(44 downto 0);
---signal FM_L1L2XX_L3PHIC_nentries_V_dout : t_myarray2_8b;
-  constant N_PAGES         : integer :=2;       --! Number of pages
+  constant N_PAGES         : integer := 2;      --! Number of pages
   file     file_out        : text is file_path; -- Text - a file of character strings
   variable line_out        : line;              -- Line - one string from a text file
---variable line_tmp        : line;              -- Line - one string from a text file
-  variable i_wr_col        : integer;           -- Write column index
   variable v_zero          : std_logic_vector(mem_data'length-1 downto 0) := (others => '0');  -- Zero vector
   begin
-    if (bx_cnt = 0) and (unsigned(mem_addr_d)=0) then -- (Over)write file header only once
-      file_open(file_out, file_path, WRITE_MODE);
-      write(line_out, string'("time"), right, 12); write(line_out, string'("BX#"), right, 4);
-      write(line_out, string'("reset"), right, 6);
-      write(line_out, string'("n_ent_p0"), right, 9); write(line_out, string'("n_ent_p1"), right, 9); write(line_out, string'("enb"), right, 4);
-      write(line_out, string'("mem_addr_d"), right, 11);  write(line_out, signal_name, right, signal_name'length+1); 
-      write(line_out, string'("done"), right, 5);  write(line_out, string'("bx_out_vld"), right, 11); write(line_out, string'("bx_out"), right, 7);
-      writeline (file_out, line_out); -- Write line
-      file_close(file_out);
-    end if;
---    else -- Append one new line each call (clock cycle)
     file_open(file_out, file_path, APPEND_MODE);
-    write(line_out, NOW, right, 12); write(line_out, bx_cnt, right, 4);
+    write(line_out, NOW, right, 20); write(line_out, bx_cnt, right, 4);
     write(line_out, string'("0b"), right, 5);   write(line_out, reset, right, 1);
-    write(line_out, string'("0x"), right, 7);  hwrite(line_out, n_entries_p0, right, 2);
-    write(line_out, string'("0x"), right, 7);  hwrite(line_out, n_entries_p1, right, 2);
-    write(line_out, string'("0b"), right, 3);   write(line_out, mem_enb_d, right, 1);
-    write(line_out, string'("0x"), right, 7);  hwrite(line_out, std_logic_vector(unsigned(mem_addr_d)), right, 2);
-    if (mem_enb_d='1') then -- Only write if enable (delayed): Switch off in complete read out mode
+    l_pages : for i in 0 to N_PAGES-1 loop
+      write(line_out, string'("0b"), right, 5);   write(line_out, n_entries_p2_we(i), right, 1);
+      write(line_out, string'("0x"), right, 7);  hwrite(line_out, n_entries_p2(i),    right, 2);
+    end loop l_pages;
+    write(line_out, string'("0b"), right, 3);   write(line_out, mem_wea, right, 1);
+    write(line_out, string'("0x"), right, 7);  hwrite(line_out, std_logic_vector(unsigned(mem_addr)), right, 2);
+    if (mem_wea='1') then -- Only write if enable
       write(line_out, string'("0x"), right, signal_name'length+1-(mem_data'length+3)/4); hwrite(line_out, mem_data, right, (mem_data'length+3)/4);
     else
       write(line_out, string'("0x"), right, signal_name'length+1-(mem_data'length+3)/4); hwrite(line_out, v_zero,   right, (mem_data'length+3)/4);
@@ -464,7 +474,6 @@ package body mytypes_pkg is
     write(line_out, string'("0x"), right, 6);  hwrite(line_out, bx_out,     right, (bx_out'length+3)/4);
     writeline (file_out, line_out); -- Write line
     file_close(file_out);
---    end if;
-  end write_emData_2p;
+  end write_emData_line_2p;
 
 end package body mytypes_pkg;

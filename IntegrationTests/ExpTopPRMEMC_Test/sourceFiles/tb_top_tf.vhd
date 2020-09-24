@@ -40,10 +40,11 @@ end tb_top_tf;
 --! @brief TB
 architecture behavior of tb_top_tf is
   -- ########################### Types ###########################
-  type t_str_array_VMSME is array(natural range <>) of string(1 to 79);  --! String array
   type t_str_array_TPROJ is array(natural range <>) of string(1 to 103); --! String array
-  type t_str_array_VMP   is array(natural range <>) of string(1 to 31);  --! String array
-  type t_str_array_CM    is array(natural range <>) of string(1 to 30);  --! String array
+  type t_str_array_VMSME is array(natural range <>) of string(1 to 79);  --! String array
+  type t_str_array_VMP   is array(natural range <>) of string(1 to 41);  --! String array
+  type t_str_array_CM    is array(natural range <>) of string(1 to 37);  --! String array
+  type t_str_array_FM    is array(natural range <>) of string(1 to 42);  --! String array
   type t_myarray_1d_1d_int    is array(natural range <>) of t_myarray_1d_int(0 to MAX_EVENTS-1);                      --! 1x1D array of int
   type t_myarray_1d_2d_int    is array(natural range <>) of t_myarray_2d_int(0 to MAX_EVENTS-1,0 to N_MEM_BINS-1);    --! 1x2D array of int
   type t_myarray_1d_2d_slv_2p is array(natural range <>) of t_myarray_2d_slv(0 to MAX_EVENTS-1,0 to 2*PAGE_OFFSET-1); --! 1x2D array of slv
@@ -51,7 +52,16 @@ architecture behavior of tb_top_tf is
 
   -- ########################### Constant Definitions ###########################
   -- ############ Please change the constants in this section ###################
-  constant N_ME_IN_CHAIN : integer := 8; --! Number of match engines in chain 
+  constant N_ME_IN_CHAIN     : integer := 8; --! Number of match engines in chain 
+  constant INST_TOP_TF       : integer := 2;          --! Instantiate top_tf or others
+                                                      --! 0: Generated prmemc chain
+                                                      --! 1: top_tf
+                                                      --! 2: top_tf_full
+  constant CLK_PERIOD        : time    := 4.16667 ns; --! 240 MHz
+  constant DEBUG             : boolean := true;       --! Debug off/on
+  constant VMSME_DELAY       : integer := 1-1;        --! Number of BX delays (can be written early 8 pages)
+  constant AS_DELAY          : integer := 2-1;        --! Number of BX delays (can be written early 8 pages)
+  constant MEM_READ_DELAY    : integer := 2;          --! Number of memory read delay
   constant FILE_IN_TPROJ : t_str_array_TPROJ(0 to N_ME_IN_CHAIN-1) := ("../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L1L2F_L3PHIC_04.dat", --! Input files
                                                                        "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L1L2G_L3PHIC_04.dat",
                                                                        "../../../../../../../emData/MemPrints/TrackletProjections/TrackletProjections_TPROJ_L1L2H_L3PHIC_04.dat",
@@ -69,33 +79,25 @@ architecture behavior of tb_top_tf is
                                                                        "../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC23n1_04.dat",
                                                                        "../../../../../../../emData/MemPrints/VMStubsME/VMStubs_VMSME_L3PHIC24n1_04.dat" );
   constant FILE_IN_AS        : string := "../../../../../../../emData/MemPrints/Stubs/AllStubs_AS_L3PHICn6_04.dat"; --! Input file
-  constant FILE_OUT          : string := "../../../../../output.txt"; --! Output file
-  constant INST_TOP_TF       : integer := 2;          --! Instantiate top_tf or others
-                                                      --! 0: Generated prmemc chain
-                                                      --! 1: top_tf
-                                                      --! 2: top_tf_full
-  constant CLK_PERIOD        : time    := 4.16667 ns; --! 240 MHz
-  constant DEBUG             : boolean := true;       --! Debug off/on
-  constant VMSME_DELAY       : integer := 1-1;        --! Number of BX delays (can be written early 8 pages)
-  constant AS_DELAY          : integer := 2-1;        --! Number of BX delays (can be written early 8 pages)
-  constant MEM_READ_DELAY    : integer := 2;          --! Number of memory read delay
-  constant FILE_OUT_VMP      : t_str_array_VMP(0 to N_ME_IN_CHAIN-1) := ("../../../../../output_vmp17.txt", --! Output file for VMP
-                                                                         "../../../../../output_vmp18.txt",
-                                                                         "../../../../../output_vmp19.txt",
-                                                                         "../../../../../output_vmp20.txt",
-                                                                         "../../../../../output_vmp21.txt",
-                                                                         "../../../../../output_vmp22.txt",
-                                                                         "../../../../../output_vmp23.txt",
-                                                                         "../../../../../output_vmp24.txt" );
-  constant FILE_OUT_AP       : string := "../../../../../output_ap.txt";  --! Output file for AP
-  constant FILE_OUT_CM       : t_str_array_CM(0 to N_ME_IN_CHAIN-1) :=  ("../../../../../output_cm17.txt", --! Output file for CM
-                                                                         "../../../../../output_cm18.txt",
-                                                                         "../../../../../output_cm19.txt",
-                                                                         "../../../../../output_cm20.txt",
-                                                                         "../../../../../output_cm21.txt",
-                                                                         "../../../../../output_cm22.txt",
-                                                                         "../../../../../output_cm23.txt",
-                                                                         "../../../../../output_cm24.txt" );
+  constant FILE_OUT_VMP      : t_str_array_VMP(0 to N_ME_IN_CHAIN-1) := ("../../../../../TextIO/VMPROJ_L3PHIC17.txt", --! Output file for VMP
+                                                                         "../../../../../TextIO/VMPROJ_L3PHIC18.txt",
+                                                                         "../../../../../TextIO/VMPROJ_L3PHIC19.txt",
+                                                                         "../../../../../TextIO/VMPROJ_L3PHIC20.txt",
+                                                                         "../../../../../TextIO/VMPROJ_L3PHIC21.txt",
+                                                                         "../../../../../TextIO/VMPROJ_L3PHIC22.txt",
+                                                                         "../../../../../TextIO/VMPROJ_L3PHIC23.txt",
+                                                                         "../../../../../TextIO/VMPROJ_L3PHIC24.txt" );
+  constant FILE_OUT_AP       : string := "../../../../../TextIO/AP_L3PHIC.txt";  --! Output file for AP
+  constant FILE_OUT_CM       : t_str_array_CM(0 to N_ME_IN_CHAIN-1) :=  ("../../../../../TextIO/CM_L3PHIC17.txt", --! Output file for CM
+                                                                         "../../../../../TextIO/CM_L3PHIC18.txt",
+                                                                         "../../../../../TextIO/CM_L3PHIC19.txt",
+                                                                         "../../../../../TextIO/CM_L3PHIC20.txt",
+                                                                         "../../../../../TextIO/CM_L3PHIC21.txt",
+                                                                         "../../../../../TextIO/CM_L3PHIC22.txt",
+                                                                         "../../../../../TextIO/CM_L3PHIC23.txt",
+                                                                         "../../../../../TextIO/CM_L3PHIC24.txt" );
+  constant FILE_OUT_FM       : t_str_array_FM(0 to 1) :=  ("../../../../../TextIO/FM_L1L2XX_L3PHIC.txt", --! Output file for FM
+                                                           "../../../../../TextIO/FM_L5L6XX_L3PHIC.txt" );
 
   -- ########################### Signals ###########################
   -- ### UUT signals ###
@@ -153,24 +155,27 @@ architecture behavior of tb_top_tf is
   signal PR_bx_out     : std_logic_vector(2 downto 0);
   signal PR_bx_out_vld : std_logic;
   -- AllProjection output
-  signal AP_L3PHIC_dataarray_data_V_enb      : std_logic;
-  signal AP_L3PHIC_dataarray_data_V_readaddr : std_logic_vector(9 downto 0);
-  signal AP_L3PHIC_dataarray_data_V_dout     : std_logic_vector(59 downto 0);
-  signal AP_L3PHIC_nentries_V_dout : t_myarray8_8b;
+  signal AP_L3PHIC_dataarray_data_V_wea       : std_logic;
+  signal AP_L3PHIC_dataarray_data_V_writeaddr : std_logic_vector(9 downto 0);
+  signal AP_L3PHIC_dataarray_data_V_din       : std_logic_vector(59 downto 0);
+  signal AP_L3PHIC_nentries_V_we  : t_myarray8_1b;
+  signal AP_L3PHIC_nentries_V_din : t_myarray8_8b;
   -- VMProjection output
-  signal VMPROJ_L3PHIC17to24_dataarray_data_V_enb      : t_myarray8_1b;
-  signal VMPROJ_L3PHIC17to24_dataarray_data_V_readaddr : t_myarray8_8b;
-  signal VMPROJ_L3PHIC17to24_dataarray_data_V_dout     : t_myarray8_21b;
-  signal VMPROJ_L3PHIC17to24_nentries_V_dout : t_myarray2_8_8b;
+  signal VMPROJ_L3PHIC17to24_dataarray_data_V_wea       : t_myarray8_1b;
+  signal VMPROJ_L3PHIC17to24_dataarray_data_V_writeaddr : t_myarray8_8b;
+  signal VMPROJ_L3PHIC17to24_dataarray_data_V_din       : t_myarray8_21b;
+  signal VMPROJ_L3PHIC17to24_nentries_V_we  : t_myarray2_8_1b;
+  signal VMPROJ_L3PHIC17to24_nentries_V_din : t_myarray2_8_8b;
   -- MatchEngine output
   signal ME_bx_out     : t_myarray8_3b;
   signal ME_bx_out_vld : t_myarray8_1b;
   signal ME_all_done   : std_logic := '0';
   -- CandidateMatch output
-  signal CM_L3PHIC17to24_dataarray_data_V_enb      : t_myarray8_1b;
-  signal CM_L3PHIC17to24_dataarray_data_V_readaddr : t_myarray8_8b;
-  signal CM_L3PHIC17to24_dataarray_data_V_dout     : t_myarray8_14b;
-  signal CM_L3PHIC17to24_nentries_V_dout : t_myarray2_8_8b;
+  signal CM_L3PHIC17to24_dataarray_data_V_wea       : t_myarray8_1b;
+  signal CM_L3PHIC17to24_dataarray_data_V_writeaddr : t_myarray8_8b;
+  signal CM_L3PHIC17to24_dataarray_data_V_din       : t_myarray8_14b;
+  signal CM_L3PHIC17to24_nentries_V_we  : t_myarray2_8_1b;
+  signal CM_L3PHIC17to24_nentries_V_din : t_myarray2_8_8b;
 
 
 begin
@@ -355,20 +360,25 @@ begin
 
   --! @brief TextIO process for writting the output ---------------------------------------
   write_result : process
-    file     file_out : text open WRITE_MODE is FILE_OUT; -- Text - a file of character strings
-    variable v_line   : line;                             -- Line - one string from a text
+    file     file_out_L1L2 : text open WRITE_MODE is FILE_OUT_FM(0); -- Text - a file of character strings
+    file     file_out_L5L6 : text open WRITE_MODE is FILE_OUT_FM(1); -- Text - a file of character strings
+    variable v_line   : line;                                        -- Line - one string from a text
     variable v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d : std_logic_vector(MEM_READ_DELAY-1 downto 0) := (others => '0'); -- Delay vector
     variable v_FM_L5L6XX_L3PHIC_dataarray_data_V_enb_d : std_logic_vector(MEM_READ_DELAY-1 downto 0) := (others => '0'); -- Delay vector
   begin
     -- Write file header
-    write(v_line, string'("time"), right, 12); write(v_line, string'("BX#"), right, 4); --write(v_line, string'("addr"), right, 7);
+    write(v_line, string'("time"), right, 20); write(v_line, string'("BX#"), right, 4);
     write(v_line, string'("reset"), right, 6);
     write(v_line, string'("n_ent_p0"), right, 9); write(v_line, string'("n_ent_p1"), right, 9); write(v_line, string'("enb"), right, 4);
-    write(v_line, string'("readaddr"), right, 9);  write(v_line, string'("FM_L1L2XX_L3PHIC_*_dout"), right, 24); 
-    write(v_line, string'("n_ent_p0"), right, 9); write(v_line, string'("n_ent_p1"), right, 9); write(v_line, string'("enb"), right, 4);  
-    write(v_line, string'("readaddr"), right, 9);  write(v_line, string'("FM_L5L6XX_L3PHIC_*_dout"), right, 24);
-    write(v_line, string'("done"), right, 9);  write(v_line, string'("vld"), right, 4); write(v_line, string'("MC_bx_out"), right, 10);
-    writeline (file_out, v_line); -- Write line
+    write(v_line, string'("readaddr"), right, 9);  write(v_line, string'("FM_L1L2XX_L3PHIC_dataarray_data_V_dout"), right, 39); 
+    write(v_line, string'("MC_done"), right, 9);  write(v_line, string'("MC_bx_out_vld"), right, 14); write(v_line, string'("MC_bx_out"), right, 10);
+    writeline (file_out_L1L2, v_line); -- Write line
+    write(v_line, string'("time"), right, 20); write(v_line, string'("BX#"), right, 4);
+    write(v_line, string'("reset"), right, 6);
+    write(v_line, string'("n_ent_p0"), right, 9); write(v_line, string'("n_ent_p1"), right, 9); write(v_line, string'("enb"), right, 4);
+    write(v_line, string'("readaddr"), right, 9);  write(v_line, string'("FM_L5L6XX_L3PHIC_dataarray_data_V_dout"), right, 39); 
+    write(v_line, string'("MC_done"), right, 9);  write(v_line, string'("MC_bx_out_vld"), right, 14); write(v_line, string'("MC_bx_out"), right, 10);
+    writeline (file_out_L5L6, v_line); -- Write line
     wait until rising_edge(MC_done); -- Wait for first result
     l_BX : for v_bx_cnt in 0 to MAX_EVENTS-1 loop -- 0 to 99
       l_addr : for addr in 0 to MAX_ENTRIES-1+MEM_READ_DELAY loop -- 0 to 109
@@ -403,7 +413,7 @@ begin
         wait for 0 ns; -- Update signals
         -- Other writes ---------------------------------------
         if (addr >= MEM_READ_DELAY) then -- Take read dealy into account
-          write(v_line, NOW, right, 12); -- NOW = current simulation time
+          write(v_line, NOW, right, 20); -- NOW = current simulation time
           write(v_line, v_bx_cnt, right, 4);
           --write(v_line, string'("0x"), right, 4); hwrite(v_line, std_logic_vector(to_unsigned(addr,10)), right, 3);
           write(v_line, string'("0b"), right, 5);   write(v_line, reset, right, 1);
@@ -412,23 +422,31 @@ begin
           write(v_line, string'("0b"), right, 3);   write(v_line, v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-1), right, 1);
           write(v_line, string'("0x"), right, 7);  hwrite(v_line, std_logic_vector(unsigned(FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr)-to_unsigned(MEM_READ_DELAY,FM_L1L2XX_L3PHIC_dataarray_data_V_readaddr'length)), right, 2);
           if (v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-1)='1') then -- Only write if enable (delayed): Switch off in complete read out mode
-            write(v_line, string'("0x"), right, 12); hwrite(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_dout, right, 12);
+            write(v_line, string'("0x"), right, 27); hwrite(v_line, FM_L1L2XX_L3PHIC_dataarray_data_V_dout, right, 12);
           else
-            write(v_line, string'("0x"), right, 12);  write(v_line, string'("000000000000"), right, 12);
+            write(v_line, string'("0x"), right, 27);  write(v_line, string'("000000000000"), right, 12);
           end if;
+          write(v_line, string'("0b"), right, 8);   write(v_line, MC_done, right, 1);
+          write(v_line, string'("0b"), right, 13);  write(v_line, MC_bx_out_vld, right, 1);
+          write(v_line, string'("0x"), right, 9);  hwrite(v_line, MC_bx_out, right, 1);
+          writeline (file_out_L1L2, v_line); -- Write line
+          write(v_line, NOW, right, 20); -- NOW = current simulation time
+          write(v_line, v_bx_cnt, right, 4);
+          --write(v_line, string'("0x"), right, 4); hwrite(v_line, std_logic_vector(to_unsigned(addr,10)), right, 3);
+          write(v_line, string'("0b"), right, 5);   write(v_line, reset, right, 1);
           write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L5L6XX_L3PHIC_nentries_V_dout(0), right, 2);
           write(v_line, string'("0x"), right, 7);  hwrite(v_line, FM_L5L6XX_L3PHIC_nentries_V_dout(1), right, 2);
           write(v_line, string'("0b"), right, 3);   write(v_line, v_FM_L5L6XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-1), right, 1);
           write(v_line, string'("0x"), right, 7);  hwrite(v_line, std_logic_vector(unsigned(FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr)-to_unsigned(MEM_READ_DELAY,FM_L5L6XX_L3PHIC_dataarray_data_V_readaddr'length)), right, 2);
           if (v_FM_L5L6XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-1)='1') then -- Only write if enable (delayed): Switch off in complete read out mode
-            write(v_line, string'("0x"), right, 12); hwrite(v_line, FM_L5L6XX_L3PHIC_dataarray_data_V_dout, right, 12);
+            write(v_line, string'("0x"), right, 27); hwrite(v_line, FM_L5L6XX_L3PHIC_dataarray_data_V_dout, right, 12);
           else
-            write(v_line, string'("0x"), right, 12);  write(v_line, string'("000000000000"), right, 12);
+            write(v_line, string'("0x"), right, 27);  write(v_line, string'("000000000000"), right, 12);
           end if;
           write(v_line, string'("0b"), right, 8);   write(v_line, MC_done, right, 1);
-          write(v_line, string'("0b"), right, 3);   write(v_line, MC_bx_out_vld, right, 1);
+          write(v_line, string'("0b"), right, 13);  write(v_line, MC_bx_out_vld, right, 1);
           write(v_line, string'("0x"), right, 9);  hwrite(v_line, MC_bx_out, right, 1);
-          writeline (file_out, v_line); -- Write line
+          writeline (file_out_L5L6, v_line); -- Write line
         end if;
         v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d :=  v_FM_L1L2XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-2 downto 0) & FM_L1L2XX_L3PHIC_dataarray_data_V_enb; -- Required delay
         v_FM_L5L6XX_L3PHIC_dataarray_data_V_enb_d :=  v_FM_L5L6XX_L3PHIC_dataarray_data_V_enb_d(MEM_READ_DELAY-2 downto 0) & FM_L5L6XX_L3PHIC_dataarray_data_V_enb; -- Required delay
@@ -436,34 +454,10 @@ begin
         wait for CLK_PERIOD; -- Main time control
       end loop l_addr;
     end loop l_BX;
-    file_close(file_out);
+    file_close(file_out_L1L2);
+    file_close(file_out_L5L6);
     assert false report "Simulation finished!" severity FAILURE;
   end process write_result;
-  --! @brief TextIO process for writting the output ---------------------------------------
-  write_result_CM : process
-    variable varr_CM_L3PHIC17to24_dataarray_data_V_readaddr_d : t_myarray2_8_8b := (others => (others => (others => '1'))); -- Delay array
-    variable varr_CM_L3PHIC17to24_dataarray_data_V_enb_d      : t_myarray8_2b   := (others => (others => '1')); -- Delay array
-  begin
-    wait until rising_edge(ME_all_done); -- Wait for first result
---    wait for CLK_PERIOD * MEM_READ_DELAY; -- Wait for first result memory delay
-    l_BX : for v_bx_cnt in 0 to MAX_EVENTS-1 loop -- 0 to 99
-      l_addr : for addr in 0 to MAX_ENTRIES-1+MEM_READ_DELAY loop -- 0 to 109
--- put all of this in the copies loop below
-        write_emData_2p(FILE_OUT_CM(0), "CM_L3PHIC17to24_dataarray_data_V_dout(0)", CM_L3PHIC17to24_dataarray_data_V_dout(0),
-                        varr_CM_L3PHIC17to24_dataarray_data_V_enb_d(0)(MEM_READ_DELAY-1), varr_CM_L3PHIC17to24_dataarray_data_V_readaddr_d(MEM_READ_DELAY-1)(0),
-                        CM_L3PHIC17to24_nentries_V_dout(0)(0), CM_L3PHIC17to24_nentries_V_dout(1)(0),
-                        v_bx_cnt, reset, ME_all_done, ME_bx_out_vld(0), ME_bx_out(0));
-        l_copies_CM : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7
-          varr_CM_L3PHIC17to24_dataarray_data_V_readaddr_d(1)(cp) := varr_CM_L3PHIC17to24_dataarray_data_V_readaddr_d(0)(cp); -- Required delay 1. part
-          varr_CM_L3PHIC17to24_dataarray_data_V_readaddr_d(0)(cp) := CM_L3PHIC17to24_dataarray_data_V_readaddr(cp);           -- Required delay 2. part
-          varr_CM_L3PHIC17to24_dataarray_data_V_enb_d(cp)         := varr_CM_L3PHIC17to24_dataarray_data_V_enb_d(cp)(MEM_READ_DELAY-2 downto 0) & CM_L3PHIC17to24_dataarray_data_V_enb(cp); -- Required delay
-        end loop l_copies_CM;
-        wait for CLK_PERIOD; -- Main time control
-      end loop l_addr;
-    end loop l_BX;
-    wait;
-  end process write_result_CM;
-
 
   -- ########################### Instantiation ###########################
   -- Instantiate the Unit Under Test (UUT)
@@ -537,24 +531,27 @@ begin
         AS_L3PHICn4_nentries_V_we  => AS_L3PHICn4_nentries_V_we,
         AS_L3PHICn4_nentries_V_din => AS_L3PHICn4_nentries_V_din,
         -- VMProjection output
-        VMPROJ_L3PHIC17to24_dataarray_data_V_enb      => VMPROJ_L3PHIC17to24_dataarray_data_V_enb,
-        VMPROJ_L3PHIC17to24_dataarray_data_V_readaddr => VMPROJ_L3PHIC17to24_dataarray_data_V_readaddr,
-        VMPROJ_L3PHIC17to24_dataarray_data_V_dout     => VMPROJ_L3PHIC17to24_dataarray_data_V_dout,
-        VMPROJ_L3PHIC17to24_nentries_V_dout           => VMPROJ_L3PHIC17to24_nentries_V_dout,
+        VMPROJ_L3PHIC17to24_dataarray_data_V_wea       => VMPROJ_L3PHIC17to24_dataarray_data_V_wea,
+        VMPROJ_L3PHIC17to24_dataarray_data_V_writeaddr => VMPROJ_L3PHIC17to24_dataarray_data_V_writeaddr,
+        VMPROJ_L3PHIC17to24_dataarray_data_V_din       => VMPROJ_L3PHIC17to24_dataarray_data_V_din,
+        VMPROJ_L3PHIC17to24_nentries_V_we              => VMPROJ_L3PHIC17to24_nentries_V_we,
+        VMPROJ_L3PHIC17to24_nentries_V_din             => VMPROJ_L3PHIC17to24_nentries_V_din,
         -- AllProjection output
-        AP_L3PHIC_dataarray_data_V_enb      => AP_L3PHIC_dataarray_data_V_enb,
-        AP_L3PHIC_dataarray_data_V_readaddr => AP_L3PHIC_dataarray_data_V_readaddr,
-        AP_L3PHIC_dataarray_data_V_dout     => AP_L3PHIC_dataarray_data_V_dout,
-        AP_L3PHIC_nentries_V_dout           => AP_L3PHIC_nentries_V_dout,
+        AP_L3PHIC_dataarray_data_V_wea       => AP_L3PHIC_dataarray_data_V_wea,
+        AP_L3PHIC_dataarray_data_V_writeaddr => AP_L3PHIC_dataarray_data_V_writeaddr,
+        AP_L3PHIC_dataarray_data_V_din       => AP_L3PHIC_dataarray_data_V_din,
+        AP_L3PHIC_nentries_V_we              => AP_L3PHIC_nentries_V_we,
+        AP_L3PHIC_nentries_V_din             => AP_L3PHIC_nentries_V_din,
         -- ProjectionRouter output
         PR_bx_out     => PR_bx_out,
         PR_bx_out_vld => PR_bx_out_vld,
         PR_done       => PR_done,
         -- CandidateMatch output
-        CM_L3PHIC17to24_dataarray_data_V_enb      => CM_L3PHIC17to24_dataarray_data_V_enb,
-        CM_L3PHIC17to24_dataarray_data_V_readaddr => CM_L3PHIC17to24_dataarray_data_V_readaddr,
-        CM_L3PHIC17to24_dataarray_data_V_dout     => CM_L3PHIC17to24_dataarray_data_V_dout,
-        CM_L3PHIC17to24_nentries_V_dout           => CM_L3PHIC17to24_nentries_V_dout,
+        CM_L3PHIC17to24_dataarray_data_V_wea       => CM_L3PHIC17to24_dataarray_data_V_wea,
+        CM_L3PHIC17to24_dataarray_data_V_writeaddr => CM_L3PHIC17to24_dataarray_data_V_writeaddr,
+        CM_L3PHIC17to24_dataarray_data_V_din       => CM_L3PHIC17to24_dataarray_data_V_din,
+        CM_L3PHIC17to24_nentries_V_we              => CM_L3PHIC17to24_nentries_V_we,
+        CM_L3PHIC17to24_nentries_V_din             => CM_L3PHIC17to24_nentries_V_din,
         -- MatchEngine output
         ME_bx_out     => ME_bx_out,
         ME_bx_out_vld => ME_bx_out_vld,
@@ -572,6 +569,60 @@ begin
         MC_bx_out     => MC_bx_out,
         MC_bx_out_vld => MC_bx_out_vld,
         MC_done       => MC_done );
+    --! @brief TextIO process for writting the output ---------------------------------------
+    write_result_VMP : process
+      variable myarray2_8b : t_myarray2_8b := (others => (others => '0')); -- Temporary array to avoid sim error
+      variable myarray2_1b : t_myarray2_1b := (others => '0'); -- Temporary array to avoid sim error
+    begin
+      wait until PR_start = '1'; -- Wait to start
+      l_copies_header : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7
+        write_header_line_2p(FILE_OUT_VMP(cp), "VMPROJ_L3PHIC17to24_dataarray_data_V_din");
+      end loop l_copies_header;
+      l_BX : for v_bx_cnt in 0 to MAX_EVENTS-1 loop
+        if (v_bx_cnt >= 0) then
+          l_addr : for addr in 0 to MAX_ENTRIES-1 loop -- 0 to 107
+            l_copies : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7
+--              if (VMPROJ_L3PHIC17to24_dataarray_data_V_wea(cp)='1' or VMPROJ_L3PHIC17to24_nentries_V_we(0)(cp)='1' or VMPROJ_L3PHIC17to24_nentries_V_we(1)(cp)='1') then -- Only write valid data
+                myarray2_8b := (VMPROJ_L3PHIC17to24_nentries_V_din(0)(cp)) & (VMPROJ_L3PHIC17to24_nentries_V_din(1)(cp)); -- Needed to avoid sim error (casting does not work)
+                myarray2_1b := (VMPROJ_L3PHIC17to24_nentries_V_we(0)(cp))  & (VMPROJ_L3PHIC17to24_nentries_V_we(1)(cp));  -- Needed to avoid sim error (casting does not work)
+                write_emData_line_2p(reset, v_bx_cnt, PR_done, PR_bx_out, PR_bx_out_vld, FILE_OUT_VMP(cp), "VMPROJ_L3PHIC17to24_dataarray_data_V_din",
+                                     VMPROJ_L3PHIC17to24_dataarray_data_V_din(cp), VMPROJ_L3PHIC17to24_dataarray_data_V_wea(cp), VMPROJ_L3PHIC17to24_dataarray_data_V_writeaddr(cp),
+                                     myarray2_8b, myarray2_1b );
+--              end if;
+            end loop l_copies;
+            wait for CLK_PERIOD; -- Main time control
+          end loop l_addr;
+        end if;
+      end loop l_BX;
+      wait;
+    end process write_result_VMP;
+    --! @brief TextIO process for writting the output ---------------------------------------
+    write_result_CM : process
+      variable myarray2_8b : t_myarray2_8b := (others => (others => '0')); -- Temporary array to avoid sim error
+      variable myarray2_1b : t_myarray2_1b := (others => '0'); -- Temporary array to avoid sim error
+    begin
+      wait until PR_done = '1'; -- Wait to start
+      l_copies_header : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7
+        write_header_line_2p(FILE_OUT_CM(cp), "CM_L3PHIC17to24_dataarray_data_V_din");
+      end loop l_copies_header;
+      l_BX : for v_bx_cnt in 0 to MAX_EVENTS-1 loop
+        if (v_bx_cnt >= 0) then
+          l_addr : for addr in 0 to MAX_ENTRIES-1 loop -- 0 to 107
+            l_copies : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7
+--              if (CM_L3PHIC17to24_dataarray_data_V_wea(cp)='1' or CM_L3PHIC17to24_nentries_V_we(0)(cp)='1' or CM_L3PHIC17to24_nentries_V_we(1)(cp)='1') then -- Only write valid data
+                myarray2_8b := (CM_L3PHIC17to24_nentries_V_din(0)(cp)) & (CM_L3PHIC17to24_nentries_V_din(1)(cp)); -- Needed to avoid sim error (casting does not work)
+                myarray2_1b := (CM_L3PHIC17to24_nentries_V_we(0)(cp))  & (CM_L3PHIC17to24_nentries_V_we(1)(cp));  -- Needed to avoid sim error (casting does not work)
+                write_emData_line_2p(reset, v_bx_cnt, ME_all_done, ME_bx_out(cp), ME_bx_out_vld(cp), FILE_OUT_CM(cp), "CM_L3PHIC17to24_dataarray_data_V_din",
+                                     CM_L3PHIC17to24_dataarray_data_V_din(cp), CM_L3PHIC17to24_dataarray_data_V_wea(cp), CM_L3PHIC17to24_dataarray_data_V_writeaddr(cp),
+                                     myarray2_8b, myarray2_1b );
+--              end if;
+            end loop l_copies;
+            wait for CLK_PERIOD; -- Main time control
+          end loop l_addr;
+        end if;
+      end loop l_BX;
+      wait;
+    end process write_result_CM;
   end generate;
 
   i_others : if INST_TOP_TF = 0 generate

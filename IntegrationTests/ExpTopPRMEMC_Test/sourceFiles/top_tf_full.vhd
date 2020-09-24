@@ -40,24 +40,27 @@ entity top_tf_full is
     AS_L3PHICn4_nentries_V_we  : in t_myarray8_1b;
     AS_L3PHICn4_nentries_V_din : in t_myarray8_8b;
     -- VMProjection output
-    VMPROJ_L3PHIC17to24_dataarray_data_V_enb      : out t_myarray8_1b;
-    VMPROJ_L3PHIC17to24_dataarray_data_V_readaddr : out t_myarray8_8b;
-    VMPROJ_L3PHIC17to24_dataarray_data_V_dout     : out t_myarray8_21b;
-    VMPROJ_L3PHIC17to24_nentries_V_dout : out t_myarray2_8_8b;
+    VMPROJ_L3PHIC17to24_dataarray_data_V_wea       : inout t_myarray8_1b;
+    VMPROJ_L3PHIC17to24_dataarray_data_V_writeaddr : inout t_myarray8_8b;
+    VMPROJ_L3PHIC17to24_dataarray_data_V_din       : inout t_myarray8_21b;
+    VMPROJ_L3PHIC17to24_nentries_V_we  : inout t_myarray2_8_1b;
+    VMPROJ_L3PHIC17to24_nentries_V_din : inout t_myarray2_8_8b;
     -- AllProjection output
-    AP_L3PHIC_dataarray_data_V_enb      : out std_logic;
-    AP_L3PHIC_dataarray_data_V_readaddr : out std_logic_vector(9 downto 0);
-    AP_L3PHIC_dataarray_data_V_dout     : out std_logic_vector(59 downto 0);
-    AP_L3PHIC_nentries_V_dout : out t_myarray8_8b;
+    AP_L3PHIC_dataarray_data_V_wea       : inout std_logic;
+    AP_L3PHIC_dataarray_data_V_writeaddr : inout std_logic_vector(9 downto 0);
+    AP_L3PHIC_dataarray_data_V_din       : inout std_logic_vector(59 downto 0);
+    AP_L3PHIC_nentries_V_we  : inout t_myarray8_1b;
+    AP_L3PHIC_nentries_V_din : inout t_myarray8_8b;
     -- ProjectionRouter output
     PR_bx_out     : inout std_logic_vector(2 downto 0);
     PR_bx_out_vld : inout std_logic;
     PR_done       : inout std_logic;
     -- CandidateMatch output
-    CM_L3PHIC17to24_dataarray_data_V_enb      : out t_myarray8_1b;
-    CM_L3PHIC17to24_dataarray_data_V_readaddr : out t_myarray8_8b;
-    CM_L3PHIC17to24_dataarray_data_V_dout     : out t_myarray8_14b;
-    CM_L3PHIC17to24_nentries_V_dout : out t_myarray2_8_8b;
+    CM_L3PHIC17to24_dataarray_data_V_wea       : inout t_myarray8_1b;
+    CM_L3PHIC17to24_dataarray_data_V_writeaddr : inout t_myarray8_8b;
+    CM_L3PHIC17to24_dataarray_data_V_din       : inout t_myarray8_14b;
+    CM_L3PHIC17to24_nentries_V_we  : inout t_myarray2_8_1b;
+    CM_L3PHIC17to24_nentries_V_din : inout t_myarray2_8_8b;
     -- MatchEngine output
     ME_bx_out     : inout t_myarray8_3b;
     ME_bx_out_vld : inout t_myarray8_1b;
@@ -373,25 +376,25 @@ END COMPONENT;
   --signal PR_bx_out     : std_logic_vector(2 downto 0);
   --signal PR_bx_out_vld : std_logic;
   
-  -- connecting ProjectionRouter output to AllProjection memories
-  signal AP_L3PHIC_dataarray_data_V_wea       : std_logic;
-  signal AP_L3PHIC_dataarray_data_V_writeaddr : std_logic_vector(9 downto 0);
-  signal AP_L3PHIC_dataarray_data_V_din       : std_logic_vector(59 downto 0);
-  signal AP_L3PHIC_nentries_V_we  : t_myarray8_1b;
-  signal AP_L3PHIC_nentries_V_din : t_myarray8_8b;
+  ---- connecting ProjectionRouter output to AllProjection memories
+  --signal AP_L3PHIC_dataarray_data_V_wea       : std_logic;
+  --signal AP_L3PHIC_dataarray_data_V_writeaddr : std_logic_vector(9 downto 0);
+  --signal AP_L3PHIC_dataarray_data_V_din       : std_logic_vector(59 downto 0);
+  --signal AP_L3PHIC_nentries_V_we  : t_myarray8_1b;
+  --signal AP_L3PHIC_nentries_V_din : t_myarray8_8b;
   
-  -- connecting ProjectionRouter output to VMProjection memories
-  signal VMPROJ_L3PHIC17to24_dataarray_data_V_wea       : t_myarray8_1b;
-  signal VMPROJ_L3PHIC17to24_dataarray_data_V_writeaddr : t_myarray8_8b;
-  signal VMPROJ_L3PHIC17to24_dataarray_data_V_din       : t_myarray8_21b;
-  signal VMPROJ_L3PHIC17to24_nentries_V_we  : t_myarray2_8_1b;
-  signal VMPROJ_L3PHIC17to24_nentries_V_din : t_myarray2_8_8b;
+  ---- connecting ProjectionRouter output to VMProjection memories
+  --signal VMPROJ_L3PHIC17to24_dataarray_data_V_wea       : t_myarray8_1b;
+  --signal VMPROJ_L3PHIC17to24_dataarray_data_V_writeaddr : t_myarray8_8b;
+  --signal VMPROJ_L3PHIC17to24_dataarray_data_V_din       : t_myarray8_21b;
+  --signal VMPROJ_L3PHIC17to24_nentries_V_we  : t_myarray2_8_1b;
+  --signal VMPROJ_L3PHIC17to24_nentries_V_din : t_myarray2_8_8b;
   
-  ---- connecting VMProjections memories to MatchEngine input
-  --signal VMPROJ_L3PHIC17to24_dataarray_data_V_enb      : t_myarray8_1b;
-  --signal VMPROJ_L3PHIC17to24_dataarray_data_V_readaddr : t_myarray8_8b;
-  --signal VMPROJ_L3PHIC17to24_dataarray_data_V_dout     : t_myarray8_21b;
-  --signal VMPROJ_L3PHIC17to24_nentries_V_dout : t_myarray2_8_8b;
+  -- connecting VMProjections memories to MatchEngine input
+  signal VMPROJ_L3PHIC17to24_dataarray_data_V_enb      : t_myarray8_1b;
+  signal VMPROJ_L3PHIC17to24_dataarray_data_V_readaddr : t_myarray8_8b;
+  signal VMPROJ_L3PHIC17to24_dataarray_data_V_dout     : t_myarray8_21b;
+  signal VMPROJ_L3PHIC17to24_nentries_V_dout : t_myarray2_8_8b;
   
   -- connecting VMStubME memories to MatchEngine input
   signal VMSME_L3PHIC17to24n1_dataarray_data_V_enb      : t_myarray8_1b;
@@ -415,12 +418,12 @@ END COMPONENT;
   --signal ME_bx_out_vld : t_myarray8_1b;
   --signal ME_all_done   : std_logic := '0';
   
-  -- connecting MatchEngine output to CandidateMatches memories 
-  signal CM_L3PHIC17to24_dataarray_data_V_wea       : t_myarray8_1b;
-  signal CM_L3PHIC17to24_dataarray_data_V_writeaddr : t_myarray8_8b;
-  signal CM_L3PHIC17to24_dataarray_data_V_din       : t_myarray8_14b;
-  signal CM_L3PHIC17to24_nentries_V_we  : t_myarray2_8_1b;
-  signal CM_L3PHIC17to24_nentries_V_din : t_myarray2_8_8b;
+  ---- connecting MatchEngine output to CandidateMatches memories 
+  --signal CM_L3PHIC17to24_dataarray_data_V_wea       : t_myarray8_1b;
+  --signal CM_L3PHIC17to24_dataarray_data_V_writeaddr : t_myarray8_8b;
+  --signal CM_L3PHIC17to24_dataarray_data_V_din       : t_myarray8_14b;
+  --signal CM_L3PHIC17to24_nentries_V_we  : t_myarray2_8_1b;
+  --signal CM_L3PHIC17to24_nentries_V_din : t_myarray2_8_8b;
   
   -- connecting AllStubs memory to MatchCalculator input
   signal AS_L3PHICn4_dataarray_data_V_enb      : std_logic;
@@ -428,17 +431,17 @@ END COMPONENT;
   signal AS_L3PHICn4_dataarray_data_V_dout     : std_logic_vector(35 downto 0);
   signal AS_L3PHICn4_nentries_V_dout : t_myarray8_8b;
   
-  ---- connecting AllProjections memory to MatchCalculator input
-  --signal AP_L3PHIC_dataarray_data_V_enb      : std_logic;
-  --signal AP_L3PHIC_dataarray_data_V_readaddr : std_logic_vector(9 downto 0);
-  --signal AP_L3PHIC_dataarray_data_V_dout     : std_logic_vector(59 downto 0);
-  --signal AP_L3PHIC_nentries_V_dout : t_myarray8_8b;
+  -- connecting AllProjections memory to MatchCalculator input
+  signal AP_L3PHIC_dataarray_data_V_enb      : std_logic;
+  signal AP_L3PHIC_dataarray_data_V_readaddr : std_logic_vector(9 downto 0);
+  signal AP_L3PHIC_dataarray_data_V_dout     : std_logic_vector(59 downto 0);
+  signal AP_L3PHIC_nentries_V_dout : t_myarray8_8b;
   
-  ---- connecting CandidateMatches memories to MatchCalculator input
-  --signal CM_L3PHIC17to24_dataarray_data_V_enb      : t_myarray8_1b;
-  --signal CM_L3PHIC17to24_dataarray_data_V_readaddr : t_myarray8_8b;
-  --signal CM_L3PHIC17to24_dataarray_data_V_dout     : t_myarray8_14b;
-  --signal CM_L3PHIC17to24_nentries_V_dout : t_myarray2_8_8b;
+  -- connecting CandidateMatches memories to MatchCalculator input
+  signal CM_L3PHIC17to24_dataarray_data_V_enb      : t_myarray8_1b;
+  signal CM_L3PHIC17to24_dataarray_data_V_readaddr : t_myarray8_8b;
+  signal CM_L3PHIC17to24_dataarray_data_V_dout     : t_myarray8_14b;
+  signal CM_L3PHIC17to24_nentries_V_dout : t_myarray2_8_8b;
 
   -- MatchCalculator signals
   signal MC_start : std_logic := '0';
