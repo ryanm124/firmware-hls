@@ -71,8 +71,15 @@ stages: # ---------------------------------------------------------------------
   stage: check-results
   script:
     - cd IntegrationTests/ExpTopPRMEMC_Test
+    - mkdir TextIO
     # Compare HDL sim output with full machtes Mem/Prints
-    - python3 CompareFullMatches.py -r ../../emData/MemPrints/Matches/FullMatches_FM_L1L2_L3PHIC_04.dat ../../emData/MemPrints/Matches/FullMatches_FM_L5L6_L3PHIC_04.dat
+    - ./CompareMemPrintsFW.sh
+  artifacts:
+    when: on_success
+    name: "$CI_JOB_NAME-$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
+    paths:
+      - ./IntegrationTests/ExpTopPRMEMC_Test/TextIO/*.txt
+    expire_in: 10 week
     
 # Jobs ------------------------------------------------------------------------
 # Quality checks ------------

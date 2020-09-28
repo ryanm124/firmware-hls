@@ -570,56 +570,85 @@ begin
         MC_bx_out_vld => MC_bx_out_vld,
         MC_done       => MC_done );
     --! @brief TextIO process for writting the output ---------------------------------------
+    write_result_AP : process
+      variable v_bx_cnt      : integer       := -1; --! BX counter
+    begin
+      wait until PR_start = '1'; -- Wait to start
+      write_header_line(FILE_OUT_AP, "AP_L3PHIC_dataarray_data_V_din", 8);
+      l_BX : while v_bx_cnt <= MAX_EVENTS-1 loop
+        if (AP_L3PHIC_dataarray_data_V_writeaddr(6 downto 0) = b"000_0000") and
+           (AP_L3PHIC_dataarray_data_V_wea = '1') then -- Start new event assuming all addr behave the same
+          v_bx_cnt := v_bx_cnt + 1;
+        end if;
+        if (AP_L3PHIC_dataarray_data_V_wea='1') then -- Only write valid data
+        	    --or AP_L3PHIC_nentries_V_we(0)='1' or AP_L3PHIC_nentries_V_we(1)='1' or 
+                --AP_L3PHIC_nentries_V_we(2)='1' or AP_L3PHIC_nentries_V_we(3)='1' or AP_L3PHIC_nentries_V_we(4)='1' or 
+                --AP_L3PHIC_nentries_V_we(5)='1' or AP_L3PHIC_nentries_V_we(6)='1' or AP_L3PHIC_nentries_V_we(7)='1') then -- Only write valid data
+          write_emData_line_8p(reset, v_bx_cnt, PR_done, PR_bx_out, PR_bx_out_vld, FILE_OUT_AP, "AP_L3PHIC_dataarray_data_V_din",
+                               AP_L3PHIC_dataarray_data_V_din, AP_L3PHIC_dataarray_data_V_wea, AP_L3PHIC_dataarray_data_V_writeaddr,
+                               AP_L3PHIC_nentries_V_din, AP_L3PHIC_nentries_V_we );
+        end if;
+        wait for CLK_PERIOD; -- Main time control
+      end loop l_BX;
+      wait;
+    end process write_result_AP;
+    --! @brief TextIO process for writting the output ---------------------------------------
     write_result_VMP : process
-      variable myarray2_8b : t_myarray2_8b := (others => (others => '0')); -- Temporary array to avoid sim error
-      variable myarray2_1b : t_myarray2_1b := (others => '0'); -- Temporary array to avoid sim error
+      variable v_bx_cnt      : integer       := -1; --! BX counter
+      variable myarray2_8b   : t_myarray2_8b := (others => (others => '0')); -- Temporary array to avoid sim error
+      variable myarray2_1b   : t_myarray2_1b := (others => '0'); -- Temporary array to avoid sim error
+      variable v_addr_d1     : t_myarray8_8b := (others => (others => '0')); -- Delayed address
     begin
       wait until PR_start = '1'; -- Wait to start
       l_copies_header : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7
-        write_header_line_2p(FILE_OUT_VMP(cp), "VMPROJ_L3PHIC17to24_dataarray_data_V_din");
+        write_header_line(FILE_OUT_VMP(cp), "VMPROJ_L3PHIC17to24_dataarray_data_V_din", 2);
       end loop l_copies_header;
-      l_BX : for v_bx_cnt in 0 to MAX_EVENTS-1 loop
-        if (v_bx_cnt >= 0) then
-          l_addr : for addr in 0 to MAX_ENTRIES-1 loop -- 0 to 107
-            l_copies : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7
---              if (VMPROJ_L3PHIC17to24_dataarray_data_V_wea(cp)='1' or VMPROJ_L3PHIC17to24_nentries_V_we(0)(cp)='1' or VMPROJ_L3PHIC17to24_nentries_V_we(1)(cp)='1') then -- Only write valid data
-                myarray2_8b := (VMPROJ_L3PHIC17to24_nentries_V_din(0)(cp)) & (VMPROJ_L3PHIC17to24_nentries_V_din(1)(cp)); -- Needed to avoid sim error (casting does not work)
-                myarray2_1b := (VMPROJ_L3PHIC17to24_nentries_V_we(0)(cp))  & (VMPROJ_L3PHIC17to24_nentries_V_we(1)(cp));  -- Needed to avoid sim error (casting does not work)
-                write_emData_line_2p(reset, v_bx_cnt, PR_done, PR_bx_out, PR_bx_out_vld, FILE_OUT_VMP(cp), "VMPROJ_L3PHIC17to24_dataarray_data_V_din",
-                                     VMPROJ_L3PHIC17to24_dataarray_data_V_din(cp), VMPROJ_L3PHIC17to24_dataarray_data_V_wea(cp), VMPROJ_L3PHIC17to24_dataarray_data_V_writeaddr(cp),
-                                     myarray2_8b, myarray2_1b );
---              end if;
-            end loop l_copies;
-            wait for CLK_PERIOD; -- Main time control
-          end loop l_addr;
+      l_BX : while v_bx_cnt <= MAX_EVENTS-1 loop
+        if (VMPROJ_L3PHIC17to24_dataarray_data_V_writeaddr(0)(6 downto 0) = b"000_0000") and
+           v_addr_d1(0)(7) /= VMPROJ_L3PHIC17to24_dataarray_data_V_writeaddr(0)(7) then -- Start new event assuming all addr behave the same
+          v_bx_cnt := v_bx_cnt + 1;
         end if;
+        l_copies : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7
+          if (VMPROJ_L3PHIC17to24_dataarray_data_V_wea(cp)='1' or VMPROJ_L3PHIC17to24_nentries_V_we(0)(cp)='1' or VMPROJ_L3PHIC17to24_nentries_V_we(1)(cp)='1') then -- Only write valid data
+            myarray2_8b := (VMPROJ_L3PHIC17to24_nentries_V_din(0)(cp)) & (VMPROJ_L3PHIC17to24_nentries_V_din(1)(cp)); -- Needed to avoid sim error (casting does not work)
+            myarray2_1b := (VMPROJ_L3PHIC17to24_nentries_V_we(0)(cp))  & (VMPROJ_L3PHIC17to24_nentries_V_we(1)(cp));  -- Needed to avoid sim error (casting does not work)
+            write_emData_line_2p(reset, v_bx_cnt, PR_done, PR_bx_out, PR_bx_out_vld, FILE_OUT_VMP(cp), "VMPROJ_L3PHIC17to24_dataarray_data_V_din",
+                                 VMPROJ_L3PHIC17to24_dataarray_data_V_din(cp), VMPROJ_L3PHIC17to24_dataarray_data_V_wea(cp), VMPROJ_L3PHIC17to24_dataarray_data_V_writeaddr(cp),
+                                 myarray2_8b, myarray2_1b );
+          end if;
+        end loop l_copies;
+        v_addr_d1 := VMPROJ_L3PHIC17to24_dataarray_data_V_writeaddr; -- Delay the address
+        wait for CLK_PERIOD; -- Main time control
       end loop l_BX;
       wait;
     end process write_result_VMP;
     --! @brief TextIO process for writting the output ---------------------------------------
     write_result_CM : process
+      variable v_bx_cnt    : integer       := -1; --! BX counter
       variable myarray2_8b : t_myarray2_8b := (others => (others => '0')); -- Temporary array to avoid sim error
       variable myarray2_1b : t_myarray2_1b := (others => '0'); -- Temporary array to avoid sim error
+      variable v_addr_d1   : t_myarray8_8b := (others => (others => '0')); -- Delayed address
     begin
-      wait until PR_done = '1'; -- Wait to start
+      wait until PR_done = '1'; -- Wait to start = ME_start
       l_copies_header : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7
-        write_header_line_2p(FILE_OUT_CM(cp), "CM_L3PHIC17to24_dataarray_data_V_din");
+        write_header_line(FILE_OUT_CM(cp), "CM_L3PHIC17to24_dataarray_data_V_din", 2);
       end loop l_copies_header;
-      l_BX : for v_bx_cnt in 0 to MAX_EVENTS-1 loop
-        if (v_bx_cnt >= 0) then
-          l_addr : for addr in 0 to MAX_ENTRIES-1 loop -- 0 to 107
-            l_copies : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7
---              if (CM_L3PHIC17to24_dataarray_data_V_wea(cp)='1' or CM_L3PHIC17to24_nentries_V_we(0)(cp)='1' or CM_L3PHIC17to24_nentries_V_we(1)(cp)='1') then -- Only write valid data
-                myarray2_8b := (CM_L3PHIC17to24_nentries_V_din(0)(cp)) & (CM_L3PHIC17to24_nentries_V_din(1)(cp)); -- Needed to avoid sim error (casting does not work)
-                myarray2_1b := (CM_L3PHIC17to24_nentries_V_we(0)(cp))  & (CM_L3PHIC17to24_nentries_V_we(1)(cp));  -- Needed to avoid sim error (casting does not work)
-                write_emData_line_2p(reset, v_bx_cnt, ME_all_done, ME_bx_out(cp), ME_bx_out_vld(cp), FILE_OUT_CM(cp), "CM_L3PHIC17to24_dataarray_data_V_din",
-                                     CM_L3PHIC17to24_dataarray_data_V_din(cp), CM_L3PHIC17to24_dataarray_data_V_wea(cp), CM_L3PHIC17to24_dataarray_data_V_writeaddr(cp),
-                                     myarray2_8b, myarray2_1b );
---              end if;
-            end loop l_copies;
-            wait for CLK_PERIOD; -- Main time control
-          end loop l_addr;
+      l_BX : while v_bx_cnt <= MAX_EVENTS-1 loop
+        if (CM_L3PHIC17to24_dataarray_data_V_writeaddr(0)(6 downto 0) = b"000_0000") and
+           v_addr_d1(0)(7) /= CM_L3PHIC17to24_dataarray_data_V_writeaddr(0)(7) then -- Start new event assuming all addr behave the same
+          v_bx_cnt := v_bx_cnt + 1;
         end if;
+        l_copies : for cp in 0 to N_ME_IN_CHAIN-1 loop -- 0 to 7
+          if (CM_L3PHIC17to24_dataarray_data_V_wea(cp)='1' or CM_L3PHIC17to24_nentries_V_we(0)(cp)='1' or CM_L3PHIC17to24_nentries_V_we(1)(cp)='1') then -- Only write valid data
+            myarray2_8b := (CM_L3PHIC17to24_nentries_V_din(0)(cp)) & (CM_L3PHIC17to24_nentries_V_din(1)(cp)); -- Needed to avoid sim error (casting does not work)
+            myarray2_1b := (CM_L3PHIC17to24_nentries_V_we(0)(cp))  & (CM_L3PHIC17to24_nentries_V_we(1)(cp));  -- Needed to avoid sim error (casting does not work)
+            write_emData_line_2p(reset, v_bx_cnt, ME_all_done, ME_bx_out(cp), ME_bx_out_vld(cp), FILE_OUT_CM(cp), "CM_L3PHIC17to24_dataarray_data_V_din",
+                                 CM_L3PHIC17to24_dataarray_data_V_din(cp), CM_L3PHIC17to24_dataarray_data_V_wea(cp), CM_L3PHIC17to24_dataarray_data_V_writeaddr(cp),
+                                 myarray2_8b, myarray2_1b );
+          end if;
+        end loop l_copies;
+        v_addr_d1 := CM_L3PHIC17to24_dataarray_data_V_writeaddr; -- Delay the address
+        wait for CLK_PERIOD; -- Main time control
       end loop l_BX;
       wait;
     end process write_result_CM;

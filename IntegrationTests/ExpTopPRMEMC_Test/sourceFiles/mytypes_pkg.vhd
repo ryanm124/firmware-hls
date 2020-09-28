@@ -96,9 +96,10 @@ package mytypes_pkg is
     data_arr      : out   t_myarray_2d_slv(0 to MAX_EVENTS-1,0 to 8*PAGE_OFFSET-1); --! Dataarray with read values
     n_entries_arr : inout t_myarray_2d_int(0 to MAX_EVENTS-1,0 to N_MEM_BINS-1)     --! Number of entries per event
   );
-  procedure write_header_line_2p (
-    file_path       : in string;           --! File path as string
-    signal_name     : in string            --! Signal name that will be printed in output file
+  procedure write_header_line (
+    file_path       : in string;  --! File path as string
+    signal_name     : in string;  --! Signal name that will be printed in output file
+    N_PAGES         : in integer  --! Number of pages
   );
   procedure write_emData_line_2p (
     reset           : in std_logic;        --! HDL (global) reset
@@ -113,6 +114,20 @@ package mytypes_pkg is
     mem_addr        : in std_logic_vector; --! Memory address
     n_entries_p2    : in t_myarray2_8b;    --! Number of entries per page
     n_entries_p2_we : in t_myarray2_1b     --! Number of entries per page write enable
+  );
+  procedure write_emData_line_8p (
+    reset           : in std_logic;        --! HDL (global) reset
+    bx_cnt          : in integer;          --! HDL (global) counter
+    done            : in std_logic;        --! HLS module done
+    bx_out          : in std_logic_vector; --! HLS module BX counter
+    bx_out_vld      : in std_logic;        --! HLS module BX counter valid
+    file_path       : in string;           --! File path as string
+    signal_name     : in string;           --! Signal name that will be printed in output file
+    mem_data        : in std_logic_vector; --! Data write values
+    mem_wea         : in std_logic;        --! Write enable of data
+    mem_addr        : in std_logic_vector; --! Memory address
+    n_entries_p2    : in t_myarray8_8b;    --! Number of entries per page
+    n_entries_p2_we : in t_myarray8_1b     --! Number of entries per page write enable
   );
 
 end package mytypes_pkg;
@@ -414,11 +429,11 @@ package body mytypes_pkg is
   end read_emData_8p_bin;
 
   --! @brief TextIO procedure to write emData for non-binned memories one line per clock cycle
-  procedure write_header_line_2p (
-    file_path       : in string;           --! File path as string
-    signal_name     : in string            --! Signal name that will be printed in output file
+  procedure write_header_line (
+    file_path       : in string;  --! File path as string
+    signal_name     : in string;  --! Signal name that will be printed in output file
+    N_PAGES         : in integer  --! Number of pages
   ) is
-  constant N_PAGES  : integer := 2;      --! Number of pages
   file     file_out : text is file_path; -- Text - a file of character strings
   variable line_out : line;              -- Line - one string from a text file
   begin
@@ -434,7 +449,7 @@ package body mytypes_pkg is
     write(line_out, string'("done"), right, 5);  write(line_out, string'("bx_out_vld"), right, 11); write(line_out, string'("bx_out"), right, 7);
     writeline (file_out, line_out); -- Write line
     file_close(file_out);
-  end write_header_line_2p;
+  end write_header_line;
   --! @brief TextIO procedure to write emData for non-binned memories one line per clock cycle
   procedure write_emData_line_2p (
     reset           : in std_logic;        --! HDL (global) reset
@@ -450,10 +465,10 @@ package body mytypes_pkg is
     n_entries_p2    : in t_myarray2_8b;    --! Number of entries per page
     n_entries_p2_we : in t_myarray2_1b     --! Number of entries per page write enable
   ) is
-  constant N_PAGES         : integer := 2;      --! Number of pages
-  file     file_out        : text is file_path; -- Text - a file of character strings
-  variable line_out        : line;              -- Line - one string from a text file
-  variable v_zero          : std_logic_vector(mem_data'length-1 downto 0) := (others => '0');  -- Zero vector
+  constant N_PAGES  : integer := 2;      --! Number of pages
+  file     file_out : text is file_path; -- Text - a file of character strings
+  variable line_out : line;              -- Line - one string from a text file
+  variable v_zero   : std_logic_vector(mem_data'length-1 downto 0) := (others => '0');  -- Zero vector
   begin
     file_open(file_out, file_path, APPEND_MODE);
     write(line_out, NOW, right, 20); write(line_out, bx_cnt, right, 4);
@@ -475,5 +490,45 @@ package body mytypes_pkg is
     writeline (file_out, line_out); -- Write line
     file_close(file_out);
   end write_emData_line_2p;
+  --! @brief TextIO procedure to write emData for non-binned memories one line per clock cycle
+  procedure write_emData_line_8p (
+    reset           : in std_logic;        --! HDL (global) reset
+    bx_cnt          : in integer;          --! HDL (global) counter
+    done            : in std_logic;        --! HLS module done
+    bx_out          : in std_logic_vector; --! HLS module BX counter
+    bx_out_vld      : in std_logic;        --! HLS module BX counter valid
+    file_path       : in string;           --! File path as string
+    signal_name     : in string;           --! Signal name that will be printed in output file
+    mem_data        : in std_logic_vector; --! Data write values
+    mem_wea         : in std_logic;        --! Write enable of data
+    mem_addr        : in std_logic_vector; --! Memory address
+    n_entries_p2    : in t_myarray8_8b;    --! Number of entries per page
+    n_entries_p2_we : in t_myarray8_1b     --! Number of entries per page write enable
+  ) is
+  constant N_PAGES  : integer := 8;      --! Number of pages
+  file     file_out : text is file_path; -- Text - a file of character strings
+  variable line_out : line;              -- Line - one string from a text file
+  variable v_zero   : std_logic_vector(mem_data'length-1 downto 0) := (others => '0');  -- Zero vector
+  begin
+    file_open(file_out, file_path, APPEND_MODE);
+    write(line_out, NOW, right, 20); write(line_out, bx_cnt, right, 4);
+    write(line_out, string'("0b"), right, 5);   write(line_out, reset, right, 1);
+    l_pages : for i in 0 to N_PAGES-1 loop
+      write(line_out, string'("0b"), right, 5);   write(line_out, n_entries_p2_we(i), right, 1);
+      write(line_out, string'("0x"), right, 7);  hwrite(line_out, n_entries_p2(i),    right, 2);
+    end loop l_pages;
+    write(line_out, string'("0b"), right, 3);   write(line_out, mem_wea, right, 1);
+    write(line_out, string'("0x"), right, 6);  hwrite(line_out, std_logic_vector(unsigned(mem_addr)), right, 2);
+    if (mem_wea='1') then -- Only write if enable
+      write(line_out, string'("0x"), right, signal_name'length+1-(mem_data'length+3)/4); hwrite(line_out, mem_data, right, (mem_data'length+3)/4);
+    else
+      write(line_out, string'("0x"), right, signal_name'length+1-(mem_data'length+3)/4); hwrite(line_out, v_zero,   right, (mem_data'length+3)/4);
+    end if;
+    write(line_out, string'("0b"), right, 4);   write(line_out, done,       right, 1);
+    write(line_out, string'("0b"), right, 10);  write(line_out, bx_out_vld, right, 1);
+    write(line_out, string'("0x"), right, 6);  hwrite(line_out, bx_out,     right, (bx_out'length+3)/4);
+    writeline (file_out, line_out); -- Write line
+    file_close(file_out);
+  end write_emData_line_8p;
 
 end package body mytypes_pkg;
