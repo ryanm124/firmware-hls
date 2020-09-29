@@ -63,6 +63,7 @@ stages: # ---------------------------------------------------------------------
     when: on_success
     name: "$CI_JOB_NAME-$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
     paths:
+      - ./IntegrationTests/ExpTopPRMEMC_Test/TextIO/
       - ./IntegrationTests/ExpTopPRMEMC_Test/*.txt
       - ./IntegrationTests/ExpTopPRMEMC_Test/ExpTopPRMEMC_Test/ExpTopPRMEMC_Test.runs/synth_1/*.rpt
     expire_in: 1 week
