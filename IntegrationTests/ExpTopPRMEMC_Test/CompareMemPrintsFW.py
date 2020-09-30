@@ -13,6 +13,27 @@ try:
 except ImportError as error:
         raise ImportError("Unable to import the python2/3 compatibility modules (future, builtins, past, six)")
 
+# Based on: https://stackoverflow.com/questions/14906764/how-to-redirect-stdout-to-both-file-and-console-with-scripting/14906787
+class Logger(object):
+    def __init__(self, output_filename):
+        self.original_stdout = sys.stdout
+        self.terminal = sys.stdout
+        self.log = open(output_filename, "w")
+
+    def __del__(self):
+        self.log.close()
+        sys.stdout = self.original_stdout
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)  
+
+    def flush(self):
+        #this flush method is needed for python 3 compatibility.
+        #this handles the flush command by doing nothing.
+        #you might want to specify some extra behavior here.
+        pass 
+
 class ReferenceType(Enum):
     AP     = 'AllProjections'
     CM     = 'CandidateMatches'
@@ -59,10 +80,16 @@ def print_results(total_number_of_events, number_of_good_events, number_of_missi
     print("\tLength mismatches: "+str(number_of_event_length_mismatches))
     print("\tValue mismatches: "+str(number_of_value_mismatches)+"\n\n")
 
-def compare(comparison_filename="", fail_on_error=False, file_location='/', reference_filenames=[], verbose=False):
+def compare(comparison_filename="", fail_on_error=False, file_location='./', predefined=False, reference_filenames=[], save=False, verbose=False):
     # Sanity checks
     if len(reference_filenames) == 0:
         raise Exception("No reference files were specified (-r). At least one reference file is needed to run the comparison.")
+
+    # Set the output filename
+    if save:
+        original_stdout = sys.stdout
+        filename_pieces = os.path.splitext(comparison_filename)
+        sys.stdout = Logger(filename_pieces[0]+"_cmp"+filename_pieces[1])
 
     # Global error tracking
     failed = 0
@@ -171,7 +198,38 @@ def compare(comparison_filename="", fail_on_error=False, file_location='/', refe
         print_results(len(reference_data),number_of_good_events,number_of_missing_events,number_of_event_length_mismatches,number_of_value_mismatches)
         failed += len(reference_data)-number_of_good_events
 
-    sys.exit(failed)
+    if save:
+        sys.stdout = original_stdout
+
+    if predefined:
+        return failed
+    else:
+        sys.exit(failed)
+
+def comparePredefined(args):
+    ret_sum = 0
+    if os.path.exists('./TextIO/AP_L3PHIC.txt'):
+        ret_sum += compare(comparison_filename="TextIO/AP_L3PHIC.txt", fail_on_error=False, file_location=args.file_location, predefined=args.predefined,
+                           reference_filenames=["../../emData/MemPrints/TrackletProjections/AllProj_AP_L3PHIC_04.dat"], save=args.save, verbose=args.verbose)
+
+    for i in range(17,25):
+        if os.path.exists(('./TextIO/VMPROJ_L3PHIC%i.txt' % (i))):
+            ret_sum += compare(comparison_filename=("TextIO/VMPROJ_L3PHIC%i.txt" % (i)), fail_on_error=False, file_location=args.file_location, predefined=args.predefined,
+                               reference_filenames=[("../../emData/MemPrints/VMProjections/VMProjections_VMPROJ_L3PHIC%i_04.dat" % (i))], save=args.save, verbose=args.verbose)
+
+    for i in range(17,25):
+        if os.path.exists(('./TextIO/CM_L3PHIC%i.txt' % (i))):
+            ret_sum += compare(comparison_filename=("TextIO/CM_L3PHIC%i.txt" % (i)), fail_on_error=False, file_location=args.file_location, predefined=args.predefined,
+                               reference_filenames=[("../../emData/MemPrints/Matches/CandidateMatches_CM_L3PHIC%i_04.dat" % (i))], save=args.save, verbose=args.verbose)
+
+    ret_sum += compare(comparison_filename="TextIO/FM_L1L2XX_L3PHIC.txt", fail_on_error=False, file_location=args.file_location, predefined=args.predefined,
+                       reference_filenames=["../../emData/MemPrints/Matches/FullMatches_FM_L1L2_L3PHIC_04.dat"], save=args.save, verbose=args.verbose)
+    ret_sum += compare(comparison_filename="TextIO/FM_L5L6XX_L3PHIC.txt", fail_on_error=False, file_location=args.file_location, predefined=args.predefined,
+                       reference_filenames=["../../emData/MemPrints/Matches/FullMatches_FM_L5L6_L3PHIC_04.dat"], save=args.save, verbose=args.verbose)
+
+    print("Accumulated number of errors =",ret_sum)
+
+    sys.exit(ret_sum)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="""
@@ -194,9 +252,14 @@ python3 CompareMemPrintsFW.py -l testData/ -r VMProjections_VMPROJ_L3PHIC17_04.d
     parser.add_argument("-c","--comparison_filename",default="output.txt",help="The filename of the testbench output file (default = %(default)s)")
     parser.add_argument("-f","--fail_on_error",default=False,action="store_true",help="Raise an exception on the first error as opposed to simply printing a message (default = %(default)s)")
     parser.add_argument("-l","--file_location",default="./",help="Location of the input files (default = %(default)s)")
+    parser.add_argument("-p","--predefined",default=False,action="store_true",help="Run predefined comparisons (default = %(default)s)")
     parser.add_argument("-r","--reference_filenames",default=[],nargs="+",help="A list of filenames for the reference files (default = %(default)s)")
+    parser.add_argument("-s","--save",default=False,action="store_true",help="Save the output to a file (default = %(default)s)")
     parser.add_argument("-v","--verbose",default=False,action="store_true",help="Print extra information to the console (default = %(default)s)")
 
     args = parser.parse_args()
 
-    compare(**vars(args))
+    if args.predefined:
+        comparePredefined(args)
+    else:
+        compare(**vars(args))
