@@ -5,7 +5,7 @@ set -o pipefail # keep exit status
 
 N_ERR=0 # Error counter
 
-if test -f ./TextIO/AP_L3PHIC_cmp.txt; then
+if test -f ./TextIO/AP_L3PHIC.txt; then
   python3 CompareMemPrintsFW.py -r ../../emData/MemPrints/TrackletProjections/AllProj_AP_L3PHIC_04.dat -c TextIO/AP_L3PHIC.txt |tee TextIO/AP_L3PHIC_cmp.txt
   N_ERR=$(($N_ERR + $?))
 fi
