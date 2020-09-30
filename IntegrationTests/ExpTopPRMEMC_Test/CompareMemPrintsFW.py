@@ -148,7 +148,9 @@ def compare(comparison_filename="", fail_on_error=False, file_location='/', refe
                 else:             print("\t"+message.replace("\n","\n\t"))
 
             # If there are no entries in the comparison data, then don't try to compare any of the values
-            if len(selected_rows) == 0: continue
+            if len(selected_rows) == 0:
+                number_of_good_events += good
+                continue
 
             offset = selected_rows[selected_rows.columns[3]].index[0]
             for ival,val in enumerate(event):
