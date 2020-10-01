@@ -50,6 +50,11 @@ int main()
   static TrackletProjectionMemory<BARREL2S> tproj_barrel_2s[TC::N_PROJOUT_BARREL2S];
   static TrackletProjectionMemory<DISK> tproj_disk[TC::N_PROJOUT_DISK];
 
+  static ap_uint<8> status[128];
+  for (unsigned int i=0;i<128;i++) {
+    status[1]=0;
+  }
+
   ///////////////////////////
   // open input files
   cout << "Open files..." << endl;
@@ -184,6 +189,7 @@ int main()
 			    innerStubs, 
 			    &outerStubs, 
 			    outervmStubs,
+			    status,
 			    &tpar,
 			    tproj_barrel_ps,
 			    tproj_barrel_2s,
@@ -193,6 +199,10 @@ int main()
     bool truncate;
 
     cout << "Start compare" << endl;
+
+    for (unsigned int i=0;i<128;i++) {
+      cout << "status["<<i<<"]="<<status[i]<<endl;
+    }
 
     // compare the computed outputs with the expected ones
     err += compareMemWithFile<TrackletParameterMemory>(tpar, fout_tpar, ievt,
