@@ -119,21 +119,39 @@ class TEBuffer {
   }
 
   void store(const TEData::TEDATA& tedata) {
-    buffer_[writeptr_++]=tedata;
+    auto writeptrtmp=writeptr_;
+    buffer_[writeptrtmp]=tedata;
+    writeptr_++;
   }
 
-  TEData::TEDATA read() {
-    return buffer_[readptr_++];
+  //TEData::TEDATA read() {
+  //  return buffer_[readptr_++];
+  // }
+
+  TEData::TEDATA peek() const {
+    return buffer_[readptr_];
+  }
+
+  void increment_readptr() {
+    readptr_++;
   }
 
   bool full() const {
-    return ((writeptr_+1)&((1<<bufferdepthbits)-1))==readptr_;
+    ap_uint<3> writeptrnext=writeptr_+1;
+    return ((writeptrnext)&((1<<bufferdepthbits)-1))==readptr_;
   }
 
   bool empty() const {
     return writeptr_==readptr_;
   }
 
+  ap_uint<3> readptr() const {
+    return readptr_;
+  }
+
+  ap_uint<3> writeptr() const {
+    return writeptr_;
+  }
 
   //should be private
   static constexpr int bufferdepthbits=3;
