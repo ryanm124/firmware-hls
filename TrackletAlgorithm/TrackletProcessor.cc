@@ -26,7 +26,7 @@ void TrackletProcessor_L1L2D(
     TrackletProjectionMemory<DISK> projout_disk[TC::N_PROJOUT_DISK]
 ) {
 #pragma HLS inline recursive
-#pragma HLS resource variable=lut core=ROM_2P_LUTRAM 
+#pragma HLS resource variable=lut core=ROM_2P_LUTRAM  
 #pragma HLS resource variable=regionlut core=ROM_2P_LUTRAM 
 #pragma HLS resource variable=innerStubs[0].get_mem() latency=2
 #pragma HLS resource variable=innerStubs[1].get_mem() latency=2
