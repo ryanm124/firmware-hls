@@ -577,10 +577,12 @@ TrackletProcessor(
 #pragma HLS pipeline II=1
 
       
+    //#pragma HLS dependence variable=tebuffer[0].writeptr_ inter false 
 #pragma HLS dependence variable=tebuffer[0].readptr_ inter false 
     //#pragma HLS dependence variable=tebuffer[0].writeptr_ inter false 
     //#pragma HLS dependence variable=tebuffer[0].buffer_ inter false 
 
+    //#pragma HLS dependence variable=tebuffer[1].writeptr_ inter false 
 #pragma HLS dependence variable=tebuffer[1].readptr_ inter false 
     //#pragma HLS dependence variable=tebuffer[1].writeptr_ inter false 
     //#pragma HLS dependence variable=tebuffer[1].buffer_ inter false 
