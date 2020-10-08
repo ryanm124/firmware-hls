@@ -54,7 +54,7 @@
 				  + IS_REPRESENTIBLE_IN_D_BITS(32, N)    \
 				  )                                      \
 	  )
-#define LAYER 3
+#define LAYER 1
 //Options: BARREL and DISK
 #define PROJECTIONTYPE BARREL
 #if (LAYER >= 1) && (LAYER <= 3)
@@ -102,7 +102,10 @@ void MatchEngineTop(const BXType bx, BXType& bx_o,
 					const VMProjectionMemory<PROJECTIONTYPE>& inputProjectionData,
 					CandidateMatchMemory& outputCandidateMatch);
 
-const int ME_multiplicity = 32;
+#define startME 6
+#define stopME 6
+#define ME_multiplicity startME-stopME+1
+
 void SuperMatchEngineTop(const BXType bxset[ME_multiplicity], BXType (&bx_oset)[ME_multiplicity],
 					const VMStubMEMemory<MODULETYPE> (&inputStubDataset)[ME_multiplicity],
 					const VMProjectionMemory<PROJECTIONTYPE> (&inputProjectionDataset)[ME_multiplicity],

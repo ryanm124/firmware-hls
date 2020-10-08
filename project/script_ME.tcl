@@ -4,7 +4,8 @@
 # WARNING: this will wipe out the original project by the same name
 
 # create new project (deleting any existing one of same name)
-open_project -reset supermatchengine
+#open_project -reset matchengine_x1_L1Test
+open_project -reset supermatchengine_meta_x1_L1Test
 
 # source files
 # Optional Flags: -DDEBUG -DSUPER
@@ -25,15 +26,16 @@ add_files -tb ../emData/ME/
 set t0 [clock clicks -millisec]
 csim_design -compiler gcc -mflags "-j8"
 puts stderr "CSIM Finished After [expr {([clock clicks -millisec]-$t0)/1000.}] sec" ;# RS
-csynth_design
-puts stderr "CSYNTH Finished After [expr {([clock clicks -millisec]-$t0)/1000.}] sec" ;# RS
-cosim_design -trace_level all -rtl verilog -verbose
-puts stderr "COSIM Finished After [expr {([clock clicks -millisec]-$t0)/1000.}] sec" ;# RS
-export_design -format ip_catalog
+# csynth_design
+# puts stderr "CSYNTH Finished After [expr {([clock clicks -millisec]-$t0)/1000.}] sec" ;# RS
+# cosim_design -trace_level all -rtl verilog -verbose
+# puts stderr "COSIM Finished After [expr {([clock clicks -millisec]-$t0)/1000.}] sec" ;# RS
+#export_design -format ip_catalog
 
 # Adding "-flow impl" runs full Vivado implementation, providing accurate resource use numbers (very slow).
-#export_design -rtl verilog -format ip_catalog -flow impl
-puts stderr "EXPORT Finished After [expr {([clock clicks -millisec]-$t0)/1000.}] sec" ;# RS
+
+# export_design -rtl verilog -format ip_catalog -flow impl
+# puts stderr "EXPORT Finished After [expr {([clock clicks -millisec]-$t0)/1000.}] sec" ;# RS
 
 
 exit

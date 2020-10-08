@@ -29,6 +29,7 @@ void MatchEngine(const BXType bx, BXType& bx_o,
 				 const VMStubMEMemory<VMSMEType>& inputStubData,
 				 const VMProjectionMemory<VMPMEType>& inputProjectionData,
 				 CandidateMatchMemory& outputCandidateMatch) {
+	#pragma HLS inline off
 	//
 	//Initialize table for bend-rinv consistency
 	//
@@ -223,25 +224,39 @@ void MatchEngineTop(const BXType bx, BXType& bx_o,
 	MatchEngine<LAYER,MODULETYPE,PROJECTIONTYPE>(bx, bx_o, inputStubData, inputProjectionData, outputCandidateMatch); 
 }
 
+template<int N, int STOP> 
+void MatchEngineLoop(const BXType bxset[ME_multiplicity], BXType (&bx_oset)[ME_multiplicity],
+                                        const VMStubMEMemory<MODULETYPE> (&inputStubDataset)[ME_multiplicity],
+                                        const VMProjectionMemory<PROJECTIONTYPE> (&inputProjectionDataset)[ME_multiplicity],
+                                        CandidateMatchMemory (&outputCandidateMatchset)[ME_multiplicity]) { 
+
+        MatchEngineLoop<N-1,STOP>(bxset, bx_oset, inputStubDataset, inputProjectionDataset, outputCandidateMatchset);
+	MatchEngine<LAYER,MODULETYPE,PROJECTIONTYPE>(bxset[N-STOP], bx_oset[N-STOP], inputStubDataset[N-STOP], inputProjectionDataset[N-STOP], outputCandidateMatchset[N-STOP]);	
+}
+
+template<>
+void MatchEngineLoop<stopME,stopME>(const BXType bxset[ME_multiplicity], BXType (&bx_oset)[ME_multiplicity],
+                                        const VMStubMEMemory<MODULETYPE> (&inputStubDataset)[ME_multiplicity],
+                                        const VMProjectionMemory<PROJECTIONTYPE> (&inputProjectionDataset)[ME_multiplicity],
+                                        CandidateMatchMemory (&outputCandidateMatchset)[ME_multiplicity]) {
+	 MatchEngine<LAYER,MODULETYPE,PROJECTIONTYPE>(bxset[0], bx_oset[0], inputStubDataset[0], inputProjectionDataset[0], outputCandidateMatchset[0]);
+}
+
 void SuperMatchEngineTop(const BXType bxset[ME_multiplicity], BXType (&bx_oset)[ME_multiplicity],
 					const VMStubMEMemory<MODULETYPE> (&inputStubDataset)[ME_multiplicity],
 					const VMProjectionMemory<PROJECTIONTYPE> (&inputProjectionDataset)[ME_multiplicity],
 					CandidateMatchMemory (&outputCandidateMatchset)[ME_multiplicity]){
 
-	#pragma HLS interface register port=bx_oset
-	//#pragma HLS resource variable=inputStubData->get_mem() latency=2
-	//#pragma HLS resource variable=inputProjectionData->get_mem() latency=2
+	#pragma HLS inline region recursive 
 
-	//int split = ME_multiplicity / 2;
+
+	#pragma HLS interface register port=bx_oset
 
 	#pragma HLS array_partition variable=bxset complete
 	#pragma HLS array_partition variable=bx_oset complete
 	#pragma HLS array_partition variable=inputStubDataset complete
 	#pragma HLS array_partition variable=inputProjectionDataset complete
 	#pragma HLS array_partition variable=outputCandidateMatchset complete
-	
-	for (int i=0;i<ME_multiplicity;i++) {
-		#pragma HLS unroll
-		MatchEngine<LAYER,MODULETYPE,PROJECTIONTYPE>(bxset[i], bx_oset[i], inputStubDataset[i], inputProjectionDataset[i], outputCandidateMatchset[i]); 
-	}
+
+	MatchEngineLoop<startME,stopME> (bxset, bx_oset, inputStubDataset, inputProjectionDataset, outputCandidateMatchset);
 }

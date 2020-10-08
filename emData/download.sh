@@ -7,24 +7,80 @@ tarball_url="https://cernbox.cern.ch/index.php/s/tsxTkilHDVhnbYF/download"
 # prepared for them.
 declare -a processing_modules=(
   # VMRouter
-  "VMR_L1PHIE"
 
   # TrackletEngine
-  "TE_L1PHIE18_L2PHIC17"
 
   # TrackletCalculator
-  "TC_L1L2E"
-  "TC_L1L2G"
-  "TC_L3L4E"
-  "TC_L5L6D"
 
   # ProjectionRouter
-  "PR_L3PHIC"
 
   # MatchEngine
+  "ME_L1PHIA1"
+  "ME_L1PHIA2"
+  "ME_L1PHIA3"
+  "ME_L1PHIA4"
+  "ME_L1PHIB5"
+  "ME_L1PHIB6"
+  "ME_L1PHIB7"
+  "ME_L1PHIB8"
+  "ME_L1PHIC9"
+  "ME_L1PHIC10"
+  "ME_L1PHIC11"
+  "ME_L1PHIC12"
+  "ME_L1PHID13"
+  "ME_L1PHID14"
+  "ME_L1PHID15"
+  "ME_L1PHID16"
+  "ME_L1PHIE17"
+  "ME_L1PHIE18"
+  "ME_L1PHIE19"
   "ME_L1PHIE20"
-  "ME_L4PHIB12"
-  
+  "ME_L1PHIF21"
+  "ME_L1PHIF22"
+  "ME_L1PHIF23"
+  "ME_L1PHIF24"
+  "ME_L1PHIG25"
+  "ME_L1PHIG26"
+  "ME_L1PHIG27"
+  "ME_L1PHIG28"
+  "ME_L1PHIH29"
+  "ME_L1PHIH30"
+  "ME_L1PHIH31"
+  "ME_L1PHIH32"
+
+  "ME_L2PHIA1"
+  "ME_L2PHIA2"
+  "ME_L2PHIA3"
+  "ME_L2PHIA4"
+  "ME_L2PHIA5"
+  "ME_L2PHIA6"
+  "ME_L2PHIA7"
+  "ME_L2PHIA8"
+  "ME_L2PHIB9"
+  "ME_L2PHIB10"
+  "ME_L2PHIB11"
+  "ME_L2PHIB12"
+  "ME_L2PHIB13"
+  "ME_L2PHIB14"
+  "ME_L2PHIB15"
+  "ME_L2PHIB16"
+  "ME_L2PHIC17"
+  "ME_L2PHIC18"
+  "ME_L2PHIC19"
+  "ME_L2PHIC20"
+  "ME_L2PHIC21"
+  "ME_L2PHIC22"
+  "ME_L2PHIC23"
+  "ME_L2PHIC24"
+  "ME_L2PHID25"
+  "ME_L2PHID26"
+  "ME_L2PHID27"
+  "ME_L2PHID28"
+  "ME_L2PHID29"
+  "ME_L2PHID30"
+  "ME_L2PHID31"
+  "ME_L2PHID32"
+
   "ME_L3PHIA1"
   "ME_L3PHIA2"
   "ME_L3PHIA3"
@@ -59,12 +115,6 @@ declare -a processing_modules=(
   "ME_L3PHID32"
 
   # MatchCalculator
-  "MC_L1PHIC"
-  "MC_L2PHIC"
-  "MC_L3PHIC"
-  "MC_L4PHIC"
-  "MC_L5PHIC"
-  "MC_L6PHIC"
 )
 
 # If the MemPrints directory exists, assume the script has already been run,
