@@ -587,9 +587,9 @@ TrackletProcessor(
     //#pragma HLS dependence variable=tebuffer[1].writeptr_ inter false 
     //#pragma HLS dependence variable=tebuffer[1].buffer_ inter false 
 
-#pragma HLS dependence variable=teunits[0].slot_ inter false 
-#pragma HLS dependence variable=teunits[0].ireg_ inter false 
-#pragma HLS dependence variable=teunits[0].istub_ inter false 
+    //#pragma HLS dependence variable=teunits[0].slot_ inter false 
+    //#pragma HLS dependence variable=teunits[0].ireg_ inter false 
+    //#pragma HLS dependence variable=teunits[0].istub_ inter false 
 #pragma HLS dependence variable=teunits[0].next_ inter false 
 #pragma HLS dependence variable=teunits[0].nstubs_ inter false 
 #pragma HLS dependence variable=teunits[0].idle_ inter false 
@@ -597,9 +597,10 @@ TrackletProcessor(
 #pragma HLS dependence variable=teunits[0].readindex_ inter false 
 #pragma HLS dependence variable=teunits[0].innerstub_ inter false 
 #pragma HLS dependence variable=teunits[0].memstubs_ inter false 
-#pragma HLS dependence variable=teunits[0].rzbindiffmax_ inter false 
-#pragma HLS dependence variable=teunits[0].rzbinfirst_ inter false 
+    //#pragma HLS dependence variable=teunits[0].rzbindiffmax_ inter false 
+    //#pragma HLS dependence variable=teunits[0].rzbinfirst_ inter false 
 
+    /*
 #pragma HLS dependence variable=teunits[1].slot_ inter false 
 #pragma HLS dependence variable=teunits[1].ireg_ inter false 
 #pragma HLS dependence variable=teunits[1].istub_ inter false 
@@ -665,6 +666,7 @@ TrackletProcessor(
 #pragma HLS dependence variable=teunits[5].rzbindiffmax_ inter false 
 #pragma HLS dependence variable=teunits[5].rzbinfirst_ inter false 
 
+    */
     
 
     //std::cout << "************************ TP istep = " << istep << " *********************"<< std::endl;
@@ -741,18 +743,6 @@ TrackletProcessor(
     // Second step
     // 
 
-
-    bool idleTE=false;
-    unsigned int iTEUnit=0;
-  step_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
-#pragma HLS unroll
-      if ((!idleTE)&&teunits[k].idle()) {
-	iTEUnit=k;
-      }  
-      idleTE=idleTE||teunits[k].idle();
-      teunits[k].step(outerVMStubs[k],stubptinnerlut[k],stubptouterlut[k]);
-    }
-    
     bool TEBufferData=false;
     unsigned int iTEBuff=0;
     //status[istep]=tebuffer[1].writeptr_;
@@ -764,43 +754,31 @@ TrackletProcessor(
       }
     }
 
-    if (idleTE&&TEBufferData) {
-      tebuffer[iTEBuff].readptr_=tebuffer[iTEBuff].readptr_+1;
-      //tebuffer[iTEBuff].increment_readptr();
-      teunits[iTEUnit].init(bx,
-			    tedatatmp[iTEBuff].getAllStub(),
-			    tedatatmp[iTEBuff].getNStub(),
-			    tedatatmp[iTEBuff].getStart(),
-			    tedatatmp[iTEBuff].getrzbinfirst(),
-			    tedatatmp[iTEBuff].getrzdiffmax());
+    bool idleTE=false;
+  step_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
+#pragma HLS unroll
+      if (teunits[k].idle()) {
+	if (TEBufferData&&(!idleTE)) {
+	  tebuffer[iTEBuff].readptr_=tebuffer[iTEBuff].readptr_+1;
+	  teunits[k].init(bx,
+			  tedatatmp[iTEBuff].getAllStub(),
+			  tedatatmp[iTEBuff].getNStub(),
+			  tedatatmp[iTEBuff].getStart(),
+			  tedatatmp[iTEBuff].getrzbinfirst(),
+			  tedatatmp[iTEBuff].getrzdiffmax());
+	}
+      } else { 
+	teunits[k].step(outerVMStubs[k],stubptinnerlut[k],stubptouterlut[k]);
+      }
+      idleTE=idleTE||teunits[k].idle();
     }
     
-
-
     //
     // Third step
     //
 
   process_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
 #pragma HLS unroll
-      /*
-      //tedatatmp[i]=tebuffer[i].peek();
-      ap_uint<3> writeptr=tebuffer[i].writeptr_;
-      ap_uint<3> readptr=tebuffer[i].readptr_;
-      tedatatmp[i]=tebuffer[i].buffer_[readptr];
-      //tebufferempty[i]=tebuffer[i].empty();
-      tebufferempty[i]=(writeptr==readptr);
-      ap_uint<3> writeptrnext1=writeptr+1;
-      //ap_uint<3> writeptrnext2=tebuffer[i].writeptr_+2;
-      //ap_uint<3> writeptrnext3=tebuffer[i].writeptr_+3;
-      //ap_uint<3> writeptrnext4=tebuffer[i].writeptr_+4;
-      tebufferfull[i]=
-	(writeptrnext1==readptr)
-	//||(writeptrnext2==tebuffer[i].readptr_)
-	//||(writeptrnext3==tebuffer[i].readptr_)
-	//||(writeptrnext4==tebuffer[i].readptr_)
-	;
-      */
 
       auto& imem=tebuffer[i].getMem();
       auto imemend=tebuffer[i].getMemEnd();
