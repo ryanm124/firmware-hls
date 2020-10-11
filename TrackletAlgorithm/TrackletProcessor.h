@@ -680,29 +680,102 @@ TrackletProcessor(
     TEData tedatatmp[2];
     bool tebufferempty[2];
     bool tebufferfull[2];
+    ap_uint<3> writeptr[2];
+    ap_uint<3> readptr[2];
 
-    /*
   check_prefetchtedata: for (unsigned i = 0; i < NTEBuffer; i++){
 #pragma HLS unroll
       //tedatatmp[i]=tebuffer[i].peek();
-      ap_uint<3> writeptr[i]=tebuffer[i].writeptr_;
-      ap_uint<3> readptr[i]=tebuffer[i].readptr_;
-      tedatatmp[i]=tebuffer[i].buffer_[readptr];
+      writeptr[i]=tebuffer[i].writeptr_;
+      readptr[i]=tebuffer[i].readptr_;
+      tedatatmp[i]=tebuffer[i].buffer_[readptr[i]];
       //tebufferempty[i]=tebuffer[i].empty();
-      tebufferempty[i]=(writeptr==readptr);
-      ap_uint<3> writeptrnext1=writeptr+1;
+      tebufferempty[i]=(writeptr[i]==readptr[i]);
+      ap_uint<3> writeptrnext1=writeptr[i]+1;
       //ap_uint<3> writeptrnext2=tebuffer[i].writeptr_+2;
       //ap_uint<3> writeptrnext3=tebuffer[i].writeptr_+3;
       //ap_uint<3> writeptrnext4=tebuffer[i].writeptr_+4;
       tebufferfull[i]=
-	(writeptrnext1==readptr)
+	(writeptrnext1==readptr[i])
 	//||(writeptrnext2==tebuffer[i].readptr_)
 	//||(writeptrnext3==tebuffer[i].readptr_)
 	//||(writeptrnext4==tebuffer[i].readptr_)
 	;
     }
 
-    */
+
+
+    //
+    // In this first step we check if there are stubs to be fit
+    //
+
+    bool haveTEData=false;
+    int iTE=0;
+  process_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
+#pragma HLS unroll
+      haveTEData=haveTEData||(!teunits[k].empty());
+      if (!teunits[k].empty()){
+	iTE=k;
+      }
+    }
+    
+
+    if (haveTEData) {
+      
+      ap_uint<36> innerStub;
+      ap_uint<7> innerIndex;
+      ap_uint<8> finephi;
+      ap_uint<7> outerIndex;
+      (outerIndex, innerStub, innerIndex, finephi)=teunits[iTE].read();
+
+      const TrackletProjection<BARRELPS>::TProjTCID TCID(3);
+      
+      const auto &outerStub = outerStubs->read_mem(bx, outerIndex);
+      
+      TC::processStubPair<Seed, InnerRegion, OuterRegion, TPROJMaskBarrel<Seed, iTC>(), TPROJMaskDisk<Seed, iTC>()>(bx, innerIndex, AllStub<BARRELPS>(innerStub), outerIndex, outerStub, TCID, trackletIndex, trackletParameters, projout_barrel_ps, projout_barrel_2s, projout_disk, npar, nproj_barrel_ps, nproj_barrel_2s, nproj_disk);
+      
+    }
+    
+
+    //
+    // Second step
+    // 
+
+
+    bool idleTE=false;
+    unsigned int iTEUnit=0;
+  step_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
+#pragma HLS unroll
+      if ((!idleTE)&&teunits[k].idle()) {
+	iTEUnit=k;
+      }  
+      idleTE=idleTE||teunits[k].idle();
+      teunits[k].step(outerVMStubs[k],stubptinnerlut[k],stubptouterlut[k]);
+    }
+    
+    bool TEBufferData=false;
+    unsigned int iTEBuff=0;
+    //status[istep]=tebuffer[1].writeptr_;
+  check_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
+#pragma HLS unroll
+      if ((!TEBufferData)&&(!tebufferempty[i])) {
+	TEBufferData=true;
+	iTEBuff=i;
+      }
+    }
+
+    if (idleTE&&TEBufferData) {
+      tebuffer[iTEBuff].readptr_=tebuffer[iTEBuff].readptr_+1;
+      //tebuffer[iTEBuff].increment_readptr();
+      teunits[iTEUnit].init(bx,
+			    tedatatmp[iTEBuff].getAllStub(),
+			    tedatatmp[iTEBuff].getNStub(),
+			    tedatatmp[iTEBuff].getStart(),
+			    tedatatmp[iTEBuff].getrzbinfirst(),
+			    tedatatmp[iTEBuff].getrzdiffmax());
+    }
+    
+
 
     //
     // Third step
@@ -710,6 +783,7 @@ TrackletProcessor(
 
   process_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
 #pragma HLS unroll
+      /*
       //tedatatmp[i]=tebuffer[i].peek();
       ap_uint<3> writeptr=tebuffer[i].writeptr_;
       ap_uint<3> readptr=tebuffer[i].readptr_;
@@ -726,7 +800,7 @@ TrackletProcessor(
 	//||(writeptrnext3==tebuffer[i].readptr_)
 	//||(writeptrnext4==tebuffer[i].readptr_)
 	;
-
+      */
 
       auto& imem=tebuffer[i].getMem();
       auto imemend=tebuffer[i].getMemEnd();
@@ -804,77 +878,6 @@ TrackletProcessor(
 
     }
 
-
-    //
-    // In this first step we check if there are stubs to be fit
-    //
-
-    bool haveTEData=false;
-    int iTE=0;
-  process_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
-#pragma HLS unroll
-      haveTEData=haveTEData||(!teunits[k].empty());
-      if (!teunits[k].empty()){
-	iTE=k;
-      }
-    }
-    
-
-    if (haveTEData) {
-      
-      ap_uint<36> innerStub;
-      ap_uint<7> innerIndex;
-      ap_uint<8> finephi;
-      ap_uint<7> outerIndex;
-      (outerIndex, innerStub, innerIndex, finephi)=teunits[iTE].read();
-
-      const TrackletProjection<BARRELPS>::TProjTCID TCID(3);
-      
-      const auto &outerStub = outerStubs->read_mem(bx, outerIndex);
-      
-      TC::processStubPair<Seed, InnerRegion, OuterRegion, TPROJMaskBarrel<Seed, iTC>(), TPROJMaskDisk<Seed, iTC>()>(bx, innerIndex, AllStub<BARRELPS>(innerStub), outerIndex, outerStub, TCID, trackletIndex, trackletParameters, projout_barrel_ps, projout_barrel_2s, projout_disk, npar, nproj_barrel_ps, nproj_barrel_2s, nproj_disk);
-      
-    }
-    
-
-    //
-    // Second step
-    // 
-
-
-    bool idleTE=false;
-    unsigned int iTEUnit=0;
-  step_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
-#pragma HLS unroll
-      if ((!idleTE)&&teunits[k].idle()) {
-	iTEUnit=k;
-      }  
-      idleTE=idleTE||teunits[k].idle();
-      teunits[k].step(outerVMStubs[k],stubptinnerlut[k],stubptouterlut[k]);
-    }
-    
-    bool TEBufferData=false;
-    unsigned int iTEBuff=0;
-    //status[istep]=tebuffer[1].writeptr_;
-  check_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
-#pragma HLS unroll
-      if ((!TEBufferData)&&(!tebufferempty[i])) {
-	TEBufferData=true;
-	iTEBuff=i;
-      }
-    }
-
-    if (idleTE&&TEBufferData) {
-      tebuffer[iTEBuff].readptr_=tebuffer[iTEBuff].readptr_+1;
-      //tebuffer[iTEBuff].increment_readptr();
-      teunits[iTEUnit].init(bx,
-			    tedatatmp[iTEBuff].getAllStub(),
-			    tedatatmp[iTEBuff].getNStub(),
-			    tedatatmp[iTEBuff].getStart(),
-			    tedatatmp[iTEBuff].getrzbinfirst(),
-			    tedatatmp[iTEBuff].getrzdiffmax());
-    }
-    
 
     
     
