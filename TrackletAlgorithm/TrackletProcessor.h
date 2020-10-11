@@ -578,12 +578,12 @@ TrackletProcessor(
 
       
     //#pragma HLS dependence variable=tebuffer[0].writeptr_ inter false 
-#pragma HLS dependence variable=tebuffer[0].readptr_ inter false 
+    //#pragma HLS dependence variable=tebuffer[0].readptr_ inter false 
     //#pragma HLS dependence variable=tebuffer[0].writeptr_ inter false 
     //#pragma HLS dependence variable=tebuffer[0].buffer_ inter false 
 
     //#pragma HLS dependence variable=tebuffer[1].writeptr_ inter false 
-#pragma HLS dependence variable=tebuffer[1].readptr_ inter false 
+    //#pragma HLS dependence variable=tebuffer[1].readptr_ inter false 
     //#pragma HLS dependence variable=tebuffer[1].writeptr_ inter false 
     //#pragma HLS dependence variable=tebuffer[1].buffer_ inter false 
 
@@ -680,7 +680,35 @@ TrackletProcessor(
     TEData tedatatmp[2];
     bool tebufferempty[2];
     bool tebufferfull[2];
+
+    /*
   check_prefetchtedata: for (unsigned i = 0; i < NTEBuffer; i++){
+#pragma HLS unroll
+      //tedatatmp[i]=tebuffer[i].peek();
+      ap_uint<3> writeptr[i]=tebuffer[i].writeptr_;
+      ap_uint<3> readptr[i]=tebuffer[i].readptr_;
+      tedatatmp[i]=tebuffer[i].buffer_[readptr];
+      //tebufferempty[i]=tebuffer[i].empty();
+      tebufferempty[i]=(writeptr==readptr);
+      ap_uint<3> writeptrnext1=writeptr+1;
+      //ap_uint<3> writeptrnext2=tebuffer[i].writeptr_+2;
+      //ap_uint<3> writeptrnext3=tebuffer[i].writeptr_+3;
+      //ap_uint<3> writeptrnext4=tebuffer[i].writeptr_+4;
+      tebufferfull[i]=
+	(writeptrnext1==readptr)
+	//||(writeptrnext2==tebuffer[i].readptr_)
+	//||(writeptrnext3==tebuffer[i].readptr_)
+	//||(writeptrnext4==tebuffer[i].readptr_)
+	;
+    }
+
+    */
+
+    //
+    // Third step
+    //
+
+  process_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
 #pragma HLS unroll
       //tedatatmp[i]=tebuffer[i].peek();
       ap_uint<3> writeptr=tebuffer[i].writeptr_;
@@ -698,15 +726,8 @@ TrackletProcessor(
 	//||(writeptrnext3==tebuffer[i].readptr_)
 	//||(writeptrnext4==tebuffer[i].readptr_)
 	;
-    }
 
 
-    //
-    // Third step
-    //
-
-  process_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
-#pragma HLS unroll
       auto& imem=tebuffer[i].getMem();
       auto imemend=tebuffer[i].getMemEnd();
 
@@ -733,12 +754,12 @@ TrackletProcessor(
       ap_uint<3> rzdiffmax;
 
       ap_uint<10> lutval=lut[(indexz,indexr)];
-      //ap_uint<10> lutval=4*istep;
+      //ap_uint<10> lutval=4*istep&indexz&indexr;
       (rzdiffmax,start, usenext, rzfinebinfirst) = lutval;
       bool valid=lutval!=1023;
 
       ap_uint<8> useregion=regionlut[(innerfinephi,bend)];
-      //ap_uint<8> useregion=istep&63;
+      //ap_uint<8> useregion=istep&63&innerfinephi&bend;
 
       ap_uint<64> nstubs(0);
 
@@ -772,6 +793,7 @@ TrackletProcessor(
       tebuffer[i].buffer_[writeptrtmp]=tedatatmp.raw();
 
       tebuffer[i].writeptr_=tebuffer[i].writeptr_+addtedata;
+      //tebuffer[i].writeptr_=writeptr+addtedata;
       status[istep]=tebuffer[i].writeptr_;
 
       istub=istub+goodstub;
