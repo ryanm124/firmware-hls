@@ -87,18 +87,14 @@ void write(STUBID stubs) {
  inline void step( const VMStubTEOuterMemoryCM<VMSTEType> &outervmstubs,
 		   const ap_uint<1> ptinnerLUT[256], 
 		   const ap_uint<1> ptouterLUT[256],
-		   unsigned int iTE) {
+		   bool nearfull) {
 #pragma HLS inline
 #pragma HLS PIPELINE II=1
-#pragma HLS dependence variable=istub intra WAR true
-#pragma HLS dependence variable=writeindex_ intra false
-#pragma HLS dependence variable=readindex_ intra false
-#pragma HLS dependence variable=idle_ intra false
    
    (ireg_, next_, nstubs_)=memstubs_.range((memindex_*8)+7,memindex_*8);
    idle_=idle_||nstubs_==0;
    
-   bool good=!(idle()||nearfull());
+   bool good=!(idle()||nearfull);
    
    
    ap_uint<2> iAllstub=1; //FIXME need to be template parameter
@@ -111,9 +107,9 @@ void write(STUBID stubs) {
 #ifndef __SYNTHESIS__
    if (good) {
      assert(nstubs_!=0);
-     std::cout << "iTE nstubs_ nentries memindex_ ireg_ ibin slot_ next_: "
-	       << iTE<<" "<<nstubs_<<" "<<outervmstubs.getEntries(bx_,(ireg_,ibin))
-	       << " " << memindex_<<" "<<ireg_<<" "<<ibin<<" "<<slot_<<" "<<next_<<std::endl;
+     //std::cout << "iTE nstubs_ nentries memindex_ ireg_ ibin slot_ next_: "
+     //	       << iTE<<" "<<nstubs_<<" "<<outervmstubs.getEntries(bx_,(ireg_,ibin))
+     //	       << " " << memindex_<<" "<<ireg_<<" "<<ibin<<" "<<slot_<<" "<<next_<<std::endl;
      assert(nstubs_==outervmstubs.getEntries(bx_,(ireg_,ibin)));
    }
 #endif
