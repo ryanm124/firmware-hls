@@ -86,7 +86,8 @@ void write(STUBID stubs) {
 
  inline void step( const VMStubTEOuterMemoryCM<VMSTEType> &outervmstubs,
 		   const ap_uint<1> ptinnerLUT[256], 
-		   const ap_uint<1> ptouterLUT[256]) {
+		   const ap_uint<1> ptouterLUT[256],
+		   unsigned int iTE) {
 #pragma HLS inline
 #pragma HLS PIPELINE II=1
 #pragma HLS dependence variable=istub intra WAR true
@@ -110,6 +111,9 @@ void write(STUBID stubs) {
 #ifndef __SYNTHESIS__
    if (good) {
      assert(nstubs_!=0);
+     std::cout << "iTE nstubs_ nentries memindex_ ireg_ ibin slot_ next_: "
+	       << iTE<<" "<<nstubs_<<" "<<outervmstubs.getEntries(bx_,(ireg_,ibin))
+	       << " " << memindex_<<" "<<ireg_<<" "<<ibin<<" "<<slot_<<" "<<next_<<std::endl;
      assert(nstubs_==outervmstubs.getEntries(bx_,(ireg_,ibin)));
    }
 #endif
