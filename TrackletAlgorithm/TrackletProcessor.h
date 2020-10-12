@@ -577,97 +577,6 @@ TrackletProcessor(
 #pragma HLS pipeline II=1
 
       
-    //#pragma HLS dependence variable=tebuffer[0].writeptr_ inter false 
-    //#pragma HLS dependence variable=tebuffer[0].readptr_ inter false 
-    //#pragma HLS dependence variable=tebuffer[0].writeptr_ inter false 
-    //#pragma HLS dependence variable=tebuffer[0].buffer_ inter false 
-
-    //#pragma HLS dependence variable=tebuffer[1].writeptr_ inter false 
-    //#pragma HLS dependence variable=tebuffer[1].readptr_ inter false 
-    //#pragma HLS dependence variable=tebuffer[1].writeptr_ inter false 
-    //#pragma HLS dependence variable=tebuffer[1].buffer_ inter false 
-
-    //#pragma HLS dependence variable=teunits[0].slot_ inter false 
-    //#pragma HLS dependence variable=teunits[0].ireg_ inter false 
-    //#pragma HLS dependence variable=teunits[0].istub_ inter false 
-#pragma HLS dependence variable=teunits[0].next_ inter false 
-#pragma HLS dependence variable=teunits[0].nstubs_ inter false 
-#pragma HLS dependence variable=teunits[0].idle_ inter false 
-#pragma HLS dependence variable=teunits[0].writeindex_ inter false 
-#pragma HLS dependence variable=teunits[0].readindex_ inter false 
-#pragma HLS dependence variable=teunits[0].innerstub_ inter false 
-#pragma HLS dependence variable=teunits[0].memstubs_ inter false 
-    //#pragma HLS dependence variable=teunits[0].rzbindiffmax_ inter false 
-    //#pragma HLS dependence variable=teunits[0].rzbinfirst_ inter false 
-
-    /*
-#pragma HLS dependence variable=teunits[1].slot_ inter false 
-#pragma HLS dependence variable=teunits[1].ireg_ inter false 
-#pragma HLS dependence variable=teunits[1].istub_ inter false 
-#pragma HLS dependence variable=teunits[1].next_ inter false 
-#pragma HLS dependence variable=teunits[1].nstubs_ inter false 
-#pragma HLS dependence variable=teunits[1].idle_ inter false 
-#pragma HLS dependence variable=teunits[1].writeindex_ inter false 
-#pragma HLS dependence variable=teunits[1].readindex_ inter false 
-#pragma HLS dependence variable=teunits[1].innerstub_ inter false 
-#pragma HLS dependence variable=teunits[1].memstubs_ inter false 
-#pragma HLS dependence variable=teunits[1].rzbindiffmax_ inter false 
-#pragma HLS dependence variable=teunits[1].rzbinfirst_ inter false 
-
-#pragma HLS dependence variable=teunits[2].slot_ inter false 
-#pragma HLS dependence variable=teunits[2].ireg_ inter false 
-#pragma HLS dependence variable=teunits[2].istub_ inter false 
-#pragma HLS dependence variable=teunits[2].next_ inter false 
-#pragma HLS dependence variable=teunits[2].nstubs_ inter false 
-#pragma HLS dependence variable=teunits[2].idle_ inter false 
-#pragma HLS dependence variable=teunits[2].writeindex_ inter false 
-#pragma HLS dependence variable=teunits[2].readindex_ inter false 
-#pragma HLS dependence variable=teunits[2].innerstub_ inter false 
-#pragma HLS dependence variable=teunits[2].memstubs_ inter false 
-#pragma HLS dependence variable=teunits[2].rzbindiffmax_ inter false 
-#pragma HLS dependence variable=teunits[2].rzbinfirst_ inter false 
-
-#pragma HLS dependence variable=teunits[3].slot_ inter false 
-#pragma HLS dependence variable=teunits[3].ireg_ inter false 
-#pragma HLS dependence variable=teunits[3].istub_ inter false 
-#pragma HLS dependence variable=teunits[3].next_ inter false 
-#pragma HLS dependence variable=teunits[3].nstubs_ inter false 
-#pragma HLS dependence variable=teunits[3].idle_ inter false 
-#pragma HLS dependence variable=teunits[3].writeindex_ inter false 
-#pragma HLS dependence variable=teunits[3].readindex_ inter false 
-#pragma HLS dependence variable=teunits[3].innerstub_ inter false 
-#pragma HLS dependence variable=teunits[3].memstubs_ inter false 
-#pragma HLS dependence variable=teunits[3].rzbindiffmax_ inter false 
-#pragma HLS dependence variable=teunits[3].rzbinfirst_ inter false 
-
-#pragma HLS dependence variable=teunits[4].slot_ inter false 
-#pragma HLS dependence variable=teunits[4].ireg_ inter false 
-#pragma HLS dependence variable=teunits[4].istub_ inter false 
-#pragma HLS dependence variable=teunits[4].next_ inter false 
-#pragma HLS dependence variable=teunits[4].nstubs_ inter false 
-#pragma HLS dependence variable=teunits[4].idle_ inter false 
-#pragma HLS dependence variable=teunits[4].writeindex_ inter false 
-#pragma HLS dependence variable=teunits[4].readindex_ inter false 
-#pragma HLS dependence variable=teunits[4].innerstub_ inter false 
-#pragma HLS dependence variable=teunits[4].memstubs_ inter false 
-#pragma HLS dependence variable=teunits[4].rzbindiffmax_ inter false 
-#pragma HLS dependence variable=teunits[4].rzbinfirst_ inter false 
-
-#pragma HLS dependence variable=teunits[5].slot_ inter false 
-#pragma HLS dependence variable=teunits[5].ireg_ inter false 
-#pragma HLS dependence variable=teunits[5].istub_ inter false 
-#pragma HLS dependence variable=teunits[5].next_ inter false 
-#pragma HLS dependence variable=teunits[5].nstubs_ inter false 
-#pragma HLS dependence variable=teunits[5].idle_ inter false 
-#pragma HLS dependence variable=teunits[5].writeindex_ inter false 
-#pragma HLS dependence variable=teunits[5].readindex_ inter false 
-#pragma HLS dependence variable=teunits[5].innerstub_ inter false 
-#pragma HLS dependence variable=teunits[5].memstubs_ inter false 
-#pragma HLS dependence variable=teunits[5].rzbindiffmax_ inter false 
-#pragma HLS dependence variable=teunits[5].rzbinfirst_ inter false 
-
-    */
-    
 
     //std::cout << "************************ TP istep = " << istep << " *********************"<< std::endl;
     //status_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
@@ -754,12 +663,12 @@ TrackletProcessor(
       }
     }
 
-    bool idleTE=false;
+   ap_uint<1> initialized=0;
   step_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
 #pragma HLS unroll
       if (teunits[k].idle()) {
-	if (TEBufferData&&(!idleTE)) {
-	  tebuffer[iTEBuff].readptr_=tebuffer[iTEBuff].readptr_+1;
+	if (TEBufferData&&(!initialized)) {
+	  initialized=1;
 	  teunits[k].init(bx,
 			  tedatatmp[iTEBuff].getAllStub(),
 			  tedatatmp[iTEBuff].getNStub(),
@@ -768,10 +677,10 @@ TrackletProcessor(
 			  tedatatmp[iTEBuff].getrzdiffmax());
 	}
       } else { 
-	teunits[k].step(outerVMStubs[k],stubptinnerlut[k],stubptouterlut[k]);
+	teunits[k].step(outerVMStubs[k],stubptinnerlut[k],stubptouterlut[k],k);
       }
-      idleTE=idleTE||teunits[k].idle();
     }
+   tebuffer[iTEBuff].readptr_=tebuffer[iTEBuff].readptr_+initialized;
     
     //
     // Third step
