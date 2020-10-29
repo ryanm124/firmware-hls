@@ -12,7 +12,9 @@ class TEData {
     // The location of the least significant bit (LSB) and most significant bit (MSB) in the ProjectionRouterBufferMemory word for different fields
     kTEDataNStubLSB = 0,
     kTEDataNStubMSB = kTEDataNStubLSB + 64 - 1,
-    kTEDatarzbinfirstLSB = kTEDataNStubMSB+1,
+    kTEDataStubMaskLSB = kTEDataNStubMSB+1,
+    kTEDataStubMaskMSB = kTEDataStubMaskLSB + 16 - 1,
+    kTEDatarzbinfirstLSB = kTEDataStubMaskMSB+1,
     kTEDatarzbinfirstMSB = kTEDatarzbinfirstLSB + 3 - 1,
     kTEDatastartLSB = kTEDatarzbinfirstMSB + 1,
     kTEDatastartMSB = kTEDatastartLSB + 3 - 1,
@@ -51,6 +53,10 @@ class TEData {
     return data_.range(kTEDataNStubMSB,kTEDataNStubLSB);
   }
 
+  ap_uint<16> getStubMask() const {
+    return data_.range(kTEDataStubMaskMSB,kTEDataStubMaskLSB);
+  }
+
  TEData(const TEData& tedata):
   data_(tedata.data_)
   {}
@@ -59,13 +65,14 @@ class TEData {
   data_(tedata)
   {}
   
- TEData( const ap_uint<64> nstub, 
+ TEData( const ap_uint<64> nstub,
+	 const ap_uint<16> stubmask,
 	 const RZBINFIRST rzbinfirst, 
 	 const START start, 
 	 const RZDIFFMAX rzdiffmax, 
 	 const AllStubInner<BARRELPS>::AllStubInnerData stub
 	 ):
-  data_( (stub, rzdiffmax, start, rzbinfirst, nstub) )
+  data_( (stub, rzdiffmax, start, rzbinfirst, stubmask, nstub) )
     {}
 
   TEDATA raw() const {return data_;}
@@ -162,7 +169,6 @@ class TEBuffer {
   ap_uint<2> imem_, imembegin_, imemend_;
   
   TEData::TEDATA buffer_[1<<bufferdepthbits];
-
   
 private:
 
