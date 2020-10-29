@@ -27,6 +27,7 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
  inline void init(BXType bxin, 
 		  AllStubInner<BARRELPS>::AllStubInnerData innerstub,
 		  ap_uint<64> memstubs,
+		  ap_uint<16> memmask,
 		  ap_uint<3> slot,
 		  ap_uint<3> rzbinfirst,
 		  ap_uint<3> rzbindiffmax
@@ -35,8 +36,16 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
   idle_ = false;
   bx_ = bxin;
   memstubs_ = memstubs;
+  memmask_ = memmask;
+  maskmask_ = 0xFFFFFFFF;
+#ifndef __SYNTHESIS__
+  std::cout << "memstubs_: "<<memstubs_.to_string(2)<<std::endl;
+  std::cout << "memmask_: "<<memmask_.to_string(2)<<std::endl;
+#endif
+   
+
   //std::cout << "TEUnit::init memstubs = "<<memstubs.to_string(2)<<std::endl; 
-  memindex_ = 0;
+  //memindex_ = 0;
   istub_=0;
   innerstub_=innerstub;
   slot_=slot;
@@ -91,7 +100,30 @@ void write(STUBID stubs) {
 #pragma HLS inline
 #pragma HLS PIPELINE II=1
    
-   (ireg_, next_, nstubs_)=memstubs_.range((memindex_*8)+7,memindex_*8);
+   ap_uint<4> memindex(0);
+
+   ap_uint<16> masktmp=memmask_&maskmask_;
+
+   memindex = masktmp.test(0) ? 0 :
+     masktmp.test(1) ? 1 :
+     masktmp.test(2) ? 2 :
+     masktmp.test(3) ? 3 :
+     masktmp.test(4) ? 4 :
+     masktmp.test(5) ? 5 :
+     masktmp.test(6) ? 6 :
+     masktmp.test(7) ? 7 :
+     masktmp.test(8) ? 8 :
+     masktmp.test(9) ? 9 :
+     masktmp.test(10) ? 10 :
+     masktmp.test(11) ? 11 :
+     masktmp.test(12) ? 12 :
+     masktmp.test(13) ? 13 :
+     masktmp.test(14) ? 14 :
+     15;
+
+
+   (next_, ireg_)=memindex;
+   nstubs_=memstubs_.range((memindex*4)+3,memindex*4);
    idle_=idle_||nstubs_==0;
    
    bool good=!(idle()||nearfull);
@@ -104,12 +136,13 @@ void write(STUBID stubs) {
    ap_uint<12> stubadd( (ireg_, ibin,istub_) );
    ap_uint<1> current_next=next_;
    
+
 #ifndef __SYNTHESIS__
    if (good) {
      assert(nstubs_!=0);
-     //std::cout << "iTE nstubs_ nentries memindex_ ireg_ ibin slot_ next_: "
-     //	       << iTE<<" "<<nstubs_<<" "<<outervmstubs.getEntries(bx_,(ireg_,ibin))
-     //	       << " " << memindex_<<" "<<ireg_<<" "<<ibin<<" "<<slot_<<" "<<next_<<std::endl;
+     //std::cout << "nstubs_ nentries memmask_ memindex ireg_ ibin slot_ next_: "
+     // 	       <<" "<<nstubs_<<" "<<outervmstubs.getEntries(bx_,(ireg_,ibin))
+     //	       << " " << memmask_.to_string(2)<<" "<<memindex<<" "<<ireg_<<" "<<ibin<<" "<<slot_<<" "<<next_<<std::endl;
      assert(nstubs_==outervmstubs.getEntries(bx_,(ireg_,ibin)));
    }
 #endif
@@ -117,9 +150,16 @@ void write(STUBID stubs) {
    NSTUBS zero(0);
    NSTUBS istubtmp=istub_+1;
    ap_uint<1> allstubs=istubtmp==nstubs_;
+   ap_uint<1> notallstubs=!allstubs;
    istub_=allstubs?zero:istubtmp;
-   memindex_+=allstubs;
-   idle_=idle_||(memindex_==0&&allstubs);
+   maskmask_.range(memindex,memindex)=notallstubs;
+
+#ifndef __SYNTHESIS__
+   //std::cout << "Updated memmask_: "<<memmask_.to_string(2)<<std::endl;
+#endif
+
+
+   idle_=idle_||(memmask_==0&&allstubs);
 
    const auto& outervmstub = outervmstubs.read_mem(bx_,stubadd);
 
@@ -159,7 +199,9 @@ void write(STUBID stubs) {
  
 
  ap_uint<64> memstubs_;
- ap_uint<3> memindex_;
+ ap_uint<16> memmask_;
+ ap_uint<16> maskmask_;
+ //ap_uint<3> memindex_;
 
  ap_uint<3> slot_;
  ap_uint<3> rzbinfirst_;
