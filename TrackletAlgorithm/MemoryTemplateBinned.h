@@ -22,6 +22,7 @@ public:
   static constexpr unsigned int kNBitDataAddr = NBIT_ADDR-NBIT_BIN;
   typedef ap_uint<NBIT_BX> BunchXingT;
   typedef ap_uint<kNBitDataAddr+1> NEntryT;
+
   
 protected:
   enum BitWidths {
@@ -32,8 +33,41 @@ protected:
 
   DataType dataarray_[kNBxBins][kNMemDepth];  // data array
   NEntryT nentries_[kNBxBins][kNSlots];     // number of entries
+  ap_uint<1> binmask_[kNBxBins][kNSlots];     // true if nonzero # of hits
   
 public:
+
+  MemoryTemplateBinned()
+  {
+#pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
+	clear();
+  }
+  
+  ~MemoryTemplateBinned(){}
+  
+  void clear()
+  {
+#pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
+#pragma HLS inline
+	
+	for (size_t ibx=0; ibx<(kNBxBins); ++ibx) {
+#pragma HLS UNROLL
+	  clear(ibx);
+	}
+  }
+
+  void clear(BunchXingT bx)
+  {
+#pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
+#pragma HLS ARRAY_PARTITION variable=binmask_ complete dim=0
+#pragma HLS inline
+	
+	for (unsigned int ibin = 0; ibin < (kNSlots); ++ibin) {
+#pragma HLS UNROLL
+	  nentries_[bx][ibin] = 0;
+	  binmask_[bx][ibin] = 0;
+	}
+  }
 
   unsigned int getDepth() const {return kNMemDepth;}
   unsigned int getNBX() const {return kNBxBins;}
