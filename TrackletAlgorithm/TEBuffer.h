@@ -104,7 +104,6 @@ class TEBuffer {
 
   void reset() {
     imem_=imembegin_;
-    istub_=0;
     writeptr_=0;
     readptr_=0;
   }
@@ -121,7 +120,7 @@ class TEBuffer {
     return istub_;
   }
 
-  void setIStub(ap_uint<7>& istub) {
+  void setIStub(ap_uint<7> istub) {
     istub_=istub;
   }
 
