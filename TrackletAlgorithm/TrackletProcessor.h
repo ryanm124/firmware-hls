@@ -599,8 +599,10 @@ TrackletProcessor(
   static_assert(NASMemInner == 2, "Only handling two inner AS memories");
   tebuffer[0].setMemBegin(0);
   tebuffer[0].setMemEnd(1);
+  tebuffer[0].setIStub(innerStubs[0].getEntries(bx)-1); //first stub to read
   tebuffer[1].setMemBegin(1);
   tebuffer[1].setMemEnd(2);
+  tebuffer[1].setIStub(innerStubs[1].getEntries(bx)-1);
   
  reset_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++)
 #pragma HLS unroll
@@ -786,9 +788,12 @@ TrackletProcessor(
       bool validmem=imem<imemend;
 
       auto& istub=tebuffer[i].getIStub();
-      bool validstub=(istub<innerStubs[imem].getEntries(bx));
-      ap_uint<7> istubnext=istub+1;
-      bool validstubnext=(istubnext<innerStubs[imem].getEntries(bx));
+      //bool validstub=(istub<innerStubs[imem].getEntries(bx));
+      bool validstub=!istub.and_reduce();
+      std::cout << "iTE istub validstub:"<<i<<" "<<istub<<" "<<validstub<<std::endl;
+      ap_uint<7> istubnext=istub-1;
+      //bool validstubnext=(istubnext<innerStubs[imem].getEntries(bx));
+      bool validstubnext=!istubnext.and_reduce();
 
       auto stub=innerStubs[imem].read_mem(bx,istub);
       
@@ -815,7 +820,7 @@ TrackletProcessor(
       (rzdiffmax,startnext,start, usenext, rzfinebinfirst) = lutval;
       bool valid=!lutval.and_reduce();
 
-      std::cout << "startnext start:"<<startnext<<" "<<start<<" "<<lutval<<" "<<(indexz,indexr)<<std::endl;
+      //std::cout << "startnext start:"<<startnext<<" "<<start<<" "<<lutval<<" "<<(indexz,indexr)<<std::endl;
 
       ap_uint<8> useregion=regionlut[(innerfinephi,bend)];
 
@@ -842,7 +847,7 @@ TrackletProcessor(
 
       status[istep]=tebuffer[i].writeptr_;
   
-      istub=goodstub?(validstubnext?istubnext:ap_uint<7>(0)):istub;
+      istub=goodstub?(validstubnext?istubnext:ap_uint<7>(0)):istub; //code not correct if two memories
       imem=(goodstub&&(!validstubnext))?imemnext:imem;
 
     }
