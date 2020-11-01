@@ -124,7 +124,8 @@ void write(STUBID stubs) {
 
    (next_, ireg_)=memindex;
    nstubs_=memstubs_.range((memindex*4)+3,memindex*4);
-   idle_=idle_||nstubs_==0;
+   std::cout << "memindex mask nstubs : "<<memindex<<" "<<memmask_.test(memindex)<<" "<<nstubs_<<std::endl;
+   idle_=idle_||(!masktmp.or_reduce());
    
    bool good=!(idle()||nearfull);
    
