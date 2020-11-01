@@ -19,7 +19,7 @@ template<class DataType, unsigned int NBIT_BX, unsigned int NBIT_ADDR,
 // NBIT_BIN: number of bits used for binning; (1<<NBIT_BIN): number of bins
 class MemoryTemplateBinned{
   typedef ap_uint<NBIT_BX> BunchXingT;
-  typedef ap_uint<NBIT_ADDR-NBIT_BIN+1> NEntryT;
+  typedef ap_uint<NBIT_ADDR-NBIT_BIN> NEntryT;
   
 protected:
   enum BitWidths {
@@ -30,6 +30,7 @@ protected:
 
   DataType dataarray_[kNBxBins][kNMemDepth];  // data array
   NEntryT nentries_[kNBxBins][kNSlots];     // number of entries
+  ap_uint<1> binmask_[kNBxBins][kNSlots];     // true if nonzero # of hits
   
 public:
 
@@ -55,11 +56,13 @@ public:
   void clear(BunchXingT bx)
   {
 #pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
+#pragma HLS ARRAY_PARTITION variable=binmask_ complete dim=0
 #pragma HLS inline
 	
 	for (unsigned int ibin = 0; ibin < (kNSlots); ++ibin) {
 #pragma HLS UNROLL
 	  nentries_[bx][ibin] = 0;
+	  binmask_[bx][ibin] = 0;
 	}
   }
 
@@ -70,6 +73,72 @@ public:
   NEntryT getEntries(BunchXingT bx, ap_uint<NBIT_BIN> ibin) const {
 #pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
     return nentries_[bx][ibin];
+  }
+
+  ap_uint<64> getEntries16(BunchXingT bx, ap_uint<3> ibin) const {
+
+    switch(ibin) {
+    case 0 : return (getEntries8(bx,1),getEntries8(bx,0)); break;
+    case 1 : return (getEntries8(bx,2),getEntries8(bx,1)); break;
+    case 2 : return (getEntries8(bx,3),getEntries8(bx,2)); break;
+    case 3 : return (getEntries8(bx,4),getEntries8(bx,3)); break;
+    case 4 : return (getEntries8(bx,5),getEntries8(bx,4)); break;
+    case 5 : return (getEntries8(bx,6),getEntries8(bx,5)); break;
+    case 6 : return (getEntries8(bx,7),getEntries8(bx,6)); break;
+    case 7 : return (ap_uint<32>(0),getEntries8(bx,7)); break;
+    }
+
+  }
+
+  ap_uint<16> getBinMask16(BunchXingT bx, ap_uint<3> ibin) const {
+
+    switch(ibin) {
+    case 0 : return (getBinMask8(bx,1),getBinMask8(bx,0)); break;
+    case 1 : return (getBinMask8(bx,2),getBinMask8(bx,1)); break;
+    case 2 : return (getBinMask8(bx,3),getBinMask8(bx,2)); break;
+    case 3 : return (getBinMask8(bx,4),getBinMask8(bx,3)); break;
+    case 4 : return (getBinMask8(bx,5),getBinMask8(bx,4)); break;
+    case 5 : return (getBinMask8(bx,6),getBinMask8(bx,5)); break;
+    case 6 : return (getBinMask8(bx,7),getBinMask8(bx,6)); break;
+    case 7 : return (ap_uint<8>(0),getBinMask8(bx,7)); break;
+    }
+
+  }
+
+  /*
+    Can't get this implementation to work...
+  ap_uint<32> getEntries8(BunchXingT bx, ap_uint<NBIT_BIN> ibin) const {
+#pragma HLS array_reshape variable=nentries_ cyclic factor=8 dim=2
+    //#pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
+    std::cout << "bx ibin nentries_ : "<<bx<<" "<<ibin<<" "<<nentries_[bx][ibin]<<std::endl;
+    return nentries_[bx][ibin];
+  }
+  */
+
+  ap_uint<32> getEntries8(BunchXingT bx, ap_uint<3> ibin) const {
+#pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
+    return (nentries_[bx][(ap_uint<3>(7),ibin)],
+      nentries_[bx][(ap_uint<3>(6),ibin)],
+      nentries_[bx][(ap_uint<3>(5),ibin)],
+      nentries_[bx][(ap_uint<3>(4),ibin)],
+      nentries_[bx][(ap_uint<3>(3),ibin)],
+      nentries_[bx][(ap_uint<3>(2),ibin)],
+      nentries_[bx][(ap_uint<3>(1),ibin)],
+      nentries_[bx][(ap_uint<3>(0),ibin)]
+      );
+  }
+
+  ap_uint<8> getBinMask8(BunchXingT bx, ap_uint<3> ibin) const {
+#pragma HLS ARRAY_PARTITION variable=binmask_ complete dim=0
+    return (binmask_[bx][(ap_uint<3>(7),ibin)],
+      binmask_[bx][(ap_uint<3>(6),ibin)],
+      binmask_[bx][(ap_uint<3>(5),ibin)],
+      binmask_[bx][(ap_uint<3>(4),ibin)],
+      binmask_[bx][(ap_uint<3>(3),ibin)],
+      binmask_[bx][(ap_uint<3>(2),ibin)],
+      binmask_[bx][(ap_uint<3>(1),ibin)],
+      binmask_[bx][(ap_uint<3>(0),ibin)]
+      );
   }
 
   NEntryT getEntries(BunchXingT bx) const {
@@ -110,6 +179,7 @@ public:
 	  // write address for slot: 1<<(NBIT_ADDR-NBIT_BIN) * slot + nentry_ibx
 	  dataarray_[ibx][(1<<(NBIT_ADDR-NBIT_BIN))*slot+nentry_ibx] = data;
 	  nentries_[ibx][slot] = nentry_ibx + 1;
+	  binmask_[ibx][slot] = 1;
 	  return true;
 	}
 	else {

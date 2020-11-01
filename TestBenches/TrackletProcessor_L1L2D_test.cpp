@@ -17,7 +17,7 @@ int main()
   // error counts
   int err = 0;
 
-  ap_uint<10> innervmtable[2048] =
+  ap_uint<10> innervmtabletmp[2048] =
 #include "../emData/TP/tables/TP_L1.tab"
 
   ap_uint<8> useregion[2048] =
@@ -30,12 +30,33 @@ int main()
 #include "../emData/TP/tables/TP_L1L2D_stubptoutercut.tab"
 
     for (unsigned int i=1;i<6;i++) {
-      for (unsigned int j=1;j<256;j++) {
+  for (unsigned int j=1;j<256;j++) { //FIXME should start from zero
 	stubptinner[i][j]=stubptinner[0][j];
 	stubptouter[i][j]=stubptouter[0][j];
       }
     }
       
+
+  ap_uint<13> innervmtable[2048];
+
+  for (unsigned int i=0;i<2048;i++) {
+    if (innervmtabletmp[i]==1023) {
+       innervmtable[i]=8191;
+       continue;
+    }
+    ap_uint<3> rzdiff;
+    ap_uint<3> start;
+    ap_uint<1> next;
+    ap_uint<3> firstbin;
+
+    (rzdiff,start,next, firstbin) = innervmtabletmp[i];
+    ap_uint<3> startnext(start+1);
+
+    innervmtable[i]=(rzdiff,startnext,start,next,firstbin);
+  
+  }
+    
+
 
   ///////////////////////////
   // input memories

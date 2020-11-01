@@ -21,9 +21,9 @@ void TrackletCalculator_L1L2E(
     TrackletProjectionMemory<DISK> projout_disk[TC::N_PROJOUT_DISK]
 ) {
 #pragma HLS inline recursive
-#pragma HLS resource variable=innerStubs.get_mem() latency=2
-#pragma HLS resource variable=outerStubs.get_mem() latency=2
-#pragma HLS resource variable=stubPairs.get_mem() latency=2
+#pragma HLS resource variable=innerStubs.get_mem() latency=1
+#pragma HLS resource variable=outerStubs.get_mem() latency=1
+#pragma HLS resource variable=stubPairs.get_mem() latency=1
 #pragma HLS array_partition variable=projout_barrel_ps complete
 #pragma HLS array_partition variable=projout_barrel_2s complete
 #pragma HLS array_partition variable=projout_disk complete
