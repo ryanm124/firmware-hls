@@ -39,8 +39,8 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
   memmask_ = memmask;
   maskmask_ = 0xFFFFFFFF;
 #ifndef __SYNTHESIS__
-  std::cout << "memstubs_: "<<memstubs_.to_string(2)<<std::endl;
-  std::cout << "memmask_: "<<memmask_.to_string(2)<<std::endl;
+  //  std::cout << "memstubs_: "<<memstubs_.to_string(2)<<std::endl;
+  // std::cout << "memmask_: "<<memmask_.to_string(2)<<std::endl;
 #endif
    
 
@@ -124,7 +124,7 @@ void write(STUBID stubs) {
 
    (next_, ireg_)=memindex;
    nstubs_=memstubs_.range((memindex*4)+3,memindex*4);
-   std::cout << "memindex mask nstubs : "<<memindex<<" "<<memmask_.test(memindex)<<" "<<nstubs_<<std::endl;
+   //std::cout << "memindex mask nstubs : "<<memindex<<" "<<memmask_.test(memindex)<<" "<<nstubs_<<std::endl;
    idle_=idle_||(!masktmp.or_reduce());
    
    bool good=!(idle()||nearfull);
