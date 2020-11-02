@@ -156,6 +156,11 @@ public:
     int slot = (int)strtol(split(line, ' ').front().c_str(), nullptr, base); // Convert string (in hexadecimal) to int
     // Originally: atoi(split(line, ' ').front().c_str()); but that didn't work for disks with 16 bins
 
+    //change order HACK...
+    ap_uint<3> ireg,bin;
+    (ireg,bin)=ap_uint<6>(slot);
+    int newslot=(bin,ireg);
+
     DataType data(datastr.c_str(), base);
     int nent = nentries_[bx][slot];
     bool success = write_mem(bx, slot, data, nent);

@@ -621,43 +621,8 @@ TrackletProcessor(
  istep_loop: for(unsigned istep=0;istep<108;istep++) {
 #pragma HLS pipeline II=1
 
-    /*
-
-#pragma HLS dependence variable=tebuffer[0].writeptr_ intra WAR true  
-#pragma HLS dependence variable=tebuffer[1].writeptr_ intra WAR true  
-#pragma HLS dependence variable=tebuffer[0].writeptr_ intra RAW true  
-#pragma HLS dependence variable=tebuffer[1].writeptr_ intra RAW true  
-
-#pragma HLS dependence variable=tebuffer[0].writeptr_ inter WAR true  
-#pragma HLS dependence variable=tebuffer[1].writeptr_ inter WAR true  
-#pragma HLS dependence variable=tebuffer[0].writeptr_ inter RAW true  
-#pragma HLS dependence variable=tebuffer[1].writeptr_ inter RAW true  
-
-#pragma HLS dependence variable=tebuffer[0].istub_ intra WAR true  
-#pragma HLS dependence variable=tebuffer[1].istub_ intra WAR true  
-#pragma HLS dependence variable=tebuffer[0].istub_ intra RAW true  
-#pragma HLS dependence variable=tebuffer[1].istub_ intra RAW true  
-
-#pragma HLS dependence variable=tebuffer[0].istub_ inter WAR true  
-#pragma HLS dependence variable=tebuffer[1].istub_ inter WAR true  
-#pragma HLS dependence variable=tebuffer[0].istub_ inter RAW true  
-#pragma HLS dependence variable=tebuffer[1].istub_ inter RAW true  
-
-#pragma HLS dependence variable=tebuffer[0].istub_ intra false
-#pragma HLS dependence variable=tebuffer[0].istub_ inter false
-#pragma HLS dependence variable=tebuffer[1].istub_ intra false
-#pragma HLS dependence variable=tebuffer[1].istub_ inter false
-    */
-
-
-    //std::cout << "************************ TP istep = " << istep << " *********************"<< std::endl;
-    //status_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
-    // std::cout << "TE["<<k<<"] i,e: "<<teunits[k].idle()<<" "<<teunits[k].empty()<<"  ";
-    //}
-    //std::cout <<std::endl;
-
     //
-    // zeroth step is to cache some of date
+    // Step 0 -  zeroth step is to cache some of data
     //
 
     TEData tedatatmp[2];
@@ -707,20 +672,24 @@ TrackletProcessor(
     }
 
     //
-    // In this first step we check if there are stubs to be fit
+    // Step 1 - In this first step we check if there are stubs to be sent to the TC
+    // we loop over the TE units and see if they have data.
     //
-
+    
+    // Check if TE unit has data - find the first instance with data
     bool haveTEData=false;
+    ap_uint<1> HaveTEData=0;
     int iTE=0;
   process_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
 #pragma HLS unroll
+      HaveTEData=HaveTEData||(!teuempty[k]);
       haveTEData=haveTEData||(!teuempty[k]);
       if (!teuempty[k]){
 	iTE=k;
       }
     }
-    ap_uint<1> HaveTEData=haveTEData;
-
+    std::cout<< "haveTEData: "<<HaveTEData<<" "<<haveTEData<<std::endl;
+    
       
     ap_uint<36> innerStub;
     ap_uint<7> innerIndex;
@@ -733,22 +702,20 @@ TrackletProcessor(
       
     const auto &outerStub = outerStubs->read_mem(bx, outerIndex);
 
-    //    {
-    //#pragma HLS latency min=28 max=28
 
-      //if (haveTEData) {  
+      //if (haveTEData) {  //Comment out for debugging
     TC::processStubPair<Seed, InnerRegion, OuterRegion, TPROJMaskBarrel<Seed, iTC>(), TPROJMaskDisk<Seed, iTC>()>(bx, innerIndex, AllStub<BARRELPS>(innerStub), outerIndex, outerStub, TCID, trackletIndex, trackletParameters, projout_barrel_ps, projout_barrel_2s, projout_disk, npar, nproj_barrel_ps, nproj_barrel_2s, nproj_disk);
       // }
     
-	  //}
 
     //
-    // Second step
+    // Step 2 - Run the TE unit step method. If there is idle TE unit and we have stubs to process we will read from TE Buffer 
+    // and initialize a TE unit
     // 
 
+    //Loop over TE Buffers and and find if there are empty buffers
     ap_uint<1> TEBufferData=0;
     unsigned int iTEBuff=0;
-    //status[istep]=tebuffer[1].writeptr_;
   check_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
 #pragma HLS unroll
       if ((!TEBufferData)&&(!tebufferempty[i])) {
@@ -757,6 +724,8 @@ TrackletProcessor(
       }
     }
 
+    //Now loop over the TE units and execute the step method. The first TE unit that is idle is 
+    //initialized if there is data in TE Buffer from above
   step_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
 #pragma HLS unroll
       if (teuidle[k]) {
@@ -773,84 +742,98 @@ TrackletProcessor(
 	teunits[k].step(outerVMStubs[k],stubptinnerlut[k],stubptouterlut[k],teunearfull[k]);
       }
     }
-   tebuffer[iTEBuff].readptr_=tebuffer[iTEBuff].readptr_+idlete*TEBufferData;
+
+    //Increment TE bufer read ptr if we initalized a TE unit.
+    tebuffer[iTEBuff].readptr_=tebuffer[iTEBuff].readptr_+idlete*TEBufferData;
     
-    //
-    // Third step
-    //
+   //
+   // Third step - fill inner layer stubs in the TE buffer 
+   // Check if inner stub has matching stubs in next layer/disk if
+   // so put them in TE buffere to be picked up by a TE unit
+   //
 
   process_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
 #pragma HLS unroll
 
-      auto& imem=tebuffer[i].getMem();
-      auto imemend=tebuffer[i].getMemEnd();
-      ap_uint<2> imemnext=imem+1;
-      bool validmem=imem<imemend;
+     //Extract the memory and range this TE buffer is processing
+     auto& imem=tebuffer[i].getMem();
+     auto imemend=tebuffer[i].getMemEnd();
+     bool validmem=imem<imemend;
+     
+     //compute the next memory
+     ap_uint<2> imemnext=imem+1;
 
-      auto& istub=tebuffer[i].getIStub();
-      //bool validstub=(istub<innerStubs[imem].getEntries(bx));
-      bool validstub=!istub.and_reduce();
-      std::cout << "iTE istub validstub:"<<i<<" "<<istub<<" "<<validstub<<std::endl;
-      ap_uint<7> istubnext=istub-1;
-      //bool validstubnext=(istubnext<innerStubs[imem].getEntries(bx));
-      bool validstubnext=!istubnext.and_reduce();
+     //Extract the current stub - check if valid. Calculate next stub (counting down!) Chech if valid
+     auto& istub=tebuffer[i].getIStub();
+     bool validstub=!istub.and_reduce();
+     ap_uint<7> istubnext=istub-1;
+     bool validstubnext=!istubnext.and_reduce();
 
-      auto stub=innerStubs[imem].read_mem(bx,istub);
+     //Read stub from memory - BRAM with latency of one or two clks
+     auto stub=innerStubs[imem].read_mem(bx,istub);
+     
+     //Get z-position and top bits for LUT
+     auto z=stub.getZ();
+     int nbitszfinebintable=7;
+     auto indexz=z.range(z.length()-1,z.length()-nbitszfinebintable);
+
+     //Get r-position and top bits for LUT
+     auto r=stub.getR();
+     int nbitsrfinebintable=4;
+     auto indexr=r.range(r.length()-1,r.length()-nbitsrfinebintable);
       
-
-      auto phi=stub.getPhi();
-      auto z=stub.getZ();
-      auto r=stub.getR();
-      auto bend=stub.getBend();
-
-      auto innerfinephi=stub.getFinePhi();
+     //Get bend and fine phi for LUT
+     auto bend=stub.getBend();
+     auto innerfinephi=stub.getFinePhi();
       
-      int nbitszfinebintable=7;
-      auto indexz=z.range(z.length()-1,z.length()-nbitszfinebintable);
+     //quantities looked up in LUT
+     ap_uint<3> rzfinebinfirst,start,startnext,rzdiffmax;
+     ap_uint<1> usenext;
 
-      int nbitsrfinebintable=4;
-      auto indexr=r.range(r.length()-1,r.length()-nbitsrfinebintable);
+     //This LUT tells us which range in r/z to look for stubs in the other layer/disk
+     ap_uint<13> lutval=(rzdiffmax,startnext,start, usenext, rzfinebinfirst) = lut[(indexz,indexr)];
 
-      ap_uint<3> rzfinebinfirst;
-      ap_uint<1> usenext;
-      ap_uint<3> start,startnext;
-      ap_uint<3> rzdiffmax;
+     //LUT returns all 1's if not valid. (should change to returning zero.
+     bool valid=!lutval.and_reduce();
 
-      ap_uint<13> lutval=lut[(indexz,indexr)];
-      (rzdiffmax,startnext,start, usenext, rzfinebinfirst) = lutval;
-      bool valid=!lutval.and_reduce();
+     //This lut tells us which range in phi to loof for stubs the other layer/disk
+     ap_uint<8> useregion=regionlut[(innerfinephi,bend)];
 
-      //std::cout << "startnext start:"<<startnext<<" "<<start<<" "<<lutval<<" "<<(indexz,indexr)<<std::endl;
+     //Extract the number of stubs in the ranges of r/z 
+     ap_uint<64> nstubs=(outerVMStubs[i].getEntries8(bx,startnext),outerVMStubs[i].getEntries8(bx,start));
+     //Get the mask of bins that has non-zero number of hits
+     ap_uint<16> stubmask16 =(outerVMStubs[i].getBinMask8(bx,startnext),outerVMStubs[i].getBinMask8(bx,start));
 
-      ap_uint<8> useregion=regionlut[(innerfinephi,bend)];
+     //Calculate the stub mask for which bins have hits _and_ are consistent with the inner stub
+     ap_uint<16> mask=( (useregion*usenext,useregion) );
+     ap_uint<16> stubmask=stubmask16&mask;
 
-      ap_uint<64> nstubs=(outerVMStubs[i].getEntries8(bx,startnext),outerVMStubs[i].getEntries8(bx,start));
-      ap_uint<16> stubmask16 =(outerVMStubs[i].getBinMask8(bx,startnext),outerVMStubs[i].getBinMask8(bx,start));
+     //Find if there are _any_ bins with hits that needs to be tried. If so will store stub in buffer
+     bool havestubs=stubmask.or_reduce();
 
-      ap_uint<16> mask=( (useregion*usenext,useregion) );
-      ap_uint<16> stubmask=stubmask16&mask;
+     //Calculate good stub - true if:
+     //validmem is true - meaning that we have not exhausted all stub memories
+     //tebuffer not full - can not process stub if buffere is full and we can not store 
+     //validstub - should be redundant with validmem - FIXME
+     ap_uint<1> goodstub=validmem&&(!tebufferfull[i])&&validstub;
 
-      bool havestubs=stubmask.or_reduce();
+     //addtedata is the criteria for saving stub to TE buffer:
+     //valid means that r/z project is in valid range
+     //havestubs means that at least one memory bin has stubs
+     //goodstub means that we had a valid inner stub
+     ap_uint<1> addtedata=valid&&havestubs&&goodstub;
 
-      //ap_uint<3> writeptrnext=tebuffer[i].writeptr_+1;
-      //bool tebufferfull=writeptrnext==tebuffer[i].readptr_;
-      ap_uint<1> goodstub=validmem&&(!tebufferfull[i])&&validstub;
-      ap_uint<1> addtedata=valid&&havestubs&&goodstub;
-      auto const writeptrtmp=tebuffer[i].writeptr_;
-      TEData tedatatmp(nstubs,stubmask, rzfinebinfirst,start,rzdiffmax,stub.raw());
-      
-      tebuffer[i].buffer_[writeptrtmp]=tedatatmp.raw();
+     //Create TEData and save in buffer - but only increment point if data good
+     TEData tedatatmp(nstubs,stubmask, rzfinebinfirst,start,rzdiffmax,stub.raw());
+     tebuffer[i].buffer_[tebuffer[i].writeptr_]=tedatatmp.raw();
+     tebuffer[i].writeptr_=tebuffer[i].writeptr_+addtedata;
 
-      //tebuffer[i].writeptr_=addtedata?writeptrnext[i]:writeptr[i];
-      //tebuffer[i].writeptr_=addtedata?writeptrnext:tebuffer[i].writeptr_;
-      tebuffer[i].writeptr_=tebuffer[i].writeptr_+addtedata;
+     //Update istub if goodstub
+     istub=goodstub?(validstubnext?istubnext:ap_uint<7>(0)):istub; //FIXME code not correct if two memories
+     //Update imem if the next stub isnot valid
+     imem=(goodstub&&(!validstubnext))?imemnext:imem;
 
-      status[istep]=tebuffer[i].writeptr_;
-  
-      istub=goodstub?(validstubnext?istubnext:ap_uint<7>(0)):istub; //code not correct if two memories
-      imem=(goodstub&&(!validstubnext))?imemnext:imem;
-
-    }
+   }
 
 
     
