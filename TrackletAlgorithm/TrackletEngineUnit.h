@@ -134,7 +134,7 @@ void write(STUBID stubs) {
    ap_uint<5> iAllstub_ireg =  (iAllstub, ireg_);
    
    ap_uint<3> ibin(slot_+next_);
-   ap_uint<12> stubadd( (ireg_, ibin,istub_) );
+   ap_uint<12> stubadd( (ibin, ireg_,istub_) );
    ap_uint<1> current_next=next_;
    
 
@@ -144,7 +144,7 @@ void write(STUBID stubs) {
      //std::cout << "nstubs_ nentries memmask_ memindex ireg_ ibin slot_ next_: "
      // 	       <<" "<<nstubs_<<" "<<outervmstubs.getEntries(bx_,(ireg_,ibin))
      //	       << " " << memmask_.to_string(2)<<" "<<memindex<<" "<<ireg_<<" "<<ibin<<" "<<slot_<<" "<<next_<<std::endl;
-     assert(nstubs_==outervmstubs.getEntries(bx_,(ireg_,ibin)));
+     assert(nstubs_==outervmstubs.getEntries(bx_,(ibin, ireg_)));
    }
 #endif
    

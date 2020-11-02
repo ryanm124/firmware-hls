@@ -115,31 +115,45 @@ public:
   }
   */
 
+ 
   ap_uint<32> getEntries8(BunchXingT bx, ap_uint<3> ibin) const {
 #pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
-    return (nentries_[bx][(ap_uint<3>(7),ibin)],
-      nentries_[bx][(ap_uint<3>(6),ibin)],
-      nentries_[bx][(ap_uint<3>(5),ibin)],
-      nentries_[bx][(ap_uint<3>(4),ibin)],
-      nentries_[bx][(ap_uint<3>(3),ibin)],
-      nentries_[bx][(ap_uint<3>(2),ibin)],
-      nentries_[bx][(ap_uint<3>(1),ibin)],
-      nentries_[bx][(ap_uint<3>(0),ibin)]
+    return (nentries_[bx][(ibin,ap_uint<3>(7))],
+	    nentries_[bx][(ibin,ap_uint<3>(6))],
+	    nentries_[bx][(ibin,ap_uint<3>(5))],
+	    nentries_[bx][(ibin,ap_uint<3>(4))],
+	    nentries_[bx][(ibin,ap_uint<3>(3))],
+	    nentries_[bx][(ibin,ap_uint<3>(2))],
+	    nentries_[bx][(ibin,ap_uint<3>(1))],
+	    nentries_[bx][(ibin,ap_uint<3>(0))]
       );
   }
 
   ap_uint<8> getBinMask8(BunchXingT bx, ap_uint<3> ibin) const {
 #pragma HLS ARRAY_PARTITION variable=binmask_ complete dim=0
-    return (binmask_[bx][(ap_uint<3>(7),ibin)],
-      binmask_[bx][(ap_uint<3>(6),ibin)],
-      binmask_[bx][(ap_uint<3>(5),ibin)],
-      binmask_[bx][(ap_uint<3>(4),ibin)],
-      binmask_[bx][(ap_uint<3>(3),ibin)],
-      binmask_[bx][(ap_uint<3>(2),ibin)],
-      binmask_[bx][(ap_uint<3>(1),ibin)],
-      binmask_[bx][(ap_uint<3>(0),ibin)]
+    return (binmask_[bx][(ibin,ap_uint<3>(7))],
+	    binmask_[bx][(ibin,ap_uint<3>(6))],
+	    binmask_[bx][(ibin,ap_uint<3>(5))],
+	    binmask_[bx][(ibin,ap_uint<3>(4))],
+	    binmask_[bx][(ibin,ap_uint<3>(3))],
+	    binmask_[bx][(ibin,ap_uint<3>(2))],
+	    binmask_[bx][(ibin,ap_uint<3>(1))],
+	    binmask_[bx][(ibin,ap_uint<3>(0))]
       );
   }
+ 
+  /*
+
+  ap_uint<32> getEntries8New(BunchXingT bx, ap_uint<3> ibin) const {
+#pragma HLS ARRAY_RESHAPE variable=nentries_ cycle factor=8 dim=1
+    return nentries_[bx][ibin];
+  }
+
+  ap_uint<8> getBinMask8New(BunchXingT bx, ap_uint<3> ibin) const {
+#pragma HLS ARRAY_RESHAPE variable=binmask_ cycle factor=8 dim=1
+    return binmask_[bx][ibin];
+  }
+  */
 
   NEntryT getEntries(BunchXingT bx) const {
     NEntryT val = 0;
@@ -216,8 +230,13 @@ public:
     int slot = (int)strtol(split(line, ' ').front().c_str(), nullptr, base); // Convert string (in hexadecimal) to int
     // Originally: atoi(split(line, ' ').front().c_str()); but that didn't work for disks with 16 bins
 
+    //change order HACK...
+    ap_uint<3> ireg,bin;
+    (ireg,bin)=ap_uint<6>(slot);
+    int newslot=(bin,ireg);
+
     DataType data(datastr.c_str(), base);
-    return write_mem(bx, slot, data);
+    return write_mem(bx, newslot, data);
   }
 
 
