@@ -677,19 +677,15 @@ TrackletProcessor(
     //
     
     // Check if TE unit has data - find the first instance with data
-    bool haveTEData=false;
     ap_uint<1> HaveTEData=0;
     int iTE=0;
   process_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
 #pragma HLS unroll
       HaveTEData=HaveTEData||(!teuempty[k]);
-      haveTEData=haveTEData||(!teuempty[k]);
       if (!teuempty[k]){
 	iTE=k;
       }
     }
-    std::cout<< "haveTEData: "<<HaveTEData<<" "<<haveTEData<<std::endl;
-    
       
     ap_uint<36> innerStub;
     ap_uint<7> innerIndex;
