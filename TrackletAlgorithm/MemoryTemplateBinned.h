@@ -34,6 +34,10 @@ protected:
   DataType dataarray_[kNBxBins][kNMemDepth];  // data array
   NEntryT nentries_[kNBxBins][kNSlots];     // number of entries
   ap_uint<1> binmask_[kNBxBins][kNSlots];     // true if nonzero # of hits
+
+  ap_uint<16> binmask16_[kNBxBins][8];
+  ap_uint<64> nentries16_[kNBxBins][8];
+
   
 public:
 
@@ -66,6 +70,11 @@ public:
 #pragma HLS UNROLL
 	  nentries_[bx][ibin] = 0;
 	  binmask_[bx][ibin] = 0;
+	}
+
+	for (unsigned int ibin = 0; ibin < 8; ++ibin) {
+#pragma HLS UNROLL
+	  binmask16_[bx][ibin] = 0;
 	}
   }
 
