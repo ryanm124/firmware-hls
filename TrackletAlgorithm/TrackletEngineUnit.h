@@ -100,31 +100,31 @@ void write(STUBID stubs) {
 #pragma HLS inline
 #pragma HLS PIPELINE II=1
    
-   ap_uint<4> memindex(0);
+   ap_uint<4> memindex;
+   ap_uint<4> ns0,ns1,ns2,ns3,ns4,ns5,ns6,ns7,ns8,ns9,ns10,ns11,ns12,ns13,ns14,ns15;
+   (ns15,ns14,ns13,ns12,ns11,ns10,ns9,ns8,ns7,ns6,ns5,ns4,ns3,ns2,ns1,ns0)=memstubs_;
 
    ap_uint<16> masktmp=memmask_&maskmask_;
 
-   memindex = masktmp.test(0) ? 0 :
-     masktmp.test(1) ? 1 :
-     masktmp.test(2) ? 2 :
-     masktmp.test(3) ? 3 :
-     masktmp.test(4) ? 4 :
-     masktmp.test(5) ? 5 :
-     masktmp.test(6) ? 6 :
-     masktmp.test(7) ? 7 :
-     masktmp.test(8) ? 8 :
-     masktmp.test(9) ? 9 :
-     masktmp.test(10) ? 10 :
-     masktmp.test(11) ? 11 :
-     masktmp.test(12) ? 12 :
-     masktmp.test(13) ? 13 :
-     masktmp.test(14) ? 14 :
-     15;
-
+   (memindex,nstubs_) = masktmp.test(0) ? (ap_uint<4>(0),ns0) :
+     masktmp.test(1) ? (ap_uint<4>(1),ns1) :
+     masktmp.test(2) ? (ap_uint<4>(2),ns2) :
+     masktmp.test(3) ? (ap_uint<4>(3),ns3) :
+     masktmp.test(4) ? (ap_uint<4>(4),ns4) :
+     masktmp.test(5) ? (ap_uint<4>(5),ns5) :
+     masktmp.test(6) ? (ap_uint<4>(6),ns6) :
+     masktmp.test(7) ? (ap_uint<4>(7),ns7) :
+     masktmp.test(8) ? (ap_uint<4>(8),ns8) :
+     masktmp.test(9) ? (ap_uint<4>(9),ns9) :
+     masktmp.test(10) ? (ap_uint<4>(10),ns10) :
+     masktmp.test(11) ? (ap_uint<4>(11),ns11) :
+     masktmp.test(12) ? (ap_uint<4>(12),ns12) :
+     masktmp.test(13) ? (ap_uint<4>(13),ns13) :
+     masktmp.test(14) ? (ap_uint<4>(14),ns14) :
+     (ap_uint<4>(15),ns15);
 
    (next_, ireg_)=memindex;
-   nstubs_=memstubs_.range((memindex*4)+3,memindex*4);
-   //std::cout << "memindex mask nstubs : "<<memindex<<" "<<memmask_.test(memindex)<<" "<<nstubs_<<std::endl;
+
    idle_=idle_||(!masktmp.or_reduce());
    
    bool good=!(idle()||nearfull);

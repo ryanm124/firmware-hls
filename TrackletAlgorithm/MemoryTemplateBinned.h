@@ -31,6 +31,10 @@ protected:
   DataType dataarray_[kNBxBins][kNMemDepth];  // data array
   NEntryT nentries_[kNBxBins][kNSlots];     // number of entries
   ap_uint<1> binmask_[kNBxBins][kNSlots];     // true if nonzero # of hits
+
+  ap_uint<16> binmask16_[kNBxBins][8];
+  ap_uint<64> nentries16_[kNBxBins][8];
+
   
 public:
 
@@ -64,6 +68,11 @@ public:
 	  nentries_[bx][ibin] = 0;
 	  binmask_[bx][ibin] = 0;
 	}
+
+	for (unsigned int ibin = 0; ibin < 8; ++ibin) {
+#pragma HLS UNROLL
+	  binmask16_[bx][ibin] = 0;
+	}
   }
 
   unsigned int getDepth() const {return kNMemDepth;}
@@ -75,6 +84,7 @@ public:
     return nentries_[bx][ibin];
   }
 
+/*
   ap_uint<64> getEntries16(BunchXingT bx, ap_uint<3> ibin) const {
 
     switch(ibin) {
@@ -89,7 +99,18 @@ public:
     }
 
   }
+*/
 
+
+  ap_uint<64> getEntries16(BunchXingT bx, ap_uint<3> ibin) const {
+    return nentries16_[bx][ibin];
+  }
+
+  ap_uint<16> getBinMask16(BunchXingT bx, ap_uint<3> ibin) const {
+    return binmask16_[bx][ibin];
+  }
+
+  /*
   ap_uint<16> getBinMask16(BunchXingT bx, ap_uint<3> ibin) const {
 
     switch(ibin) {
@@ -105,6 +126,8 @@ public:
 
   }
 
+  */
+
   /*
     Can't get this implementation to work...
   ap_uint<32> getEntries8(BunchXingT bx, ap_uint<NBIT_BIN> ibin) const {
@@ -118,6 +141,8 @@ public:
  
   ap_uint<32> getEntries8(BunchXingT bx, ap_uint<3> ibin) const {
 #pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
+#pragma HLS inline
+
     return (nentries_[bx][(ibin,ap_uint<3>(7))],
 	    nentries_[bx][(ibin,ap_uint<3>(6))],
 	    nentries_[bx][(ibin,ap_uint<3>(5))],
@@ -131,6 +156,8 @@ public:
 
   ap_uint<8> getBinMask8(BunchXingT bx, ap_uint<3> ibin) const {
 #pragma HLS ARRAY_PARTITION variable=binmask_ complete dim=0
+#pragma HLS inline
+
     return (binmask_[bx][(ibin,ap_uint<3>(7))],
 	    binmask_[bx][(ibin,ap_uint<3>(6))],
 	    binmask_[bx][(ibin,ap_uint<3>(5))],
@@ -194,6 +221,23 @@ public:
 	  dataarray_[ibx][(1<<(NBIT_ADDR-NBIT_BIN))*slot+nentry_ibx] = data;
 	  nentries_[ibx][slot] = nentry_ibx + 1;
 	  binmask_[ibx][slot] = 1;
+	  
+	  ap_uint<3> ibin,ireg;
+
+	  (ibin,ireg)=slot;
+
+	  //std::cout << "slot ibin ireg :"<<slot<<" "<<ibin<<" "<<ireg<<std::endl;
+
+	  //binmask16_[ibx][ibin].set(ireg);
+	  //if (ibin!=0) binmask16_[ibx][ibin-1].set(ireg+8);
+
+	  binmask16_[ibx][ibin].set_bit(ireg,true);
+	  if (ibin!=0) binmask16_[ibx][ibin-1].set_bit(ireg+8,true);
+	  //std::cout << "slot ibin ireg binmask16:"<<slot<<" "<<ibin<<" "<<ireg<<" "<<binmask16_[ibx][ibin]<<std::endl;
+
+	  nentries16_[ibx][ibin].range(ireg*4+3,ireg*4)=nentries16_[ibx][ibin].range(ireg*4+3,ireg*4)+1;;
+	  if ( ibin!=0) nentries16_[ibx][ibin-1].range(32+ireg*4+3,32+ireg*4)=nentries16_[ibx][ibin-1].range(32+ireg*4+3,32+ireg*4)+1;
+
 	  return true;
 	}
 	else {
