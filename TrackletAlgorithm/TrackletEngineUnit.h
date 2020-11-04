@@ -179,8 +179,6 @@ void write(STUBID stubs) {
    
    if (idphi<0) idphi+=(1<<nbitsfinephidiff);
 
-   std::cout << "rzbin rzbinfirst_ rzbindiffmax_ : "<<rzbin<<" "<<rzbinfirst_<<" "<<rzbindiffmax_<<std::endl;
-
    bool rzcut=!(rzbin<rzbinfirst_ || rzbin > rzbinfirst_ + rzbindiffmax_);
 
    const auto& outerbend = outervmstub.getBend();
@@ -189,10 +187,6 @@ void write(STUBID stubs) {
    auto ptinnerindex = (idphi, innerbend);
    auto ptouterindex = (idphi, outerbend);
    
-
-   std::cout << "good, inrange, ptinnerLUT[ptinnerindex], ptouterLUT[ptouterindex], rzcut: "
-     << good<<" "<<inrange<<" "<<ptinnerLUT[ptinnerindex]<<" "<<ptouterLUT[ptouterindex]<<" "<<rzcut<<std::endl;
-
    ap_uint<1> savestub = good&&inrange && ptinnerLUT[ptinnerindex] && ptouterLUT[ptouterindex] && rzcut;
    //if (good&&inrange && ptinnerLUT[ptinnerindex] && ptouterLUT[ptouterindex] && rzcut){
    //  write( (outervmstub.getIndex(), innerstub_.raw()) );
