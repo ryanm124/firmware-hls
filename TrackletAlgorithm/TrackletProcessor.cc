@@ -12,7 +12,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 void TrackletProcessor_L1L2D(
     const BXType bx,
-    const ap_uint<13> lut[2048],
+    const ap_uint<10> lut[2048],
     const ap_uint<8> regionlut[2048],
     const ap_uint<1> stubptinnerlut[6][256],
     const ap_uint<1> stubptouterlut[6][256],

@@ -17,7 +17,7 @@ int main()
   // error counts
   int err = 0;
 
-  ap_uint<10> innervmtabletmp[2048] =
+  ap_uint<10> innervmtable[2048] =
 #include "../emData/TP/tables/TP_L1.tab"
 
   ap_uint<8> useregion[2048] =
@@ -36,28 +36,6 @@ int main()
       }
     }
       
-
-  ap_uint<13> innervmtable[2048];
-
-  for (unsigned int i=0;i<2048;i++) {
-    if (innervmtabletmp[i]==1023) {
-       innervmtable[i]=8191;
-       continue;
-    }
-    ap_uint<3> rzdiff;
-    ap_uint<3> start;
-    ap_uint<1> next;
-    ap_uint<3> firstbin;
-
-    (rzdiff,start,next, firstbin) = innervmtabletmp[i];
-    ap_uint<3> startnext(start+1);
-
-    innervmtable[i]=(rzdiff,startnext,start,next,firstbin);
-  
-  }
-    
-
-
   ///////////////////////////
   // input memories
   static AllStubInnerMemory<BARRELPS> innerStubs[2];
