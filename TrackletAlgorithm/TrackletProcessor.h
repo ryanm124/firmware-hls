@@ -634,10 +634,6 @@ TrackletProcessor(
     // Step 0 -  zeroth step is to cache some of data
     //
 
-    std::cout << "TEBuffers on istep="<<istep
-	      <<" First rptr, wptr: "<<tebuffer[0].writeptr_<<" "<<tebuffer[0].readptr_
-	      <<" Second rptr, wptr: "<<tebuffer[1].writeptr_<<" "<<tebuffer[1].readptr_
-	      <<std::endl;
 
     TEData tedatatmp[2];
     bool tebufferempty[2];
@@ -697,18 +693,13 @@ TrackletProcessor(
     // Check if TE unit has data - find the first instance with data
     ap_uint<1> HaveTEData=0;
     int iTE=0;
-    std::cout << "Istep:"<<istep<< " teunit with data";
   process_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
 #pragma HLS unroll
-      std::cout <<" "<<!teuempty[k];
       HaveTEData=HaveTEData||(!teuempty[k]);
       if (!teuempty[k]){
 	iTE=k;
       }
     }
-    std::cout << "  teunit processing";
-    for (unsigned int k = 0 ; k < NTEUnits; k++) std::cout <<" "<<!teuidle[k];
-    std::cout << std::endl;
       
     ap_uint<36> innerStub;
     ap_uint<7> innerIndex;
@@ -735,17 +726,14 @@ TrackletProcessor(
     //Loop over TE Buffers and and find if there are empty buffers
     ap_uint<1> TEBufferData=0;
     unsigned int iTEBuff=0;
-    std::cout << "Istep:"<<istep<< " tebuffer with data";
   check_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
 #pragma HLS unroll
       //if ((!TEBufferData)&&(!tebufferempty[i])) {
-      std::cout <<" "<<!tebufferempty[i];
       if (!tebufferempty[i]) {
 	TEBufferData=1;
 	iTEBuff=i;
       }
     }
-    std::cout<<std::endl;
 
     //Now loop over the TE units and execute the step method. The first TE unit that is idle is 
     //initialized if there is data in TE Buffer from above
@@ -753,8 +741,6 @@ TrackletProcessor(
 #pragma HLS unroll
       if (teuidle[k]) {
 	if (TEBufferData&&(!teuidlebefore[k])) {
-	  std::cout << "Adding stub istep="<<istep<<" "<<tedatatmp[iTEBuff].getAllStub().to_string(2)
-		    <<" teinit:"<<k<<" from tebuffer"<<iTEBuff<<std::endl;
 	  teunits[k].init(bx,
 			  tedatatmp[iTEBuff].getAllStub(),
 			  tedatatmp[iTEBuff].getNStub(),
@@ -764,7 +750,6 @@ TrackletProcessor(
 			  tedatatmp[iTEBuff].getrzdiffmax());
 	}
       } else { 
-	std::cout << "istep, ite "<<istep<<" "<<k<<std::endl;
 	teunits[k].step(outerVMStubs[k],stubptinnerlut[k],stubptouterlut[k],teunearfull[k]);
       }
     }
@@ -819,12 +804,6 @@ TrackletProcessor(
      tebuffer[i].buffer_[tebuffer[i].writeptr_]=tedatatmp.raw();
      tebuffer[i].writeptr_=tebuffer[i].writeptr_+addtedata;
 
-     if (addtedata) {
-       std::cout << "Adding istub:"<<istub___[i]<<" to TE buffer:"<<i<<std::endl;
-       std::cout << "Adding stub on istep:"<<istep<<" to TE Buffer:"<<i<<" wptr, rptr: "<<tebuffer[i].writeptr_
-		 <<" "<<tebuffer[i].readptr_ <<std::endl;
-     }
-
 
      //
      // Read LUTs and find valid regions in r/z and phi
@@ -847,8 +826,6 @@ TrackletProcessor(
       
      //This LUT tells us which range in r/z to look for stubs in the other layer/disk
      ap_uint<10> lutval = lut[(indexz,indexr)];
-
-     std::cout << "istub lutval:"<<istub__[i]<<" "<<lutval<<" index:"<<(indexz,indexr)<<std::endl;
 
      //This lut tells us which range in phi to loof for stubs the other layer/disk
      ap_uint<8> useregion=regionlut[(innerfinephi,bend)];
@@ -888,8 +865,6 @@ TrackletProcessor(
      //tebuffer not full - can not process stub if buffere is full and we can not store 
      //validstub - should be redundant with validmem - FIXME
      ap_uint<1> goodstub=validmem&&(!tebufferfull[i])&&validstub;
-
-     std::cout << "istep="<<istep<<" tebufferfull["<<i<<"] = "<<tebufferfull[i]<<std::endl;
 
      //Update istub if goodstub
      istub=goodstub?(validstubnext?istubnext:ap_uint<7>(0)):istub; //FIXME code not correct if two memories
