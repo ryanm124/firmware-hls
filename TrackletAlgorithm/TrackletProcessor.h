@@ -79,7 +79,7 @@ namespace TC {
 // the 1.0e-1 is a fudge factor needed to get the floating point truncation
 // right
   static const float ptcut = 1.91;
-  static const ap_uint<13> rinvcut = 0.01 * 0.3 * 3.8 / ptcut / krinv + 1.0e-1;
+  static const ap_uint<13> rinvcut = 0.01 * 0.299792458 * 3.8112 / ptcut / krinv;
   static const ap_uint<9> z0cut_L1L2 = 15.0 / kz0 + 1.0e-1;
   static const ap_uint<9> z0cut = 1.5 * 15.0 / kz0 + 1.0e-1;
 ////////////////////////////////////////////////////////////////////////////////
@@ -191,7 +191,6 @@ void TrackletProcessor_L1L2D(const BXType bx,
 			     const AllStubInnerMemory<BARRELPS> innerStubs[2],
 			     const AllStubMemory<BARRELPS>* outerStubs,
 			     const VMStubTEOuterMemoryCM<BARRELPS> outerVMStubs[6],
-			     ap_uint<8> status[128],
 			     TrackletParameterMemory * trackletParameters,
 			     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
 			     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
@@ -322,17 +321,6 @@ TC::barrelSeeding(const AllStub<InnerRegion> &innerStub, const AllStub<OuterRegi
 
     valid_proj_disk[i] = valid_t && valid_phimin && valid_phimax && valid_r;
 
-      /*
-    valid_proj_disk[i] = true;
-    if (abs(*t) < 512)
-      valid_proj_disk[i] = false;
-    if (phiD[i] <= 0)
-      valid_proj_disk[i] = false;
-    if (phiD[i] >= (1 << TrackletProjection<BARRELPS>::kTProjPhiSize) - 1)
-      valid_proj_disk[i] = false;
-    if (rD[i] < 342 || rD[i] > 2048)
-      valid_proj_disk[i] = false;
-      */
   }
 
 // Reject tracklets with too high a curvature or with too large a longitudinal
@@ -341,18 +329,8 @@ TC::barrelSeeding(const AllStub<InnerRegion> &innerStub, const AllStub<OuterRegi
   bool valid_rinv=abs(*rinv) < rinvcut;
   bool valid_z0=abs(*z0) < ((Seed == TC::L1L2) ? z0cut_L1L2 : z0cut);
 
-  /*
-  bool success = true;
-  if (abs(*rinv) >= rinvcut)
-    success = false;
-  if (abs(*z0) >= ((Seed == TC::L1L2) ? z0cut_L1L2 : z0cut))
-    success = false;
-  */
-
   const ap_int<TrackletParameters::kTParPhi0Size + 2> phicrit = *phi0 - (*rinv<<1);
   const bool keep = (phicrit > 9253) && (phicrit < 56269);
-
-  //success = success && keep;
 
   return valid_rinv && valid_z0 && keep;
 }
@@ -456,8 +434,6 @@ TC::processStubPair(
 // Calculate the tracklet parameters and projections.
   success = TC::barrelSeeding<Seed, InnerRegion, OuterRegion>(innerStub, outerStub, &rinv, &phi0, &z0, &t, phiL, zL, &der_phiL, &der_zL, valid_proj, phiD, rD, &der_phiD, &der_rD, valid_proj_disk);
 
-  //std::cout << "barrelSeeding: success : "<<success<<std::endl;
-
 // Write the tracklet parameters and projections to the output memories.
   const TrackletParameters tpar(innerIndex, outerIndex, rinv, phi0, z0, t);
   if (success) trackletParameters->write_mem(bx, tpar, npar++);
@@ -548,7 +524,6 @@ TrackletProcessor(
     const AllStubInnerMemory<InnerRegion> innerStubs[NASMemInner],
     const AllStubMemory<OuterRegion>* outerStubs,
     const VMStubTEOuterMemoryCM<OuterRegion> outerVMStubs[6],
-    ap_uint<8> status[128],
     TrackletParameterMemory * const trackletParameters,
     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
@@ -713,9 +688,9 @@ TrackletProcessor(
     const auto &outerStub = outerStubs->read_mem(bx, outerIndex);
 
 
-      //if (haveTEData) {  //Comment out for debugging
-    TC::processStubPair<Seed, InnerRegion, OuterRegion, TPROJMaskBarrel<Seed, iTC>(), TPROJMaskDisk<Seed, iTC>()>(bx, innerIndex, AllStub<BARRELPS>(innerStub), outerIndex, outerStub, TCID, trackletIndex, trackletParameters, projout_barrel_ps, projout_barrel_2s, projout_disk, npar, nproj_barrel_ps, nproj_barrel_2s, nproj_disk);
-      // }
+    if (HaveTEData) {  //Comment out for debugging
+      TC::processStubPair<Seed, InnerRegion, OuterRegion, TPROJMaskBarrel<Seed, iTC>(), TPROJMaskDisk<Seed, iTC>()>(bx, innerIndex, AllStub<BARRELPS>(innerStub), outerIndex, outerStub, TCID, trackletIndex, trackletParameters, projout_barrel_ps, projout_barrel_2s, projout_disk, npar, nproj_barrel_ps, nproj_barrel_2s, nproj_disk);
+    }
     
 
     //
@@ -804,7 +779,6 @@ TrackletProcessor(
      tebuffer[i].buffer_[tebuffer[i].writeptr_]=tedatatmp.raw();
      tebuffer[i].writeptr_=tebuffer[i].writeptr_+addtedata;
 
-
      //
      // Read LUTs and find valid regions in r/z and phi
      //
@@ -873,7 +847,7 @@ TrackletProcessor(
 
      //Read stub from memory - BRAM with latency of one or two clks
      auto stub=innerStubs[imemsave].read_mem(bx,istubsave);
-     
+
      goodstub__[i]=goodstub;
      stub__[i]=stub;
      istub__[i]=istubsave;
