@@ -54,13 +54,18 @@
 				  + IS_REPRESENTIBLE_IN_D_BITS(32, N)    \
 				  )                                      \
 	  )
-#define LAYER 1
+#define LAYER 2
 //Options: BARREL and DISK
 #define PROJECTIONTYPE BARREL
 #if (LAYER >= 1) && (LAYER <= 3)
 	#define MODULETYPE BARRELPS
 #elif (LAYER >= 4) && (LAYER <= 6)
 	#define MODULETYPE BARREL2S
+#endif
+#if LAYER
+  #define NBITBIN 3
+#else
+  #define NBITBIN 4
 #endif
 
 #define RINVSTEPS 32
@@ -93,21 +98,21 @@ void readTable(bool table[LSIZE]);
 //template<int L, regionType VMSMEType>
 template<int L, int VMSMEType>
 void MatchEngine(const BXType bx, BXType& bx_o,
-		 		 const VMStubMEMemory<VMSMEType>& inputStubData,
+		 		 const VMStubMEMemory<VMSMEType, NBITBIN>& inputStubData,
 		 		 const VMProjectionMemory<PROJECTIONTYPE>& inputProjectionData,
 		 		 CandidateMatchMemory& outputCandidateMatch);
 
 void MatchEngineTop(const BXType bx, BXType& bx_o,
-					const VMStubMEMemory<MODULETYPE>& inputStubData,
+					const VMStubMEMemory<MODULETYPE, NBITBIN>& inputStubData,
 					const VMProjectionMemory<PROJECTIONTYPE>& inputProjectionData,
 					CandidateMatchMemory& outputCandidateMatch);
 
-#define startME 6
-#define stopME 6
+#define startME 3
+#define stopME 3
 #define ME_multiplicity startME-stopME+1
 
 void SuperMatchEngineTop(const BXType bxset[ME_multiplicity], BXType (&bx_oset)[ME_multiplicity],
-					const VMStubMEMemory<MODULETYPE> (&inputStubDataset)[ME_multiplicity],
+					const VMStubMEMemory<MODULETYPE, NBITBIN> (&inputStubDataset)[ME_multiplicity],
 					const VMProjectionMemory<PROJECTIONTYPE> (&inputProjectionDataset)[ME_multiplicity],
 					CandidateMatchMemory (&outputCandidateMatchset)[ME_multiplicity]);
 

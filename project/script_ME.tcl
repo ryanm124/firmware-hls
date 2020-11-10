@@ -4,14 +4,14 @@
 # WARNING: this will wipe out the original project by the same name
 
 # create new project (deleting any existing one of same name)
-#open_project -reset matchengine_x1_L1Test
-open_project -reset supermatchengine_meta_x1_L1Test
+open_project -reset matchengine_x1_L2Test
+#open_project -reset supermatchengine_meta_x32_L2Test
 
 # source files
 # Optional Flags: -DDEBUG -DSUPER
-set CFLAGS {-std=c++11 -I../TrackletAlgorithm -DSUPER}
-#set_top MatchEngineTop
-set_top SuperMatchEngineTop
+set CFLAGS {-std=c++11 -I../TrackletAlgorithm}
+set_top MatchEngineTop
+#set_top SuperMatchEngineTop
 add_files ../TrackletAlgorithm/MatchEngine.cc -cflags "$CFLAGS"
 add_files -tb ../TestBenches/MatchEngine_test.cpp -cflags "$CFLAGS"
 

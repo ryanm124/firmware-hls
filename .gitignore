@@ -35,6 +35,7 @@ IntegrationTests/PRMEMC_Test
 project/*/
 emData/*/
 emData/*.dat
+.vscode/
 
 # Precompiled Headers
 *.gch

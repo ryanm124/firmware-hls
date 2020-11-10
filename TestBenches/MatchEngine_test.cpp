@@ -33,7 +33,7 @@ std::string get_vm(int module_number) {
 		else if (module_number <= 28) return "G";
 		else if (module_number <= 32) return "H";
 		else {
-			std:cout << "You suck at this!" << std::endl;
+			std:cout << "Check Layer Modules" << std::endl;
 			exit(0);
 		}
 	#elif LAYER==2
@@ -42,7 +42,7 @@ std::string get_vm(int module_number) {
 		else if (module_number <= 24) return "C";
 		else if (module_number <= 32) return "D";
 		else {
-			std:cout << "You suck at this!" << std::endl;
+			std:cout << "Check Layer Modules" << std::endl;
 			exit(0);
 		}
 	#elif LAYER==3
@@ -93,7 +93,7 @@ int main() {
 	int err_count[ME_multiplicity]	= {0};
 	
 	// Declare input memory arrays to be read from the emulation files as array
-	VMStubMEMemory<MODULETYPE> inputvmstubset[ME_multiplicity];
+	VMStubMEMemory<MODULETYPE, NBITBIN> inputvmstubset[ME_multiplicity];
 	VMProjectionMemory<PROJECTIONTYPE> inputvmprojset[ME_multiplicity]; 
 
 	// Declare output memory array to be filled by hls simulation as array
@@ -182,7 +182,8 @@ int main() {
 
 	// Declare input memory arrays to be read from the emulation files
 	VMProjectionMemory<PROJECTIONTYPE> inputvmprojs;
-	VMStubMEMemory<MODULETYPE> inputvmstubs;
+	VMStubMEMemory<MODULETYPE, NBITBIN> inputvmstubs;
+	//CandidateMatchMemory inputcandmatches;
 
 	// Declare output memory array to be filled by hls simulation
 	CandidateMatchMemory outputcandmatches;
@@ -203,9 +204,9 @@ int main() {
 	validvmstub    = openDataFile(fin_vmstub,"ME/ME_L1PHIB6/VMStubs_VMSME_L1PHIB6n1_04.dat");
 	validcandmatch = openDataFile(fin_candmatch,"ME/ME_L1PHIB6/CandidateMatches_CM_L1PHIB6_04.dat");
 #elif LAYER == 2
-	validvmproj    = false;
-	validvmstub    = false;
-	validcandmatch = false;
+	validvmproj    = openDataFile(fin_vmproj,"ME/ME_L2PHIC20/VMProjections_VMPROJ_L2PHIC20_04.dat");
+	validvmstub    = openDataFile(fin_vmstub,"ME/ME_L2PHIC20/VMStubs_VMSME_L2PHIC20n1_04.dat");
+	validcandmatch = openDataFile(fin_candmatch,"ME/ME_L2PHIC20/CandidateMatches_CM_L2PHIC20_04.dat");
 #elif LAYER == 3
 	validvmproj    = openDataFile(fin_vmproj,"ME/ME_L3PHIC20/VMProjections_VMPROJ_L3PHIC20_04.dat");
     validvmstub    = openDataFile(fin_vmstub,"ME/ME_L3PHIC20/VMStubs_VMSME_L3PHIC20n1_04.dat");
@@ -243,7 +244,7 @@ int main() {
 		// Fill stub & projection memories from reference files
 		for (int i=0;i<ME_multiplicity;i++) {
 			writeMemFromFile<VMProjectionMemory<PROJECTIONTYPE> >(inputvmprojset[i], fin_vmprojset[i], ievt);
-			writeMemFromFile<VMStubMEMemory<MODULETYPE> >(inputvmstubset[i], fin_vmstubset[i], ievt);
+			writeMemFromFile<VMStubMEMemory<MODULETYPE, NBITBIN> >(inputvmstubset[i], fin_vmstubset[i], ievt);
 			bxset[i]=ievt&0x7;;
 		}
 
@@ -275,7 +276,7 @@ int main() {
  
 		// Fill stub & projection memories from reference files
 		writeMemFromFile<VMProjectionMemory<PROJECTIONTYPE> >(inputvmprojs, fin_vmproj, ievt);
-		writeMemFromFile<VMStubMEMemory<MODULETYPE> >(inputvmstubs, fin_vmstub, ievt);
+		writeMemFromFile<VMStubMEMemory<MODULETYPE, NBITBIN> >(inputvmstubs, fin_vmstub, ievt);
 
 		//Print the number of projections and stubs
 		std::cout << "In MatchEngine #proj ="<<std::hex<<inputvmprojs.getEntries(bx)<<" #stubs=";

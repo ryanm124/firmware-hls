@@ -26,7 +26,7 @@ void readTable(ap_uint<1> table[LSIZE]){
 //template<int L, regionType VMSMEType>
 template<int L, int VMSMEType, int VMPMEType>
 void MatchEngine(const BXType bx, BXType& bx_o,
-				 const VMStubMEMemory<VMSMEType>& inputStubData,
+				 const VMStubMEMemory<VMSMEType, NBITBIN>& inputStubData,
 				 const VMProjectionMemory<VMPMEType>& inputProjectionData,
 				 CandidateMatchMemory& outputCandidateMatch) {
 	#pragma HLS inline off
@@ -213,20 +213,20 @@ void MatchEngine(const BXType bx, BXType& bx_o,
 }
 
 void MatchEngineTop(const BXType bx, BXType& bx_o,
-					const VMStubMEMemory<MODULETYPE>& inputStubData,
+					const VMStubMEMemory<MODULETYPE, NBITBIN>& inputStubData,
 					const VMProjectionMemory<PROJECTIONTYPE>& inputProjectionData,
 					CandidateMatchMemory& outputCandidateMatch) {
 
 #pragma HLS interface register port=bx_o
-//#pragma HLS resource variable=inputStubData->get_mem() latency=2
-//#pragma HLS resource variable=inputProjectionData->get_mem() latency=2
+#pragma HLS resource variable=inputStubData->get_mem() latency=2
+#pragma HLS resource variable=inputProjectionData->get_mem() latency=2
 
 	MatchEngine<LAYER,MODULETYPE,PROJECTIONTYPE>(bx, bx_o, inputStubData, inputProjectionData, outputCandidateMatch); 
 }
 
 template<int N, int STOP> 
 void MatchEngineLoop(const BXType bxset[ME_multiplicity], BXType (&bx_oset)[ME_multiplicity],
-                                        const VMStubMEMemory<MODULETYPE> (&inputStubDataset)[ME_multiplicity],
+                                        const VMStubMEMemory<MODULETYPE, NBITBIN> (&inputStubDataset)[ME_multiplicity],
                                         const VMProjectionMemory<PROJECTIONTYPE> (&inputProjectionDataset)[ME_multiplicity],
                                         CandidateMatchMemory (&outputCandidateMatchset)[ME_multiplicity]) { 
 
@@ -236,14 +236,14 @@ void MatchEngineLoop(const BXType bxset[ME_multiplicity], BXType (&bx_oset)[ME_m
 
 template<>
 void MatchEngineLoop<stopME,stopME>(const BXType bxset[ME_multiplicity], BXType (&bx_oset)[ME_multiplicity],
-                                        const VMStubMEMemory<MODULETYPE> (&inputStubDataset)[ME_multiplicity],
+                                        const VMStubMEMemory<MODULETYPE, NBITBIN> (&inputStubDataset)[ME_multiplicity],
                                         const VMProjectionMemory<PROJECTIONTYPE> (&inputProjectionDataset)[ME_multiplicity],
                                         CandidateMatchMemory (&outputCandidateMatchset)[ME_multiplicity]) {
 	 MatchEngine<LAYER,MODULETYPE,PROJECTIONTYPE>(bxset[0], bx_oset[0], inputStubDataset[0], inputProjectionDataset[0], outputCandidateMatchset[0]);
 }
 
 void SuperMatchEngineTop(const BXType bxset[ME_multiplicity], BXType (&bx_oset)[ME_multiplicity],
-					const VMStubMEMemory<MODULETYPE> (&inputStubDataset)[ME_multiplicity],
+					const VMStubMEMemory<MODULETYPE, NBITBIN> (&inputStubDataset)[ME_multiplicity],
 					const VMProjectionMemory<PROJECTIONTYPE> (&inputProjectionDataset)[ME_multiplicity],
 					CandidateMatchMemory (&outputCandidateMatchset)[ME_multiplicity]){
 
