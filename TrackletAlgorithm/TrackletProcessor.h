@@ -188,6 +188,7 @@ void TrackletProcessor_L1L2D(const BXType bx,
 			     const ap_uint<8> regionlut[2048],
 			     const ap_uint<1> stubptinnerlut[6][256],
 			     const ap_uint<1> stubptouterlut[6][256],
+			     const ap_uint<1> TENearFull[6][256],
 			     const AllStubInnerMemory<BARRELPS> innerStubs[2],
 			     const AllStubMemory<BARRELPS>* outerStubs,
 			     const VMStubTEOuterMemoryCM<BARRELPS> outerVMStubs[6],
@@ -387,7 +388,6 @@ TC::addProj(const TrackletProjection<TProjType> &proj, const BXType bx, Tracklet
   return (success && proj_success);
 }
 
-
 // Processes a given stub pair and writes the calculated tracklet parameters
 // and tracklet projections to the appropriate memories.
 template<TC::seed Seed, regionType InnerRegion, regionType OuterRegion, uint32_t TPROJMaskBarrel, uint32_t TPROJMaskDisk> void
@@ -521,6 +521,7 @@ TrackletProcessor(
     const ap_uint<8> regionlut[2048],
     const ap_uint<1> stubptinnerlut[6][256],
     const ap_uint<1> stubptouterlut[6][256],
+    const ap_uint<1> TENearFull[6][256],
     const AllStubInnerMemory<InnerRegion> innerStubs[NASMemInner],
     const AllStubMemory<OuterRegion>* outerStubs,
     const VMStubTEOuterMemoryCM<OuterRegion> outerVMStubs[6],
@@ -565,11 +566,9 @@ TrackletProcessor(
   static_assert(NASMemInner == 2, "Only handling two inner AS memories");
   tebuffer[0].setMemBegin(0);
   tebuffer[0].setMemEnd(1);
-  //tebuffer[0].setIStub(innerStubs[0].getEntries(bx)-1); //first stub to read
   tebuffer[0].setIStub(0); 
   tebuffer[1].setMemBegin(1);
   tebuffer[1].setMemEnd(2);
-  //tebuffer[1].setIStub(innerStubs[1].getEntries(bx)-1);
   tebuffer[1].setIStub(0);
   
  reset_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++)
@@ -578,10 +577,28 @@ TrackletProcessor(
 
   TrackletEngineUnit<BARRELPS> teunits[NTEUnits];
 #pragma HLS array_partition variable=teunits complete dim=0
+  //#pragma HLS dependence variable=teunits intra WAR true
+  //#pragma HLS dependence variable=teunits inter WAR true
+  //#pragma HLS dependence variable=teunits inter RAW true
+  //#pragma HLS dependence variable=teunits intra RAW true
+  /*
+  #pragma HLS dependence variable=teunits[0].istub_ intra WAR true
+  #pragma HLS dependence variable=teunits[1].istub_ intra WAR true
+  #pragma HLS dependence variable=teunits[2].istub_ intra WAR true
+  #pragma HLS dependence variable=teunits[3].istub_ intra WAR true
+  #pragma HLS dependence variable=teunits[4].istub_ intra WAR true
+  #pragma HLS dependence variable=teunits[5].istub_ intra WAR true
+  #pragma HLS dependence variable=teunits[0].writeindex_ intra WAR true
+  #pragma HLS dependence variable=teunits[1].writeindex_ intra WAR true
+  #pragma HLS dependence variable=teunits[2].writeindex_ intra WAR true
+  #pragma HLS dependence variable=teunits[3].writeindex_ intra WAR true
+  #pragma HLS dependence variable=teunits[4].writeindex_ intra WAR true
+  #pragma HLS dependence variable=teunits[5].writeindex_ intra WAR true
+  */
 
  reset_teunits: for (unsigned i = 0; i < NTEUnits; i++) {
 #pragma HLS unroll
-    teunits[i].reset();
+    teunits[i].reset(i);
   }
 
   TrackletProjection<BARRELPS>::TProjTrackletIndex trackletIndex = 0;
@@ -652,7 +669,8 @@ TrackletProcessor(
 #pragma HLS unroll
       teuwriteindex[k]=teunits[k].writeindex_;
       teureadindex[k]=teunits[k].readindex_;
-      teunearfull[k]=((teuwriteindex[k]+2==teureadindex[k])||(teuwriteindex[k]+1==teureadindex[k]));
+      teunearfull[k]=TENearFull[k][ (teuwriteindex[k], teureadindex[k]) ];
+      //assert(teunearfull[k]==((teuwriteindex[k]+2==teureadindex[k])||(teuwriteindex[k]+1==teureadindex[k])));
       teuempty[k]=teuwriteindex[k]==teureadindex[k];
       teudata[k]=teunits[k].stubids_[teureadindex[k]];
       teuidle[k]=teunits[k].idle_;
@@ -671,9 +689,10 @@ TrackletProcessor(
   process_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
 #pragma HLS unroll
       HaveTEData=HaveTEData||(!teuempty[k]);
-      if (!teuempty[k]){
-	iTE=k;
-      }
+      iTE=teuempty[k]?iTE:k;
+      //if (!teuempty[k]){
+      //	iTE=k;
+      //}
     }
       
     ap_uint<36> innerStub;
@@ -688,10 +707,9 @@ TrackletProcessor(
     const auto &outerStub = outerStubs->read_mem(bx, outerIndex);
 
 
-    if (HaveTEData) {  //Comment out for debugging
+    if (HaveTEData) {
       TC::processStubPair<Seed, InnerRegion, OuterRegion, TPROJMaskBarrel<Seed, iTC>(), TPROJMaskDisk<Seed, iTC>()>(bx, innerIndex, AllStub<BARRELPS>(innerStub), outerIndex, outerStub, TCID, trackletIndex, trackletParameters, projout_barrel_ps, projout_barrel_2s, projout_disk, npar, nproj_barrel_ps, nproj_barrel_2s, nproj_disk);
     }
-    
 
     //
     // Step 2 - Run the TE unit step method. If there is idle TE unit and we have stubs to process we will read from TE Buffer 
@@ -703,30 +721,29 @@ TrackletProcessor(
     unsigned int iTEBuff=0;
   check_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
 #pragma HLS unroll
-      //if ((!TEBufferData)&&(!tebufferempty[i])) {
-      if (!tebufferempty[i]) {
-	TEBufferData=1;
-	iTEBuff=i;
-      }
+      //if (!tebufferempty[i]) {
+      //	TEBufferData=1;
+      //	iTEBuff=i;
+      //}
+      TEBufferData=TEBufferData||(!tebufferempty[i]);
+      iTEBuff=tebufferempty[i]?iTEBuff:i;
     }
+
+    //std::cout << "istep TEBufferData idlete : "<<istep<<" "<<TEBufferData<<" "<<idlete<<std::endl;
 
     //Now loop over the TE units and execute the step method. The first TE unit that is idle is 
     //initialized if there is data in TE Buffer from above
   step_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
 #pragma HLS unroll
-      if (teuidle[k]) {
-	if (TEBufferData&&(!teuidlebefore[k])) {
-	  teunits[k].init(bx,
-			  tedatatmp[iTEBuff].getAllStub(),
-			  tedatatmp[iTEBuff].getNStub(),
-			  tedatatmp[iTEBuff].getStubMask(),
-			  tedatatmp[iTEBuff].getStart(),
-			  tedatatmp[iTEBuff].getrzbinfirst(),
-			  tedatatmp[iTEBuff].getrzdiffmax());
-	}
-      } else { 
-	teunits[k].step(outerVMStubs[k],stubptinnerlut[k],stubptouterlut[k],teunearfull[k]);
-      }
+      ap_uint<1> init=teuidle[k]&&TEBufferData&&(!teuidlebefore[k]);
+      teunits[k].step(bx,outerVMStubs[k],stubptinnerlut[k],stubptouterlut[k],teunearfull[k]||teuidle[k],
+		      init,
+		      tedatatmp[iTEBuff].getAllStub(),
+		      tedatatmp[iTEBuff].getNStub(),
+		      tedatatmp[iTEBuff].getStubMask(),
+		      tedatatmp[iTEBuff].getStart(),
+		      tedatatmp[iTEBuff].getrzbinfirst(),
+		      tedatatmp[iTEBuff].getrzdiffmax());
     }
 
     //Increment TE bufer read ptr if we initalized a TE unit.

@@ -35,7 +35,17 @@ int main()
 	stubptouter[i][j]=stubptouter[0][j];
       }
     }
-      
+
+  ap_uint<1> TENearFull[6][256];
+  for(unsigned int readptr=0;readptr<16;readptr++){
+    for(unsigned int wrtptr=0;wrtptr<16;wrtptr++){
+      bool nearfull=((wrtptr+1)%16)==readptr || ((wrtptr+2)%16)==readptr;
+      for (unsigned int i=0;i<6;i++) {
+	TENearFull[i][wrtptr*16+readptr]=nearfull;
+      }
+    }
+  }
+
   ///////////////////////////
   // input memories
   static AllStubInnerMemory<BARRELPS> innerStubs[2];
@@ -180,6 +190,7 @@ int main()
 			    useregion, 
 			    stubptinner, 
 			    stubptouter, 
+			    TENearFull, 
 			    innerStubs, 
 			    &outerStubs, 
 			    outervmStubs,
