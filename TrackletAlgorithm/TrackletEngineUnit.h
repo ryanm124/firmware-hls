@@ -74,6 +74,8 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
    readindex_ = 0;
    idle_ = true;
    good__=0;
+   good___=0;
+   good____=0;
    instance_=instance;
  }
 
@@ -107,7 +109,7 @@ void write(STUBID stubs) {
   stubids_[writeindex_++]=stubs;
 }
 
- inline void step( BXType bxin, 
+ void step( BXType bxin, 
 		   const VMStubTEOuterMemoryCM<VMSTEType> &outervmstubs,
 		   const ap_uint<1> ptinnerLUT[256], 
 		   const ap_uint<1> ptouterLUT[256],
@@ -246,8 +248,8 @@ void write(STUBID stubs) {
  //ap_uint<4> rzbinlast_;
  ap_uint<3> rzbinfirst_;
  ap_uint<3> rzbindiffmax_;
- ap_uint<3> rzbinfirst__;
- ap_uint<3> rzbindiffmax__;
+ ap_uint<3> rzbinfirst__, rzbinfirst___, rzbinfirst____;
+ ap_uint<3> rzbindiffmax__, rzbindiffmax___, rzbindiffmax____;
 
  ap_uint<16> masktmp;
  ap_uint<4> nstubs;
@@ -256,12 +258,12 @@ void write(STUBID stubs) {
  ap_uint<3> ireg;
 
 
- AllStubInner<BARRELPS> innerstub_,innerstub__; 
- ap_uint<1> good__;
- ap_uint<1> next__;
- ap_uint<3> ireg__;
+ AllStubInner<BARRELPS> innerstub_,innerstub__, innerstub___, innerstub____; 
+ ap_uint<1> good__, good___, good____;
+ ap_uint<1> next__, next___, next____;
+ ap_uint<3> ireg__, ireg___, ireg____;
 
- VMStubTEOuter<VMSTEType> outervmstub__;
+ VMStubTEOuter<VMSTEType> outervmstub__, outervmstub___, outervmstub____;
 
  ap_uint<4> ns0,ns1,ns2,ns3,ns4,ns5,ns6,ns7,ns8,ns9,ns10,ns11,ns12,ns13,ns14,ns15;
 

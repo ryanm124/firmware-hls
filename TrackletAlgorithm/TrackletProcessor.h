@@ -186,9 +186,9 @@ template<TC::seed Seed, TC::itc iTC> constexpr uint32_t TPROJMaskDisk();
 void TrackletProcessor_L1L2D(const BXType bx,
 			     const ap_uint<10> lut[2048],
 			     const ap_uint<8> regionlut[2048],
-			     const ap_uint<1> stubptinnerlut[6][256],
-			     const ap_uint<1> stubptouterlut[6][256],
-			     const ap_uint<1> TENearFull[6][256],
+			     const ap_uint<1> stubptinnerlut[3][256],
+			     const ap_uint<1> stubptouterlut[3][256],
+			     const ap_uint<1> TENearFull[3][256],
 			     const AllStubInnerMemory<BARRELPS> innerStubs[2],
 			     const AllStubMemory<BARRELPS>* outerStubs,
 			     const VMStubTEOuterMemoryCM<BARRELPS> outerVMStubs[6],
@@ -279,6 +279,8 @@ TC::barrelSeeding(const AllStub<InnerRegion> &innerStub, const AllStub<OuterRegi
       der_phiD,
       der_rD
   );
+
+  return false; //ryd
 
 // Determine which layer projections are valid.
   valid_proj: for (ap_uint<3> i = 0; i < 4; i++) {
@@ -426,7 +428,6 @@ TC::processStubPair(
   bool success;
 #pragma HLS array_partition variable=rD complete
 
-
   //std::cout << "barrelSeeding: innerStub phi z r : "<<innerStub.getPhi()<<" "<<innerStub.getZ()<<" "<<innerStub.getR()<<std::endl;
   //std::cout << "barrelSeeding: outerStub phi z r : "<<outerStub.getPhi()<<" "<<outerStub.getZ()<<" "<<outerStub.getR()<<std::endl;
 
@@ -437,6 +438,8 @@ TC::processStubPair(
 // Write the tracklet parameters and projections to the output memories.
   const TrackletParameters tpar(innerIndex, outerIndex, rinv, phi0, z0, t);
   if (success) trackletParameters->write_mem(bx, tpar, npar++);
+
+  //return; //ryd
 
   bool addL3 = false, addL4 = false, addL5 = false, addL6 = false;
 
@@ -519,9 +522,9 @@ TrackletProcessor(
     const BXType bx,
     const ap_uint<10> lut[2048],
     const ap_uint<8> regionlut[2048],
-    const ap_uint<1> stubptinnerlut[6][256],
-    const ap_uint<1> stubptouterlut[6][256],
-    const ap_uint<1> TENearFull[6][256],
+    const ap_uint<1> stubptinnerlut[3][256],
+    const ap_uint<1> stubptouterlut[3][256],
+    const ap_uint<1> TENearFull[3][256],
     const AllStubInnerMemory<InnerRegion> innerStubs[NASMemInner],
     const AllStubMemory<OuterRegion>* outerStubs,
     const VMStubTEOuterMemoryCM<OuterRegion> outerVMStubs[6],
@@ -619,34 +622,94 @@ TrackletProcessor(
     goodstub___[i]=false;
   }
 
+  ap_uint<1> stubptinnerlutnew[256] =
+#include "../emData/TP/tables/TP_L1L2D_stubptinnercut.tab"
+#pragma HLS ARRAY_PARTITION variable=stubptinnerlutnew complete dim=1
+
+  ap_uint<1> stubptouterlutnew[256] =
+#include "../emData/TP/tables/TP_L1L2D_stubptoutercut.tab"
+#pragma HLS ARRAY_PARTITION variable=stubptouterlutnew complete dim=1
+
+    ap_uint<1> TENearFullNew[256]=
+#include "../emData/TP/tables/TENearFull.tab"
+#pragma HLS ARRAY_PARTITION variable=TENearFullNew complete dim=1
+
+    ap_uint<1> TEBuffFull1[64]={
+    0,1,1,1,0,0,0,0,
+    0,0,1,1,1,0,0,0,
+    0,0,0,1,1,1,0,0,
+    0,0,0,0,1,1,1,0,
+    0,0,0,0,0,1,1,1,
+    1,0,0,0,0,0,1,1,
+    1,1,0,0,0,0,0,1,
+    1,1,1,0,0,0,0,0};
+#pragma HLS ARRAY_PARTITION variable=TEBuffFull1 complete dim=1
+
+    ap_uint<1> TEBuffFull2[64]={
+    0,1,1,1,0,0,0,0,
+    0,0,1,1,1,0,0,0,
+    0,0,0,1,1,1,0,0,
+    0,0,0,0,1,1,1,0,
+    0,0,0,0,0,1,1,1,
+    1,0,0,0,0,0,1,1,
+    1,1,0,0,0,0,0,1,
+    1,1,1,0,0,0,0,0};
+#pragma HLS ARRAY_PARTITION variable=TEBuffFull2 complete dim=1
+
+
+
  istep_loop: for(unsigned istep=0;istep<108;istep++) {
 #pragma HLS pipeline II=1
+    //#pragma HLS dependence variable=teunits[0].outervmstub__ intra WAR true
+    //#pragma HLS dependence variable=teunits[0].outervmstub___ intra WAR true
+    //#pragma HLS dependence variable=teunits[0].idle_ intra WAR true
 
     //
     // Step 0 -  zeroth step is to cache some of data
     //
 
+      TEData tedatatmp[2];
+      bool tebufferempty[2];
+      bool tebufferfull[2];
+      ap_uint<3> writeptr[2];
+      ap_uint<3> writeptrnext[2];
+      ap_uint<3> writeptrnext2[2];
+      ap_uint<3> writeptrnext3[2];
+      ap_uint<3> readptr[2];
+      ap_uint<3> readptrnext[2];
+      ap_uint<3> tebufferwriteptrtmp[2];
+      ap_uint<3> tebufferreadptrtmp[2];
+      ap_uint<7> tebufferistubtmp[2];
+      ap_uint<2> tebufferimemtmp[2];
+  
+      bool teuidletmp[NTEUnits]; 
+      TrackletEngineUnit<BARRELPS>::INDEX teunitswriteindextmp[NTEUnits];
+      TrackletEngineUnit<BARRELPS>::INDEX teunitsreadindextmp[NTEUnits];
 
-    TEData tedatatmp[2];
-    bool tebufferempty[2];
-    bool tebufferfull[2];
-    ap_uint<3> writeptr[2];
-    ap_uint<3> writeptrnext[2];
-    ap_uint<3> writeptrnext2[2];
-    ap_uint<3> writeptrnext3[2];
-    ap_uint<3> readptr[2];
 
-  prefetchtedata: for (unsigned i = 0; i < NTEBuffer; i++){
+
+    ap_uint<1> TEBufferData=0;
+    unsigned int iTEBuff=0;
+
+   prefetchtedata: for (unsigned i = 0; i < NTEBuffer; i++){
 #pragma HLS unroll
       writeptr[i]=tebuffer[i].writeptr_;
       readptr[i]=tebuffer[i].readptr_;
+      readptrnext[i]=readptr[i]+1;
       tedatatmp[i]=tebuffer[i].buffer_[readptr[i]];
       tebufferempty[i]=(writeptr[i]==readptr[i]);
+      //#ifndef __SYNTHESIS__
       writeptrnext[i]=writeptr[i]+1;
       writeptrnext2[i]=writeptr[i]+2;
       writeptrnext3[i]=writeptr[i]+3;
       tebufferfull[i]=(writeptrnext[i]==readptr[i])||(writeptrnext2[i]==readptr[i])||(writeptrnext3[i]==readptr[i]);
+      //#endif
+      TEBufferData=TEBufferData||(!tebufferempty[i]);
+      iTEBuff=tebufferempty[i]?iTEBuff:i;
     }
+
+    //tebufferfull[0]=TEBuffFull1[(writeptr[0],readptr[0])];
+    //tebufferfull[1]=TEBuffFull2[(writeptr[1],readptr[1])];
 
 
     TrackletEngineUnit<BARRELPS>::INDEX teuwriteindex[NTEUnits];
@@ -657,26 +720,42 @@ TrackletProcessor(
 #pragma HLS array_partition variable=teudata complete dim=1
     bool teunearfull[NTEUnits];
 #pragma HLS array_partition variable=teunearfull complete dim=1
+    bool nearfulloridle[NTEUnits];
+#pragma HLS array_partition variable=nearfulloridle complete dim=1
     bool teuempty[NTEUnits];
 #pragma HLS array_partition variable=teuempty complete dim=1
     bool teuidle[NTEUnits];
 #pragma HLS array_partition variable=teuidle complete dim=1
     bool teuidlebefore[NTEUnits];
-#pragma HLS array_partition variable=teuidleint complete dim=1
+#pragma HLS array_partition variable=teuidlebefore complete dim=1
     ap_uint<1> idlete=0;
+
+    ap_uint<1> HaveTEData=0;
+    int iTE=0;
 
   prefetchteudata: for (unsigned k = 0; k < NTEUnits; k++){
 #pragma HLS unroll
       teuwriteindex[k]=teunits[k].writeindex_;
       teureadindex[k]=teunits[k].readindex_;
-      teunearfull[k]=TENearFull[k][ (teuwriteindex[k], teureadindex[k]) ];
-      //assert(teunearfull[k]==((teuwriteindex[k]+2==teureadindex[k])||(teuwriteindex[k]+1==teureadindex[k])));
+      teunearfull[k]=TENearFullNew[ (teureadindex[k], teuwriteindex[k]) ];
+      //std::cout << "writeindex readindex nearfill : "<<teuwriteindex[k]<<" "<<teureadindex[k]<<" "<<teunearfull[k]<<std::endl;
+      //teunearfull[k]=(teuwriteindex[k]+2==teureadindex[k])||(teuwriteindex[k]+1==teureadindex[k]);
+#ifndef __SYNTHESIS__
+      assert(teunearfull[k]==((teuwriteindex[k]+2==teureadindex[k])||(teuwriteindex[k]+1==teureadindex[k])));
+#endif
       teuempty[k]=teuwriteindex[k]==teureadindex[k];
       teudata[k]=teunits[k].stubids_[teureadindex[k]];
       teuidle[k]=teunits[k].idle_;
       idlete=idlete|teunits[k].idle_;
       teuidlebefore[k]=(k==0)?false:(teuidlebefore[k-1]||teunits[k-1].idle_);
+      HaveTEData=HaveTEData||(!teuempty[k]);
+      iTE=teuempty[k]?iTE:k;
+      nearfulloridle[k]=teunearfull[k]||teuidle[k];
     }
+
+    //tebufferreadptrtmp[iTEBuff]=readptr[iTEBuff]+idlete*TEBufferData;
+    //tebufferreadptrtmp[iTEBuff]=(idlete*TEBufferData)?readptrnext[iTEBuff]:readptr[iTEBuff];
+    tebufferreadptrtmp[iTEBuff]=(idlete*TEBufferData)?readptrnext[iTEBuff]:readptr[iTEBuff];
 
     //
     // Step 1 - In this first step we check if there are stubs to be sent to the TC
@@ -684,32 +763,38 @@ TrackletProcessor(
     //
     
     // Check if TE unit has data - find the first instance with data
-    ap_uint<1> HaveTEData=0;
-    int iTE=0;
-  process_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
-#pragma HLS unroll
-      HaveTEData=HaveTEData||(!teuempty[k]);
-      iTE=teuempty[k]?iTE:k;
+
+    //ap_uint<1> HaveTEData=0;
+    //int iTE=0;
+    //process_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
+    //#pragma HLS unroll
+    //  HaveTEData=HaveTEData||(!teuempty[k]);
+    //  iTE=teuempty[k]?iTE:k;
       //if (!teuempty[k]){
       //	iTE=k;
       //}
-    }
+    //}
       
     ap_uint<36> innerStub;
     ap_uint<7> innerIndex;
     ap_uint<8> finephi;
     ap_uint<7> outerIndex;
     (outerIndex, innerStub, innerIndex, finephi)=teudata[iTE];
-    teunits[iTE].readindex_+=HaveTEData;
+    teunitsreadindextmp[iTE]=teunits[iTE].readindex_+HaveTEData;
+    teunits[iTE].readindex_=teunitsreadindextmp[iTE];
+
     
+
     const TrackletProjection<BARRELPS>::TProjTCID TCID(3);
       
     const auto &outerStub = outerStubs->read_mem(bx, outerIndex);
 
-
+    
     if (HaveTEData) {
       TC::processStubPair<Seed, InnerRegion, OuterRegion, TPROJMaskBarrel<Seed, iTC>(), TPROJMaskDisk<Seed, iTC>()>(bx, innerIndex, AllStub<BARRELPS>(innerStub), outerIndex, outerStub, TCID, trackletIndex, trackletParameters, projout_barrel_ps, projout_barrel_2s, projout_disk, npar, nproj_barrel_ps, nproj_barrel_2s, nproj_disk);
     }
+   
+    
 
     //
     // Step 2 - Run the TE unit step method. If there is idle TE unit and we have stubs to process we will read from TE Buffer 
@@ -717,17 +802,19 @@ TrackletProcessor(
     // 
 
     //Loop over TE Buffers and and find if there are empty buffers
-    ap_uint<1> TEBufferData=0;
-    unsigned int iTEBuff=0;
-  check_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
-#pragma HLS unroll
+    //ap_uint<1> TEBufferData=0;
+    //unsigned int iTEBuff=0;
+    //check_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
+    //#pragma HLS unroll
       //if (!tebufferempty[i]) {
       //	TEBufferData=1;
       //	iTEBuff=i;
       //}
-      TEBufferData=TEBufferData||(!tebufferempty[i]);
-      iTEBuff=tebufferempty[i]?iTEBuff:i;
-    }
+      //TEBufferData=TEBufferData||(!tebufferempty[i]);
+      //iTEBuff=tebufferempty[i]?iTEBuff:i;
+    //}
+
+   // tebufferreadptrtmp[iTEBuff]=readptr[iTEBuff]+TEBufferData;
 
     //std::cout << "istep TEBufferData idlete : "<<istep<<" "<<TEBufferData<<" "<<idlete<<std::endl;
 
@@ -735,7 +822,13 @@ TrackletProcessor(
     //initialized if there is data in TE Buffer from above
   step_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
 #pragma HLS unroll
-      ap_uint<1> init=teuidle[k]&&TEBufferData&&(!teuidlebefore[k]);
+      ap_uint<1> teuidletemp(teuidle[k]);
+      ap_uint<1> notidlebefore(!teuidlebefore[k]);
+      //std::cout << "old : "<<teuidle[k]<<" "<<(!teuidlebefore[k])<<"  new : "<<teuidletmp<<" "<<notidlebefore<<std::endl;
+      ap_uint<1> init=teuidletemp&TEBufferData&notidlebefore;
+      //ap_uint<1> init=teuidle[k]&&TEBufferData&&(!teuidlebefore[k]);
+      //std::cout << "init : "<<init<<" "<<initnew<<std::endl;
+      /*
       teunits[k].step(bx,outerVMStubs[k],stubptinnerlut[k],stubptouterlut[k],teunearfull[k]||teuidle[k],
 		      init,
 		      tedatatmp[iTEBuff].getAllStub(),
@@ -744,11 +837,152 @@ TrackletProcessor(
 		      tedatatmp[iTEBuff].getStart(),
 		      tedatatmp[iTEBuff].getrzbinfirst(),
 		      tedatatmp[iTEBuff].getrzdiffmax());
+      */
+      //second step
+
+      ap_uint<4> writeindexnext=teuwriteindex[k]+1;
+
+      const auto& finephi = teunits[k].outervmstub___.getFinePhi();
+      const auto& rzbin = (teunits[k].next___, teunits[k].outervmstub___.getFineZ()); 
+
+      ap_uint<2> iAllstub=1; //FIXME need to be template parameter
+      ap_uint<8> outerfinephi = (iAllstub, teunits[k].ireg___, finephi);
+   
+      ap_uint<5> idphi;
+      ap_uint<3> overflow;
+      (overflow,idphi) =  outerfinephi - AllStubInner<BARRELPS>(teunits[k].innerstub___).getFinePhi();
+      
+      bool inrange1 = overflow==0;
+      bool inrange2 = overflow==7;
+      bool inrange = inrange1||inrange2;
+
+      bool rzcut1=rzbin<teunits[k].rzbinfirst___;
+      bool rzcut2=rzbin > teunits[k].rzbinfirst___+teunits[k].rzbindiffmax___;
+      bool rzcut=!( rzcut1 || rzcut2 );
+      
+      const auto& outerbend = teunits[k].outervmstub___.getBend();
+      const auto& innerbend = teunits[k].innerstub___.getBend();
+      
+      auto ptinnerindex = (idphi, innerbend);
+      auto ptouterindex = (idphi, outerbend);
+
+      auto lutinner = stubptinnerlutnew[ptinnerindex];
+      auto lutouter = stubptouterlutnew[ptouterindex];
+
+      //ap_uint<1> savestub = teunits[k].good___&&inrange && stubptinnerlut[k][ptinnerindex] && stubptouterlut[k][ptouterindex] && rzcut;
+      //ap_uint<1> savestub = teunits[k].good___ && inrange && stubptinnerlutnew[ptinnerindex] && stubptouterlutnew[ptouterindex] && rzcut;
+      ap_uint<1> savestub = teunits[k].good___ && inrange && lutinner && lutouter && rzcut;
+   
+      teunits[k].stubids_[teuwriteindex[k]] = (teunits[k].outervmstub___.getIndex(), teunits[k].innerstub___.raw());
+      teunitswriteindextmp[k]=savestub?writeindexnext:teuwriteindex[k];
+      
+      //first and half step
+
+      //teunits[k].next____=teunits[k].next___;
+      //teunits[k].ireg____=teunits[k].ireg___;
+      //teunits[k].outervmstub____=teunits[k].outervmstub___;
+      //teunits[k].rzbinfirst____=teunits[k].rzbinfirst___;
+      //teunits[k].rzbindiffmax____=teunits[k].rzbindiffmax___;
+      //teunits[k].innerstub____=teunits[k].innerstub___;
+      //teunits[k].good____=teunits[k].good___;
+
+      
+
+
+      teunits[k].next___=teunits[k].next__;
+      teunits[k].ireg___=teunits[k].ireg__;
+      teunits[k].outervmstub___=teunits[k].outervmstub__;
+      teunits[k].rzbinfirst___=teunits[k].rzbinfirst__;
+      teunits[k].rzbindiffmax___=teunits[k].rzbindiffmax__;
+      teunits[k].innerstub___=teunits[k].innerstub__;
+      teunits[k].good___=teunits[k].good__;
+
+      
+
+      //first step
+      
+      //if (init) {
+      //  std::cout << "Initialize TEU:"<<instance_<<std::endl;
+      //}     
+
+      teunits[k].bx_=bx;
+      teunits[k].innerstub_ = init?tedatatmp[iTEBuff].getAllStub():teunits[k].innerstub_;
+      //istub_=init?ap_uint<4>(0):istub_;
+      teunits[k].slot_=init?tedatatmp[iTEBuff].getStart():teunits[k].slot_;
+      teunits[k].rzbinfirst_=init?tedatatmp[iTEBuff].getrzbinfirst():teunits[k].rzbinfirst_;
+      teunits[k].rzbindiffmax_=init?tedatatmp[iTEBuff].getrzdiffmax():teunits[k].rzbindiffmax_;
+      teuidletmp[k]=init ? false : teuidle[k];
+      teunits[k].memmask_ = init?tedatatmp[iTEBuff].getStubMask():teunits[k].memmask_;
+      teunits[k].maskmask_ = init?ap_uint<16>(0xFFFF):teunits[k].maskmask_;
+      teunits[k].masktmp = init?tedatatmp[iTEBuff].getStubMask():teunits[k].masktmp;
+      
+      (teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0) = 
+	init?tedatatmp[iTEBuff].getNStub():(teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0);
+      
+ 
+      bool good=(!nearfulloridle[k])&&(!init);
+      
+      
+      ap_uint<3> ibin(teunits[k].slot_+teunits[k].next);
+      ap_uint<12> stubadd( (ibin, teunits[k].ireg, teunits[k].istub_) );
+
+      const auto outervmstub = outerVMStubs[k].read_mem(teunits[k].bx_,stubadd);
+      
+#ifndef __SYNTHESIS__
+      if (good) {
+	assert(teunits[k].nstubs!=0);
+	assert(teunits[k].nstubs==outerVMStubs[k].getEntries(teunits[k].bx_,(ibin, teunits[k].ireg)));
+      }
+#endif
+      
+      TrackletEngineUnit<BARRELPS>::NSTUBS zero(0);
+      TrackletEngineUnit<BARRELPS>::NSTUBS istubtmp=teunits[k].istub_+1;
+      ap_uint<5> xorstubs=(istubtmp^teunits[k].nstubs, ap_uint<1>(nearfulloridle[k]));
+      //ap_uint<5> xorstubs=(istubtmp^nstubs, ap_uint<1>(!good));
+      
+      //ap_uint<1> notallstubs=istubtmp!=nstubs||(!good);
+      ap_uint<1> notallstubs=xorstubs.or_reduce();
+      teunits[k].istub_=init?zero:good?(notallstubs?istubtmp:zero):teunits[k].istub_;
+      //ap_uint<1> notallstubs=istubtmp!=nstubs;
+      //istub_=notallstubs?istubtmp:zero;
+      teunits[k].maskmask_.range(teunits[k].memindex,teunits[k].memindex)=notallstubs;
+      
+      ap_uint<16> masktmp=teunits[k].memmask_&teunits[k].maskmask_;
+      
+      (teunits[k].memindex,teunits[k].nstubs) = masktmp.test(0) ? (ap_uint<4>(0),teunits[k].ns0) :
+	masktmp.test(1) ? (ap_uint<4>(1),teunits[k].ns1) :
+	masktmp.test(2) ? (ap_uint<4>(2),teunits[k].ns2) :
+	masktmp.test(3) ? (ap_uint<4>(3),teunits[k].ns3) :
+	masktmp.test(4) ? (ap_uint<4>(4),teunits[k].ns4) :
+	masktmp.test(5) ? (ap_uint<4>(5),teunits[k].ns5) :
+	masktmp.test(6) ? (ap_uint<4>(6),teunits[k].ns6) :
+	masktmp.test(7) ? (ap_uint<4>(7),teunits[k].ns7) :
+	masktmp.test(8) ? (ap_uint<4>(8),teunits[k].ns8) :
+	masktmp.test(9) ? (ap_uint<4>(9),teunits[k].ns9) :
+	masktmp.test(10) ? (ap_uint<4>(10),teunits[k].ns10) :
+	masktmp.test(11) ? (ap_uint<4>(11),teunits[k].ns11) :
+	masktmp.test(12) ? (ap_uint<4>(12),teunits[k].ns12) :
+	masktmp.test(13) ? (ap_uint<4>(13),teunits[k].ns13) :
+	masktmp.test(14) ? (ap_uint<4>(14),teunits[k].ns14) :
+	(ap_uint<4>(15),teunits[k].ns15);
+      
+      teunits[k].next__=teunits[k].next;
+      teunits[k].ireg__=teunits[k].ireg;
+
+      (teunits[k].next, teunits[k].ireg)=teunits[k].memindex;
+
+      //teunits[k].idle_=teunits[k].idle_||(!masktmp.or_reduce());
+      teuidletmp[k]=teuidletmp[k]||(!masktmp.or_reduce());
+      
+      teunits[k].outervmstub__=outervmstub;
+      teunits[k].rzbinfirst__=teunits[k].rzbinfirst_;
+      teunits[k].rzbindiffmax__=teunits[k].rzbindiffmax_;
+      teunits[k].innerstub__=teunits[k].innerstub_;
+      teunits[k].good__=good;
+
+
     }
 
-    //Increment TE bufer read ptr if we initalized a TE unit.
-    tebuffer[iTEBuff].readptr_=tebuffer[iTEBuff].readptr_+idlete*TEBufferData;
-    
    //
    // Third step - fill inner layer stubs in the TE buffer 
    // Check if inner stub has matching stubs in next layer/disk if
@@ -794,7 +1028,7 @@ TrackletProcessor(
      //Create TEData and save in buffer - but only increment point if data good
      TEData tedatatmp(nstubs,stubmask, rzfinebinfirst,start,rzdiffmax,stub___[i].raw());
      tebuffer[i].buffer_[tebuffer[i].writeptr_]=tedatatmp.raw();
-     tebuffer[i].writeptr_=tebuffer[i].writeptr_+addtedata;
+     tebufferwriteptrtmp[i]=tebuffer[i].writeptr_+addtedata;
 
      //
      // Read LUTs and find valid regions in r/z and phi
@@ -858,9 +1092,9 @@ TrackletProcessor(
      ap_uint<1> goodstub=validmem&&(!tebufferfull[i])&&validstub;
 
      //Update istub if goodstub
-     istub=goodstub?(validstubnext?istubnext:ap_uint<7>(0)):istub; //FIXME code not correct if two memories
+     tebufferistubtmp[i]=goodstub?(validstubnext?istubnext:ap_uint<7>(0)):istub; 
      //Update imem if the next stub isnot valid
-     imem=(goodstub&&(!validstubnext))?imemnext:imem;
+     tebufferimemtmp[i]=(goodstub&&(!validstubnext))?imemnext:imem;
 
      //Read stub from memory - BRAM with latency of one or two clks
      auto stub=innerStubs[imemsave].read_mem(bx,istubsave);
@@ -868,10 +1102,24 @@ TrackletProcessor(
      goodstub__[i]=goodstub;
      stub__[i]=stub;
      istub__[i]=istubsave;
+     
+    }
+    
+    //This could be earlier???
+    //Increment TE bufer read ptr if we initalized a TE unit.
+    tebuffer[iTEBuff].readptr_=tebufferreadptrtmp[iTEBuff];
+    teunits[iTE].readindex_=teunitsreadindextmp[iTE];    
 
-   }
+ update_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
+      teunits[k].idle_ = teuidletmp[k]; 
+      teunits[k].writeindex_=teunitswriteindextmp[k];
+    }
 
-
+ update_tebufferss: for (unsigned int i = 0 ; i < NTEBuffer; i++){
+      tebuffer[i].writeptr_=tebufferwriteptrtmp[i];
+      tebuffer[i].getMem()=tebufferimemtmp[i];
+      tebuffer[i].getIStub()=tebufferistubtmp[i];
+    }
     
     
   } //end of istep
