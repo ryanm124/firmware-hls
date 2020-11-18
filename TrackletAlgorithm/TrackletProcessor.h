@@ -583,6 +583,11 @@ TrackletProcessor(
   TrackletEngineUnit<BARRELPS> teunits[NTEUnits];
 #pragma HLS array_partition variable=teunits complete dim=0
 #pragma HLS array_partition variable=teunits[0].stubids_ complete dim=0
+  //#pragma HLS array_partition variable=teunits[1].stubids_ complete dim=0
+  //#pragma HLS array_partition variable=teunits[2].stubids_ complete dim=0
+  //#pragma HLS array_partition variable=teunits[3].stubids_ complete dim=0
+  //#pragma HLS array_partition variable=teunits[4].stubids_ complete dim=0
+  //#pragma HLS array_partition variable=teunits[5].stubids_ complete dim=0
 
   //#pragma HLS dependence variable=teunits intra WAR true
   //#pragma HLS dependence variable=teunits inter WAR true
@@ -629,20 +634,30 @@ TrackletProcessor(
   ap_uint<1> stubptinnerlutnew[256] =
 #include "../emData/TP/tables/TP_L1L2D_stubptinnercut.tab"
 #pragma HLS ARRAY_PARTITION variable=stubptinnerlutnew complete dim=1
-
-  ap_uint<1> stubptouterlutnew[256] =
+    
+    ap_uint<1> stubptouterlutnew[256] =
 #include "../emData/TP/tables/TP_L1L2D_stubptoutercut.tab"
 #pragma HLS ARRAY_PARTITION variable=stubptouterlutnew complete dim=1
-
+    
     ap_uint<1> TENearFullNew[256]=
 #include "../emData/TP/tables/TENearFull.tab"
 #pragma HLS ARRAY_PARTITION variable=TENearFullNew complete dim=1
-
-    ap_uint<256> TENearFullUINT;
+    
+    ap_uint<256> TENearFullUINT[NTEUnits];
+#pragma HLS ARRAY_PARTITION variable=TENearFullUINT complete dim=1
+  ap_uint<256> stubptinnerlutUINT;
+  //#pragma HLS ARRAY_PARTITION variable=stubptinnerlutUINT complete dim=1
+  ap_uint<256> stubptouterlutUINT;
+  //#pragma HLS ARRAY_PARTITION variable=stubptouterlutUINT complete dim=1
   
  nearfull_loop:for(int i=0;i<256;i++){
 #pragma HLS unroll
-    TENearFullUINT[i]=TENearFullNew[i];
+  inner_loop:for(int j=0;j<NTEUnits;j++) {
+#pragma HLS unroll
+    TENearFullUINT[j][i]=TENearFullNew[i];
+    stubptinnerlutUINT[i]=stubptinnerlutnew[i];
+    stubptouterlutUINT[i]=stubptouterlutnew[i];
+  }
   }
 
     ap_uint<1> TEBuffFull1[64]={
@@ -717,7 +732,9 @@ TrackletProcessor(
   
       bool teuidletmp[NTEUnits]; 
       TrackletEngineUnit<BARRELPS>::INDEX teunitswriteindextmp[NTEUnits];
+#pragma HLS array_partition variable=teunitswriteindextmp complete dim=1
       TrackletEngineUnit<BARRELPS>::INDEX teunitsreadindextmp[NTEUnits];
+#pragma HLS array_partition variable=teunitsreadindextmp complete dim=1
       
       
       
@@ -771,7 +788,7 @@ TrackletProcessor(
       teuwriteindex[k]=teunits[k].writeindex_;
       teureadindex[k]=teunits[k].readindex_;
       //teunearfull[k]=TENearFullNew[ (teureadindex[k], teuwriteindex[k]) ];
-      teunearfull[k]=TENearFullUINT[ (teureadindex[k], teuwriteindex[k]) ];
+      teunearfull[k]=TENearFullUINT[k][ (teureadindex[k], teuwriteindex[k]) ];
       //std::cout << "writeindex readindex nearfill : "<<teuwriteindex[k]<<" "<<teureadindex[k]<<" "<<teunearfull[k]<<std::endl;
       //teunearfull[k]=(teuwriteindex[k]+2==teureadindex[k])||(teuwriteindex[k]+1==teureadindex[k]);
 #ifndef __SYNTHESIS__
@@ -898,8 +915,11 @@ TrackletProcessor(
       auto ptinnerindex = (idphi, innerbend);
       auto ptouterindex = (idphi, outerbend);
 
-      auto lutinner = stubptinnerlutnew[ptinnerindex];
-      auto lutouter = stubptouterlutnew[ptouterindex];
+      auto lutinner = teunits[k].stubptinnerlutnew_[ptinnerindex];
+      auto lutouter = teunits[k].stubptouterlutnew_[ptouterindex];
+
+      //auto lutinner = stubptinnerlutUINT[ptinnerindex];
+      //auto lutouter = stubptouterlutUINT[ptouterindex];
 
       //ap_uint<1> savestub = teunits[k].good___&&inrange && stubptinnerlut[k][ptinnerindex] && stubptouterlut[k][ptouterindex] && rzcut;
       //ap_uint<1> savestub = teunits[k].good___ && inrange && stubptinnerlutnew[ptinnerindex] && stubptouterlutnew[ptouterindex] && rzcut;
@@ -968,13 +988,15 @@ TrackletProcessor(
 #endif
       
       TrackletEngineUnit<BARRELPS>::NSTUBS zero(0);
-      TrackletEngineUnit<BARRELPS>::NSTUBS istubtmp=teunits[k].istub_+1;
+      //TrackletEngineUnit<BARRELPS>::NSTUBS istubtmp=teunits[k].istub_+1;
+      TrackletEngineUnit<BARRELPS>::NSTUBS istubtmp=teunits[k].istubnext_;
       ap_uint<5> xorstubs=(istubtmp^teunits[k].nstubs, ap_uint<1>(nearfulloridle[k]));
       //ap_uint<5> xorstubs=(istubtmp^nstubs, ap_uint<1>(!good));
       
       //ap_uint<1> notallstubs=istubtmp!=nstubs||(!good);
       ap_uint<1> notallstubs=xorstubs.or_reduce();
       teunits[k].istub_=init?zero:good?(notallstubs?istubtmp:zero):teunits[k].istub_;
+      teunits[k].istubnext_=teunits[k].istub_+1;
       //ap_uint<1> notallstubs=istubtmp!=nstubs;
       //istub_=notallstubs?istubtmp:zero;
       teunits[k].maskmask_.range(teunits[k].memindex,teunits[k].memindex)=notallstubs;
