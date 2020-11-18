@@ -52,8 +52,8 @@ void TrackletProcessor_L1L2D(
 
  TP_L1L2D: TrackletProcessor<TC::L1L2, 
 			     TC::D, 
-			     2, 
-			     1,
+			     2, //TEBuffers
+			     6, //TE units
 			     BARRELPS, 
 			     BARRELPS, 
 			     2, 
