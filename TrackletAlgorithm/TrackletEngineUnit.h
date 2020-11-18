@@ -20,7 +20,24 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
   typedef ap_uint<TrackletEngineUnitBase::kNBitsBuffer> INDEX;
 
  TrackletEngineUnit() {
+
+#pragma HLS ARRAY_PARTITION variable=stubptinnerlutnew_ complete dim=1
+#pragma HLS ARRAY_PARTITION variable=stubptouterlutnew_ complete dim=1
+
+
     idle_ = true;
+
+    ap_uint<1> stubptinnertmp[256] =
+#include "../emData/TP/tables/TP_L1L2D_stubptinnercut.tab"
+    
+    ap_uint<1> stubptoutertmp[256] =
+#include "../emData/TP/tables/TP_L1L2D_stubptoutercut.tab"
+
+ for(unsigned int i=0;i<256;i++) {
+   stubptinnerlutnew_[i] = stubptinnertmp[i];
+   stubptouterlutnew_[i] = stubptoutertmp[i];
+ }
+
   }
 
 
@@ -61,6 +78,7 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
 
 
   istub_=0;
+  istubnext_=1;
   innerstub_=innerstub;
   slot_=slot;
   rzbinfirst_=rzbinfirst;
@@ -124,6 +142,7 @@ void write(STUBID stubs) {
 #pragma HLS inline
 #pragma HLS PIPELINE II=1
 #pragma HLS dependence variable=istub_ intra WAR true   
+#pragma HLS dependence variable=istubnext_ intra WAR true   
 #pragma HLS dependence variable=next intra WAR true   
 #pragma HLS dependence variable=next__ intra WAR true   
 
@@ -273,9 +292,14 @@ void write(STUBID stubs) {
  BXType bx_;
  
  NSTUBS istub_=0;
+ NSTUBS istubnext_=1;
  STUBID stubids_[1<<TrackletEngineUnitBase::kNBitsBuffer];
 
  int instance_;
+
+ ap_uint<1> stubptinnerlutnew_[256];    
+ ap_uint<1> stubptouterlutnew_[256];
+
 
  private:
 
