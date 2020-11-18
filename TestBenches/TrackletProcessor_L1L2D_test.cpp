@@ -177,12 +177,10 @@ int main()
     cout << "Will read vmstubs"<<endl;
     writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS> >(outervmStubs[0], fin_outervmstubs0, ievt);
     writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS> >(outervmStubs[1], fin_outervmstubs1, ievt);
-    /*
     writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS> >(outervmStubs[2], fin_outervmstubs2, ievt);
     writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS> >(outervmStubs[3], fin_outervmstubs3, ievt);
     writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS> >(outervmStubs[4], fin_outervmstubs4, ievt);
     writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS> >(outervmStubs[5], fin_outervmstubs5, ievt);
-    */
 
     // bx
     BXType bx = ievt;
