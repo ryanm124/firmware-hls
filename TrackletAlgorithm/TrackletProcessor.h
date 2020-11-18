@@ -280,7 +280,7 @@ TC::barrelSeeding(const AllStub<InnerRegion> &innerStub, const AllStub<OuterRegi
       der_rD
   );
 
-  return false; //ryd
+  //return false; //ryd
 
 // Determine which layer projections are valid.
   valid_proj: for (ap_uint<3> i = 0; i < 4; i++) {
@@ -564,6 +564,8 @@ TrackletProcessor(
   static TEBuffer tebuffer[NTEBuffer];
 #pragma HLS resource variable=tebuffer[0].buffer_ core=RAM_2P_LUTRAM
 #pragma HLS resource variable=tebuffer[1].buffer_ core=RAM_2P_LUTRAM
+#pragma HLS array_partition variable=tebuffer[0].buffer_ complete dim=0 
+#pragma HLS array_partition variable=tebuffer[1].buffer_ complete dim=0
 #pragma HLS array_partition variable=tebuffer complete
   //Need to generalize this
   static_assert(NASMemInner == 2, "Only handling two inner AS memories");
@@ -580,6 +582,8 @@ TrackletProcessor(
 
   TrackletEngineUnit<BARRELPS> teunits[NTEUnits];
 #pragma HLS array_partition variable=teunits complete dim=0
+#pragma HLS array_partition variable=teunits[0].stubids_ complete dim=0
+
   //#pragma HLS dependence variable=teunits intra WAR true
   //#pragma HLS dependence variable=teunits inter WAR true
   //#pragma HLS dependence variable=teunits inter RAW true
@@ -634,6 +638,13 @@ TrackletProcessor(
 #include "../emData/TP/tables/TENearFull.tab"
 #pragma HLS ARRAY_PARTITION variable=TENearFullNew complete dim=1
 
+    ap_uint<256> TENearFullUINT;
+  
+ nearfull_loop:for(int i=0;i<256;i++){
+#pragma HLS unroll
+    TENearFullUINT[i]=TENearFullNew[i];
+  }
+
     ap_uint<1> TEBuffFull1[64]={
     0,1,1,1,0,0,0,0,
     0,0,1,1,1,0,0,0,
@@ -655,6 +666,28 @@ TrackletProcessor(
     1,1,0,0,0,0,0,1,
     1,1,1,0,0,0,0,0};
 #pragma HLS ARRAY_PARTITION variable=TEBuffFull2 complete dim=1
+
+
+    ap_uint<64> nstubs_0_16[8];
+#pragma HLS ARRAY_PARTITION variable=nstubs_0_16 complete dim=1
+    ap_uint<64> nstubs_1_16[8];
+#pragma HLS ARRAY_PARTITION variable=nstubs_1_16 complete dim=1
+    ap_uint<16> stubmask_0_16[8];
+#pragma HLS ARRAY_PARTITION variable=stubmask_0_16 complete dim=1
+    ap_uint<16> stubmask_1_16[8];
+#pragma HLS ARRAY_PARTITION variable=stubmask_1_16 complete dim=1
+
+ nstub_loop: for(unsigned i=0;i<8;i++) {
+#pragma HLS unroll
+  
+  //Extract the number of stubs in the ranges of r/z 
+  nstubs_1_16[i] = nstubs_0_16[i] = outerVMStubs[i/2].getEntries16(bx,i);
+  
+  //Get the mask of bins that has non-zero number of hits
+  stubmask_1_16[i] = stubmask_0_16[i] = outerVMStubs[i/2].getBinMask16(bx,i);
+  
+}
+
 
 
 
@@ -685,29 +718,29 @@ TrackletProcessor(
       bool teuidletmp[NTEUnits]; 
       TrackletEngineUnit<BARRELPS>::INDEX teunitswriteindextmp[NTEUnits];
       TrackletEngineUnit<BARRELPS>::INDEX teunitsreadindextmp[NTEUnits];
+      
+      
+      
+      ap_uint<1> TEBufferData=0;
+      unsigned int iTEBuff=0;
 
-
-
-    ap_uint<1> TEBufferData=0;
-    unsigned int iTEBuff=0;
-
-   prefetchtedata: for (unsigned i = 0; i < NTEBuffer; i++){
+    prefetchtedata: for (unsigned i = 0; i < NTEBuffer; i++){
 #pragma HLS unroll
-      writeptr[i]=tebuffer[i].writeptr_;
-      readptr[i]=tebuffer[i].readptr_;
-      readptrnext[i]=readptr[i]+1;
-      tedatatmp[i]=tebuffer[i].buffer_[readptr[i]];
-      tebufferempty[i]=(writeptr[i]==readptr[i]);
-      //#ifndef __SYNTHESIS__
-      writeptrnext[i]=writeptr[i]+1;
-      writeptrnext2[i]=writeptr[i]+2;
-      writeptrnext3[i]=writeptr[i]+3;
-      tebufferfull[i]=(writeptrnext[i]==readptr[i])||(writeptrnext2[i]==readptr[i])||(writeptrnext3[i]==readptr[i]);
-      //#endif
-      TEBufferData=TEBufferData||(!tebufferempty[i]);
-      iTEBuff=tebufferempty[i]?iTEBuff:i;
-    }
-
+	writeptr[i]=tebuffer[i].writeptr_;
+	readptr[i]=tebuffer[i].readptr_;
+	readptrnext[i]=readptr[i]+1;
+	tedatatmp[i]=tebuffer[i].buffer_[readptr[i]];
+	tebufferempty[i]=(writeptr[i]==readptr[i]);
+	//#ifndef __SYNTHESIS__
+	writeptrnext[i]=writeptr[i]+1;
+	writeptrnext2[i]=writeptr[i]+2;
+	writeptrnext3[i]=writeptr[i]+3;
+	tebufferfull[i]=(writeptrnext[i]==readptr[i])||(writeptrnext2[i]==readptr[i])||(writeptrnext3[i]==readptr[i]);
+	//#endif
+	TEBufferData=TEBufferData||(!tebufferempty[i]);
+	iTEBuff=tebufferempty[i]?iTEBuff:i;
+      }
+      
     //tebufferfull[0]=TEBuffFull1[(writeptr[0],readptr[0])];
     //tebufferfull[1]=TEBuffFull2[(writeptr[1],readptr[1])];
 
@@ -737,7 +770,8 @@ TrackletProcessor(
 #pragma HLS unroll
       teuwriteindex[k]=teunits[k].writeindex_;
       teureadindex[k]=teunits[k].readindex_;
-      teunearfull[k]=TENearFullNew[ (teureadindex[k], teuwriteindex[k]) ];
+      //teunearfull[k]=TENearFullNew[ (teureadindex[k], teuwriteindex[k]) ];
+      teunearfull[k]=TENearFullUINT[ (teureadindex[k], teuwriteindex[k]) ];
       //std::cout << "writeindex readindex nearfill : "<<teuwriteindex[k]<<" "<<teureadindex[k]<<" "<<teunearfull[k]<<std::endl;
       //teunearfull[k]=(teuwriteindex[k]+2==teureadindex[k])||(teuwriteindex[k]+1==teureadindex[k]);
 #ifndef __SYNTHESIS__
@@ -746,8 +780,8 @@ TrackletProcessor(
       teuempty[k]=teuwriteindex[k]==teureadindex[k];
       teudata[k]=teunits[k].stubids_[teureadindex[k]];
       teuidle[k]=teunits[k].idle_;
-      idlete=idlete|teunits[k].idle_;
-      teuidlebefore[k]=(k==0)?false:(teuidlebefore[k-1]||teunits[k-1].idle_);
+      idlete=idlete|teuidle[k];
+      teuidlebefore[k]=(k==0)?false:(teuidlebefore[k-1]||teuidle[k-1]);
       HaveTEData=HaveTEData||(!teuempty[k]);
       iTE=teuempty[k]?iTE:k;
       nearfulloridle[k]=teunearfull[k]||teuidle[k];
@@ -780,9 +814,7 @@ TrackletProcessor(
     ap_uint<8> finephi;
     ap_uint<7> outerIndex;
     (outerIndex, innerStub, innerIndex, finephi)=teudata[iTE];
-    teunitsreadindextmp[iTE]=teunits[iTE].readindex_+HaveTEData;
-    teunits[iTE].readindex_=teunitsreadindextmp[iTE];
-
+    teunitsreadindextmp[iTE]=teureadindex[iTE]+HaveTEData;
     
 
     const TrackletProjection<BARRELPS>::TProjTCID TCID(3);
@@ -1008,9 +1040,13 @@ TrackletProcessor(
      (rzdiffmax, start, usenext, rzfinebinfirst) = lutval___[i];
 
      //Extract the number of stubs in the ranges of r/z 
-     ap_uint<64> nstubs = outerVMStubs[i].getEntries16(bx,start);
+     //ap_uint<64> nstubs = outerVMStubs[i].getEntries16(bx,start);
+     ap_uint<64> nstubs = (i==0) ? nstubs_0_16[start] : nstubs_1_16[start];
+     std::cout << "nstubs: "<<start<<" "<<outerVMStubs[i].getEntries16(bx,start)<<" "<<nstubs<<std::endl;
      //Get the mask of bins that has non-zero number of hits
-     ap_uint<16> stubmask16 = outerVMStubs[i].getBinMask16(bx,start);
+     //ap_uint<16> stubmask16 = outerVMStubs[i].getBinMask16(bx,start);
+     ap_uint<16> stubmask16 = (i==0) ? stubmask_0_16[start] : stubmask_1_16[start];
+     std::cout << "stubmask: "<<outerVMStubs[i].getBinMask16(bx,start)<<" "<<stubmask16<<std::endl;
 
      //Calculate the stub mask for which bins have hits _and_ are consistent with the inner stub
      ap_uint<16> mask=( (useregion___[i]*usenext,useregion___[i]) );
