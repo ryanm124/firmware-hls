@@ -84,103 +84,15 @@ public:
     return nentries_[bx][ibin];
   }
 
-/*
   ap_uint<64> getEntries16(BunchXingT bx, ap_uint<3> ibin) const {
-
-    switch(ibin) {
-    case 0 : return (getEntries8(bx,1),getEntries8(bx,0)); break;
-    case 1 : return (getEntries8(bx,2),getEntries8(bx,1)); break;
-    case 2 : return (getEntries8(bx,3),getEntries8(bx,2)); break;
-    case 3 : return (getEntries8(bx,4),getEntries8(bx,3)); break;
-    case 4 : return (getEntries8(bx,5),getEntries8(bx,4)); break;
-    case 5 : return (getEntries8(bx,6),getEntries8(bx,5)); break;
-    case 6 : return (getEntries8(bx,7),getEntries8(bx,6)); break;
-    case 7 : return (ap_uint<32>(0),getEntries8(bx,7)); break;
-    }
-
-  }
-*/
-
-
-  ap_uint<64> getEntries16(BunchXingT bx, ap_uint<3> ibin) const {
+#pragma HLS ARRAY_PARTITION variable=nentries16_ complete dim=0
     return nentries16_[bx][ibin];
   }
 
   ap_uint<16> getBinMask16(BunchXingT bx, ap_uint<3> ibin) const {
+#pragma HLS ARRAY_PARTITION variable=binmask16_ complete dim=0
     return binmask16_[bx][ibin];
   }
-
-  /*
-  ap_uint<16> getBinMask16(BunchXingT bx, ap_uint<3> ibin) const {
-
-    switch(ibin) {
-    case 0 : return (getBinMask8(bx,1),getBinMask8(bx,0)); break;
-    case 1 : return (getBinMask8(bx,2),getBinMask8(bx,1)); break;
-    case 2 : return (getBinMask8(bx,3),getBinMask8(bx,2)); break;
-    case 3 : return (getBinMask8(bx,4),getBinMask8(bx,3)); break;
-    case 4 : return (getBinMask8(bx,5),getBinMask8(bx,4)); break;
-    case 5 : return (getBinMask8(bx,6),getBinMask8(bx,5)); break;
-    case 6 : return (getBinMask8(bx,7),getBinMask8(bx,6)); break;
-    case 7 : return (ap_uint<8>(0),getBinMask8(bx,7)); break;
-    }
-
-  }
-
-  */
-
-  /*
-    Can't get this implementation to work...
-  ap_uint<32> getEntries8(BunchXingT bx, ap_uint<NBIT_BIN> ibin) const {
-#pragma HLS array_reshape variable=nentries_ cyclic factor=8 dim=2
-    //#pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
-    std::cout << "bx ibin nentries_ : "<<bx<<" "<<ibin<<" "<<nentries_[bx][ibin]<<std::endl;
-    return nentries_[bx][ibin];
-  }
-  */
-
- 
-  ap_uint<32> getEntries8(BunchXingT bx, ap_uint<3> ibin) const {
-#pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
-#pragma HLS inline
-
-    return (nentries_[bx][(ibin,ap_uint<3>(7))],
-	    nentries_[bx][(ibin,ap_uint<3>(6))],
-	    nentries_[bx][(ibin,ap_uint<3>(5))],
-	    nentries_[bx][(ibin,ap_uint<3>(4))],
-	    nentries_[bx][(ibin,ap_uint<3>(3))],
-	    nentries_[bx][(ibin,ap_uint<3>(2))],
-	    nentries_[bx][(ibin,ap_uint<3>(1))],
-	    nentries_[bx][(ibin,ap_uint<3>(0))]
-      );
-  }
-
-  ap_uint<8> getBinMask8(BunchXingT bx, ap_uint<3> ibin) const {
-#pragma HLS ARRAY_PARTITION variable=binmask_ complete dim=0
-#pragma HLS inline
-
-    return (binmask_[bx][(ibin,ap_uint<3>(7))],
-	    binmask_[bx][(ibin,ap_uint<3>(6))],
-	    binmask_[bx][(ibin,ap_uint<3>(5))],
-	    binmask_[bx][(ibin,ap_uint<3>(4))],
-	    binmask_[bx][(ibin,ap_uint<3>(3))],
-	    binmask_[bx][(ibin,ap_uint<3>(2))],
-	    binmask_[bx][(ibin,ap_uint<3>(1))],
-	    binmask_[bx][(ibin,ap_uint<3>(0))]
-      );
-  }
- 
-  /*
-
-  ap_uint<32> getEntries8New(BunchXingT bx, ap_uint<3> ibin) const {
-#pragma HLS ARRAY_RESHAPE variable=nentries_ cycle factor=8 dim=1
-    return nentries_[bx][ibin];
-  }
-
-  ap_uint<8> getBinMask8New(BunchXingT bx, ap_uint<3> ibin) const {
-#pragma HLS ARRAY_RESHAPE variable=binmask_ cycle factor=8 dim=1
-    return binmask_[bx][ibin];
-  }
-  */
 
   NEntryT getEntries(BunchXingT bx) const {
     NEntryT val = 0;

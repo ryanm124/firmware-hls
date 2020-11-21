@@ -629,9 +629,6 @@ TrackletProcessor(
 
 
 
-  ap_uint<64> nstubs_16[8];
-#pragma HLS ARRAY_PARTITION variable=stubmask_16 complete dim=1
-  
   ap_uint<16> stubmask_0_16[8];
 #pragma HLS ARRAY_PARTITION variable=stubmask_0_16 complete dim=1
   ap_uint<16> stubmask_1_16[8];
@@ -639,9 +636,6 @@ TrackletProcessor(
 
  nstub_loop: for(unsigned i=0;i<8;i++) {
 #pragma HLS unroll
-  
-  //Extract the number of stubs in the ranges of r/z 
-  nstubs_16[i] = outerVMStubs[i/2].getEntries16(bx,i);
   
   //Get the mask of bins that has non-zero number of hits
   stubmask_1_16[i] = stubmask_0_16[i] = outerVMStubs[i/2].getBinMask16(bx,i);
@@ -841,9 +835,9 @@ TrackletProcessor(
       teunits[k].masktmp = init?tedatatmp[iTEBuff].getStubMask():teunits[k].masktmp;
 
       (teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0) = 
-	init?nstubs_16[teunits[k].slot_]:(teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0);
+	init?outerVMStubs[0].getEntries16(bx,teunits[k].slot_):(teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0);
       
-      //outerVMStubs[0].getEntries16(bx,i)
+      
  
       bool good=(!nearfulloridle[k])&&(!init);
       
