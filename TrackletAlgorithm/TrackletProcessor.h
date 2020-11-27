@@ -184,7 +184,7 @@ template<TC::seed Seed, TC::itc iTC> constexpr uint32_t TPROJMaskBarrel();
 template<TC::seed Seed, TC::itc iTC> constexpr uint32_t TPROJMaskDisk();
 
 ap_uint<1> nearFullTEBuff(const ap_uint<3>&, const ap_uint<3>&);
-ap_uint<1> nearFullTEUnit(const ap_uint<4>&, const ap_uint<4>&);
+void nearFullTEUnitInit(ap_uint<256> lut, unsigned int ncopy);
 
 void TrackletProcessor_L1L2D(const BXType bx,
 			     const ap_uint<10> lut[2048],
@@ -614,35 +614,8 @@ TrackletProcessor(
 
   ap_uint<256> TENearFullUINT[NTEUnits];
 #pragma HLS ARRAY_PARTITION variable=TENearFullUINT complete dim=1
-    
- nearfull_loop:for(int i=0;i<256;i++){
-#pragma HLS unroll
-    ap_uint<4> writeptr,readptr;
-    ap_uint<8> address(i);
-    (readptr,writeptr)=address;
-    ap_uint<1> result=nearFullTEUnit(writeptr,readptr);
-  inner_loop:for(int j=0;j<NTEUnits;j++) {
-#pragma HLS unroll
-      TENearFullUINT[j][i]=result;
-    }
-  }
 
-
-
-  ap_uint<16> stubmask_0_16[8];
-#pragma HLS ARRAY_PARTITION variable=stubmask_0_16 complete dim=1
-  ap_uint<16> stubmask_1_16[8];
-#pragma HLS ARRAY_PARTITION variable=stubmask_1_16 complete dim=1
-
- nstub_loop: for(unsigned i=0;i<8;i++) {
-#pragma HLS unroll
-  
-  //Get the mask of bins that has non-zero number of hits
-  stubmask_1_16[i] = stubmask_0_16[i] = outerVMStubs[i/2].getBinMask16(bx,i);
-  
-}
-
-
+  nearFullTEUnitInit(TENearFullUINT,NTEUnits);
 
 
  istep_loop: for(unsigned istep=0;istep<108;istep++) {
@@ -927,9 +900,7 @@ TrackletProcessor(
      (rzdiffmax, start, usenext, rzfinebinfirst) = lutval___[i];
 
      //Get the mask of bins that has non-zero number of hits
-     //ap_uint<16> stubmask16 = outerVMStubs[i].getBinMask16(bx,start);
-     ap_uint<16> stubmask16 = (i==0) ? stubmask_0_16[start] : stubmask_1_16[start];
-     //std::cout << "stubmask: "<<outerVMStubs[i].getBinMask16(bx,start)<<" "<<stubmask16<<std::endl;
+     ap_uint<16> stubmask16 = outerVMStubs[i].getBinMask16(bx,start);
 
      //Calculate the stub mask for which bins have hits _and_ are consistent with the inner stub
      ap_uint<16> mask=( (useregion___[i]*usenext,useregion___[i]) );
