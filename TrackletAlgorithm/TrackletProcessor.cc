@@ -9,32 +9,30 @@ ap_uint<1> nearFullTEBuff(const ap_uint<3>& writeptr, const ap_uint<3>& readptr)
 }
 
 
+/*
 ap_uint<1> nearFullTEUnit(const ap_uint<4>& writeptr, const ap_uint<4>& readptr) {
   ap_uint<4> writeptr1=writeptr+1;
   ap_uint<4> writeptr2=writeptr+2;
   ap_uint<1> result=writeptr1==readptr||writeptr2==readptr;
   return result;
 }
+*/
 
-/*
-ap_uint<1> nearFullTEUnit(const ap_uint<4>& writeptr, const ap_uint<4>& readptr) {
-
-  ap_uint<1> lut[256];
-#pragma HLS array_partition variable=lut complete dim=1
+void nearFullTEUnitInit(ap_uint<256>* lut, unsigned int ncopy) {
 
   for(unsigned int i=0;i<256;i++) {
     ap_uint<4> wptr,rptr;
     ap_uint<8> address(i);
-    (wptr,rptr)=address;
+    (rptr,wptr)=address;
     ap_uint<4> wptr1=wptr+1;
     ap_uint<4> wptr2=wptr+2;
     ap_uint<1> result=wptr1==rptr||wptr2==rptr;
-    lut[i]=result;
+    for(unsigned j=0;j<ncopy;j++) {
+      lut[j][i]=result;
+    }
   }
-
-  return lut[(writeptr,readptr)];
 }
-*/
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
