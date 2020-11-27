@@ -20,14 +20,14 @@ ap_uint<1> nearFullTEUnit(const ap_uint<4>& writeptr, const ap_uint<4>& readptr)
 
 void nearFullTEUnitInit(ap_uint<256>* lut, unsigned int ncopy) {
 
-  for(unsigned int i=0;i<256;i++) {
+ nearFullTEUnitInit1:for(unsigned int i=0;i<256;i++) {
     ap_uint<4> wptr,rptr;
     ap_uint<8> address(i);
     (rptr,wptr)=address;
     ap_uint<4> wptr1=wptr+1;
     ap_uint<4> wptr2=wptr+2;
     ap_uint<1> result=wptr1==rptr||wptr2==rptr;
-    for(unsigned j=0;j<ncopy;j++) {
+  nearFullTEUnitInit2:for(unsigned j=0;j<ncopy;j++) {
       lut[j][i]=result;
     }
   }
