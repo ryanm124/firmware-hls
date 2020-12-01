@@ -184,7 +184,7 @@ template<TC::seed Seed, TC::itc iTC> constexpr uint32_t TPROJMaskBarrel();
 template<TC::seed Seed, TC::itc iTC> constexpr uint32_t TPROJMaskDisk();
 
 ap_uint<1> nearFullTEBuff(const ap_uint<3>&, const ap_uint<3>&);
-void nearFullTEUnitInit(ap_uint<256> lut);
+ap_uint<256> nearFullTEUnitInit();
 
 void TrackletProcessor_L1L2D(const BXType bx,
 			     const ap_uint<10> lut[2048],
@@ -606,10 +606,9 @@ TrackletProcessor(
   }
 
 
-  ap_uint<256> TENearFullUINT[NTEUnits];
-  //#pragma HLS ARRAY_PARTITION variable=TENearFullUINT complete dim=1
+  static const ap_uint<256> TENearFullUINT=nearFullTEUnitInit();
 
-  nearFullTEUnitInit(TENearFullUINT);
+
 
 
  istep_loop: for(unsigned istep=0;istep<108;istep++) {
@@ -682,7 +681,7 @@ TrackletProcessor(
       teuwriteindex[k]=teunits[k].writeindex_;
       teureadindex[k]=teunits[k].readindex_;
       //teunearfull[k]=nearFullTEUnit(teuwriteindex[k], teureadindex[k]);
-      teunearfull[k]=TENearFullUINT[k][ (teureadindex[k], teuwriteindex[k]) ];
+      teunearfull[k]=TENearFullUINT[ (teureadindex[k], teuwriteindex[k]) ];
       teuempty[k]=teuwriteindex[k]==teureadindex[k];
       teudata[k]=teunits[k].stubids_[teureadindex[k]];
       teuidle[k]=teunits[k].idle_;

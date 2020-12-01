@@ -8,18 +8,9 @@ ap_uint<1> nearFullTEBuff(const ap_uint<3>& writeptr, const ap_uint<3>& readptr)
   return result;
 }
 
+ap_uint<256> nearFullTEUnitInit() {
 
-/*
-ap_uint<1> nearFullTEUnit(const ap_uint<4>& writeptr, const ap_uint<4>& readptr) {
-  ap_uint<4> writeptr1=writeptr+1;
-  ap_uint<4> writeptr2=writeptr+2;
-  ap_uint<1> result=writeptr1==readptr||writeptr2==readptr;
-  return result;
-}
-*/
-
-void nearFullTEUnitInit(ap_uint<256> lut[6]) {
-
+  ap_uint<256> lut(0);
   int i;
   for(i=0;i<256;i++) {
     ap_uint<4> wptr,rptr;
@@ -28,11 +19,9 @@ void nearFullTEUnitInit(ap_uint<256> lut[6]) {
     ap_uint<4> wptr1=wptr+1;
     ap_uint<4> wptr2=wptr+2;
     ap_uint<1> result=wptr1==rptr||wptr2==rptr;
-    int j;
-    for(j=0;j<6;j++) {
-      lut[j][i]=result;
-    }
+    lut[i]=result;
   }
+  return lut;
 }
 
 
