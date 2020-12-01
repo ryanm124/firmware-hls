@@ -18,16 +18,18 @@ ap_uint<1> nearFullTEUnit(const ap_uint<4>& writeptr, const ap_uint<4>& readptr)
 }
 */
 
-void nearFullTEUnitInit(ap_uint<256>* lut, unsigned int ncopy) {
+void nearFullTEUnitInit(ap_uint<256> lut[6]) {
 
- nearFullTEUnitInit1:for(unsigned int i=0;i<256;i++) {
+  int i;
+  for(i=0;i<256;i++) {
     ap_uint<4> wptr,rptr;
     ap_uint<8> address(i);
     (rptr,wptr)=address;
     ap_uint<4> wptr1=wptr+1;
     ap_uint<4> wptr2=wptr+2;
     ap_uint<1> result=wptr1==rptr||wptr2==rptr;
-  nearFullTEUnitInit2:for(unsigned j=0;j<ncopy;j++) {
+    int j;
+    for(j=0;j<6;j++) {
       lut[j][i]=result;
     }
   }
@@ -49,9 +51,6 @@ void TrackletProcessor_L1L2D(
     const BXType bx,
     const ap_uint<10> lut[2048],
     const ap_uint<8> regionlut[2048],
-    const ap_uint<1> stubptinnerlut[3][256],
-    const ap_uint<1> stubptouterlut[3][256],
-    const ap_uint<1> TENearFull[3][256],
     const AllStubInnerMemory<BARRELPS> innerStubs[2],
     const AllStubMemory<BARRELPS>* outerStubs,
     const VMStubTEOuterMemoryCM<BARRELPS> outerVMStubs[6],
@@ -63,9 +62,6 @@ void TrackletProcessor_L1L2D(
 #pragma HLS inline recursive
 #pragma HLS resource variable=lut core=ROM_2P_BRAM  latency=1
 #pragma HLS resource variable=regionlut core=ROM_2P_BRAM latency=1
-#pragma HLS resource variable=stubptinnerlut core=ROM_1P_LUTRAM
-#pragma HLS resource variable=stubptouterlut core=ROM_1P_LUTRAM
-#pragma HLS resource variable=TENearFull core=ROM_1P_LUTRAM
 #pragma HLS resource variable=innerStubs[0].get_mem() latency=1
 #pragma HLS resource variable=innerStubs[1].get_mem() latency=1
 #pragma HLS resource variable=outerStubs->get_mem() latency=1
@@ -76,9 +72,6 @@ void TrackletProcessor_L1L2D(
 #pragma HLS resource variable=outerVMStubs[4].get_mem() latency=1
 #pragma HLS resource variable=outerVMStubs[5].get_mem() latency=1
 #pragma HLS array_partition variable=outerVMStubs complete dim=1
-#pragma HLS array_partition variable=stubptinnerlut complete dim=1
-#pragma HLS array_partition variable=stubptouterlut complete dim=1
-#pragma HLS array_partition variable=TENearFull complete dim=1
 #pragma HLS array_partition variable=projout_barrel_ps complete
 #pragma HLS array_partition variable=projout_barrel_2s complete
 #pragma HLS array_partition variable=projout_disk complete
@@ -95,9 +88,6 @@ void TrackletProcessor_L1L2D(
 			     108>(bx, 
 				  lut, 
 				  regionlut, 
-				  stubptinnerlut, 
-				  stubptouterlut,
-				  TENearFull,
 				  innerStubs, 
 				  outerStubs, 
 				  outerVMStubs,
