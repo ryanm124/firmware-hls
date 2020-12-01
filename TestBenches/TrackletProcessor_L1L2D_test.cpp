@@ -23,30 +23,6 @@ int main()
   ap_uint<8> useregion[2048] =
 #include "../emData/TP/tables/TP_L1L2D_usereg.tab"
 
-  ap_uint<1> stubptinner[3][256] = 
-#include "../emData/TP/tables/TP_L1L2D_stubptinnercut.tab"
-
-  ap_uint<1> stubptouter[3][256] =
-#include "../emData/TP/tables/TP_L1L2D_stubptoutercut.tab"
-
-    for (unsigned int i=1;i<3;i++) {
-  for (unsigned int j=1;j<256;j++) { //FIXME should start from zero
-	stubptinner[i][j]=stubptinner[0][j];
-	stubptouter[i][j]=stubptouter[0][j];
-      }
-    }
-
-  ap_uint<1> TENearFull[3][256];
-  for(unsigned int readptr=0;readptr<16;readptr++){
-    for(unsigned int wrtptr=0;wrtptr<16;wrtptr++){
-      bool nearfull=((wrtptr+1)%16)==readptr || ((wrtptr+2)%16)==readptr;
-      //cout << nearfull<<","<<endl;
-      for (unsigned int i=0;i<3;i++) {
-	TENearFull[i][wrtptr*16+readptr]=nearfull;
-      }
-    }
-  }
-
   ///////////////////////////
   // input memories
   static AllStubInnerMemory<BARRELPS> innerStubs[2];
@@ -189,9 +165,6 @@ int main()
     TrackletProcessor_L1L2D(bx, 
 			    innervmtable, 
 			    useregion, 
-			    stubptinner, 
-			    stubptouter, 
-			    TENearFull, 
 			    innerStubs, 
 			    &outerStubs, 
 			    outervmStubs,

@@ -184,14 +184,11 @@ template<TC::seed Seed, TC::itc iTC> constexpr uint32_t TPROJMaskBarrel();
 template<TC::seed Seed, TC::itc iTC> constexpr uint32_t TPROJMaskDisk();
 
 ap_uint<1> nearFullTEBuff(const ap_uint<3>&, const ap_uint<3>&);
-void nearFullTEUnitInit(ap_uint<256> lut, unsigned int ncopy);
+void nearFullTEUnitInit(ap_uint<256> lut);
 
 void TrackletProcessor_L1L2D(const BXType bx,
 			     const ap_uint<10> lut[2048],
 			     const ap_uint<8> regionlut[2048],
-			     const ap_uint<1> stubptinnerlut[3][256],
-			     const ap_uint<1> stubptouterlut[3][256],
-			     const ap_uint<1> TENearFull[3][256],
 			     const AllStubInnerMemory<BARRELPS> innerStubs[2],
 			     const AllStubMemory<BARRELPS>* outerStubs,
 			     const VMStubTEOuterMemoryCM<BARRELPS> outerVMStubs[6],
@@ -526,9 +523,6 @@ TrackletProcessor(
     const BXType bx,
     const ap_uint<10> lut[2048],
     const ap_uint<8> regionlut[2048],
-    const ap_uint<1> stubptinnerlut[3][256],
-    const ap_uint<1> stubptouterlut[3][256],
-    const ap_uint<1> TENearFull[3][256],
     const AllStubInnerMemory<InnerRegion> innerStubs[NASMemInner],
     const AllStubMemory<OuterRegion>* outerStubs,
     const VMStubTEOuterMemoryCM<OuterRegion> outerVMStubs[6],
@@ -613,9 +607,9 @@ TrackletProcessor(
 
 
   ap_uint<256> TENearFullUINT[NTEUnits];
-#pragma HLS ARRAY_PARTITION variable=TENearFullUINT complete dim=1
+  //#pragma HLS ARRAY_PARTITION variable=TENearFullUINT complete dim=1
 
-  nearFullTEUnitInit(TENearFullUINT,NTEUnits);
+  nearFullTEUnitInit(TENearFullUINT);
 
 
  istep_loop: for(unsigned istep=0;istep<108;istep++) {
