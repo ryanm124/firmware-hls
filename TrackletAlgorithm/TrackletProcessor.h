@@ -517,7 +517,7 @@ TC::seed Seed, // seed layer combination (TC::L1L2, TC::L3L4, etc.)
   regionType InnerRegion, // region type of the inner stubs
   regionType OuterRegion, // region type of the outer stubs
   uint8_t NASMemInner, // number of inner all-stub memories
-  uint16_t N // maximum number of stub pairs processed
+  uint16_t N // maximum number of steps
 > void
 TrackletProcessor(
     const BXType bx,
@@ -560,27 +560,29 @@ TrackletProcessor(
 
 
   static TEBuffer tebuffer[NTEBuffer];
-#pragma HLS resource variable=tebuffer[0].buffer_ core=RAM_2P_LUTRAM
-#pragma HLS resource variable=tebuffer[1].buffer_ core=RAM_2P_LUTRAM
-#pragma HLS array_partition variable=tebuffer[0].buffer_ complete dim=0 
-#pragma HLS array_partition variable=tebuffer[1].buffer_ complete dim=0
 #pragma HLS array_partition variable=tebuffer complete
   //Need to generalize this
   static_assert(NASMemInner == 2, "Only handling two inner AS memories");
-  tebuffer[0].setMemBegin(0);
-  tebuffer[0].setMemEnd(1);
-  tebuffer[0].setIStub(0); 
-  tebuffer[1].setMemBegin(1);
-  tebuffer[1].setMemEnd(2);
-  tebuffer[1].setIStub(0);
-  
+  if (NTEBuffer==2) {
+    tebuffer[0].setMemBegin(0);
+    tebuffer[0].setMemEnd(1);
+    tebuffer[0].setIStub(0); 
+    tebuffer[1].setMemBegin(1);
+    tebuffer[1].setMemEnd(2);
+    tebuffer[1].setIStub(0);
+  }    
+  if (NTEBuffer==1) {
+    tebuffer[0].setMemBegin(0);
+    tebuffer[0].setMemEnd(2);
+    tebuffer[0].setIStub(0); 
+  }
+
  reset_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++)
 #pragma HLS unroll
     tebuffer[i].reset();
 
   TrackletEngineUnit<BARRELPS> teunits[NTEUnits];
 #pragma HLS array_partition variable=teunits complete dim=0
-#pragma HLS array_partition variable=teunits[0].stubids_ complete dim=0
 
  reset_teunits: for (unsigned i = 0; i < NTEUnits; i++) {
 #pragma HLS unroll
@@ -611,7 +613,7 @@ TrackletProcessor(
 
 
 
- istep_loop: for(unsigned istep=0;istep<108;istep++) {
+ istep_loop: for(unsigned istep=0;istep<N;istep++) {
 #pragma HLS pipeline II=1
 
     //
@@ -671,10 +673,13 @@ TrackletProcessor(
 #pragma HLS array_partition variable=teuidle complete dim=1
     bool teuidlebefore[NTEUnits];
 #pragma HLS array_partition variable=teuidlebefore complete dim=1
-    ap_uint<1> idlete=0;
+
+    //ap_uint<1> idlete=0;
 
     ap_uint<1> HaveTEData=0;
     int iTE=0;
+
+
 
   prefetchteudata: for (unsigned k = 0; k < NTEUnits; k++){
 #pragma HLS unroll
@@ -685,12 +690,21 @@ TrackletProcessor(
       teuempty[k]=teuwriteindex[k]==teureadindex[k];
       teudata[k]=teunits[k].stubids_[teureadindex[k]];
       teuidle[k]=teunits[k].idle_;
-      idlete=idlete|teuidle[k];
-      teuidlebefore[k]=(k==0)?false:(teuidlebefore[k-1]||teuidle[k-1]);
+      //teuidlebefore[k]=(k==0)?false:(teuidlebefore[k-1]||teuidle[k-1]);
       HaveTEData=HaveTEData||(!teuempty[k]);
       iTE=teuempty[k]?iTE:k;
       nearfulloridle[k]=teunearfull[k]||teuidle[k];
     }
+
+    teuidlebefore[0]=false;
+    teuidlebefore[1]=teuidle[0];
+    teuidlebefore[2]=teuidle[1]||teuidle[0];
+    teuidlebefore[3]=teuidle[2]||teuidle[1]||teuidle[0];
+    teuidlebefore[4]=teuidle[3]||teuidle[2]||teuidle[1]||teuidle[0];
+    teuidlebefore[5]=teuidle[4]||teuidle[3]||teuidle[2]||teuidle[1]||teuidle[0];
+
+    ap_uint<1> idlete=teuidle[0]|teuidle[1]|teuidle[2]|teuidle[3]|teuidle[4]|teuidle[5];
+
 
     tebufferreadptrtmp[iTEBuff]=(idlete*TEBufferData)?readptrnext[iTEBuff]:readptr[iTEBuff];
 
@@ -718,6 +732,7 @@ TrackletProcessor(
     if (HaveTEData) {
       TC::processStubPair<Seed, InnerRegion, OuterRegion, TPROJMaskBarrel<Seed, iTC>(), TPROJMaskDisk<Seed, iTC>()>(bx, innerIndex, AllStub<BARRELPS>(innerStub), outerIndex, outerStub, TCID, trackletIndex, trackletParameters, projout_barrel_ps, projout_barrel_2s, projout_disk, npar, nproj_barrel_ps, nproj_barrel_2s, nproj_disk);
     }
+    
    
     
 
