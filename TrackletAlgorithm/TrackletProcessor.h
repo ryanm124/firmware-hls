@@ -763,13 +763,13 @@ TrackletProcessor(
       ap_uint<3> overflow;
       (overflow,idphi) =  outerfinephi - AllStubInner<BARRELPS>(teunits[k].innerstub___).getFinePhi();
       
-      bool inrange1 = overflow==0;
-      bool inrange2 = overflow==7;
-      bool inrange = inrange1||inrange2;
+      ap_uint<1> inrange1 = overflow==0;
+      ap_uint<1> inrange2 = overflow==7;
+      ap_uint<1> inrange = inrange1||inrange2;
 
-      bool rzcut1=rzbin<teunits[k].rzbinfirst___;
-      bool rzcut2=rzbin > teunits[k].rzbinfirst___+teunits[k].rzbindiffmax___;
-      bool rzcut=!( rzcut1 || rzcut2 );
+      ap_uint<1> rzcut1=rzbin >= teunits[k].rzbinfirst___;
+      ap_uint<1> rzcut2=rzbin <= teunits[k].rzbinfirst___+teunits[k].rzbindiffmax___;
+      ap_uint<1> rzcut= rzcut1 && rzcut2;
       
       const auto& outerbend = teunits[k].outervmstub___.getBend();
       const auto& innerbend = teunits[k].innerstub___.getBend();
@@ -777,15 +777,12 @@ TrackletProcessor(
       auto ptinnerindex = (idphi, innerbend);
       auto ptouterindex = (idphi, outerbend);
 
-      auto lutinner = teunits[k].stubptinnerlutnew_[ptinnerindex];
-      auto lutouter = teunits[k].stubptouterlutnew_[ptouterindex];
+      ap_uint<1> lutinner = teunits[k].stubptinnerlutnew_[ptinnerindex];
+      ap_uint<1> lutouter = teunits[k].stubptouterlutnew_[ptouterindex];
 
-      //auto lutinner = stubptinnerlutUINT[ptinnerindex];
-      //auto lutouter = stubptouterlutUINT[ptouterindex];
-
-      //ap_uint<1> savestub = teunits[k].good___&&inrange && stubptinnerlut[k][ptinnerindex] && stubptouterlut[k][ptouterindex] && rzcut;
-      //ap_uint<1> savestub = teunits[k].good___ && inrange && stubptinnerlutnew[ptinnerindex] && stubptouterlutnew[ptouterindex] && rzcut;
-      ap_uint<1> savestub = teunits[k].good___ && inrange && lutinner && lutouter && rzcut;
+      //ap_uint<1> savestub = teunits[k].good___ & inrange & lutinner & lutouter & rzcut;  //Not OK - don't meet timing
+      ap_uint<1> savestub = teunits[k].good___ && inrange && lutinner && lutouter && rzcut; //OK - meets timing
+      //ap_uint<1> savestub = ap_uint<5>( (teunits[k].good___, inrange, lutinner, lutouter, rzcut) ).and_reduce(); //OK - meets timing
    
       teunits[k].stubids_[teuwriteindex[k]] = (teunits[k].outervmstub___.getIndex(), teunits[k].innerstub___.raw());
       teunitswriteindextmp[k]=savestub?writeindexnext:teuwriteindex[k];
@@ -818,8 +815,6 @@ TrackletProcessor(
       (teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0) = 
 	init?outerVMStubs[0].getEntries16(bx,teunits[k].slot_):(teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0);
       
-      
- 
       bool good=(!nearfulloridle[k])&&(!init);
       
       

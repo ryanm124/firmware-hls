@@ -129,8 +129,6 @@ void write(STUBID stubs) {
 
  void step( BXType bxin, 
 		   const VMStubTEOuterMemoryCM<VMSTEType> &outervmstubs,
-		   const ap_uint<1> ptinnerLUT[256], 
-		   const ap_uint<1> ptouterLUT[256],
 		   bool nearfull,
 		   ap_uint<1> init,
 		   AllStubInner<BARRELPS>::AllStubInnerData innerstub,
@@ -168,7 +166,7 @@ void write(STUBID stubs) {
    auto ptinnerindex = (idphi, innerbend);
    auto ptouterindex = (idphi, outerbend);
    
-   ap_uint<1> savestub = good__&&inrange && ptinnerLUT[ptinnerindex] && ptouterLUT[ptouterindex] && rzcut;
+   ap_uint<1> savestub = good__&&inrange && stubptinnerlutnew_[ptinnerindex] && stubptouterlutnew_[ptouterindex] && rzcut;
 
    stubids_[writeindex_] = (outervmstub__.getIndex(), innerstub__.raw());
    writeindex_=writeindex_+savestub;
