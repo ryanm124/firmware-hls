@@ -8,6 +8,8 @@
 #include <vector>
 #endif
 
+//Allow to swap between fully partitioned memory and large ap_uint field
+//#define USE_APUINT
 
 template<class DataType, unsigned int NBIT_BX, unsigned int NBIT_ADDR,
 		 unsigned int NBIT_BIN>
@@ -35,8 +37,16 @@ protected:
   NEntryT nentries_[kNBxBins][kNSlots];     // number of entries
   ap_uint<1> binmask_[kNBxBins][kNSlots];     // true if nonzero # of hits
 
-  ap_uint<16> binmask16_[kNBxBins][8];
-  ap_uint<64> nentries16_[kNBxBins][8];
+#ifdef USE_APUINT
+  ap_uint<64+8> binmask16new_;
+  ap_uint<256+32> nentries16new_;
+#else
+  ap_uint<16> binmask16_[8];
+  ap_uint<64> nentries16_[8];
+#endif
+
+  //ap_uint<16> binmask16_[kNBxBins][8];
+  //ap_uint<64> nentries16_[kNBxBins][8];
 
   
 public:
@@ -74,7 +84,11 @@ public:
 
 	for (unsigned int ibin = 0; ibin < 8; ++ibin) {
 #pragma HLS UNROLL
-	  binmask16_[bx][ibin] = 0;
+#ifdef USE_APUINT
+	  binmask16new_  = 0;
+#else
+	  binmask16_[ibin] = 0;
+#endif
 	}
   }
 
