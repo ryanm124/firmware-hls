@@ -191,7 +191,7 @@ void TrackletProcessor_L1L2D(const BXType bx,
 			     const ap_uint<8> regionlut[2048],
 			     const AllStubInnerMemory<BARRELPS> innerStubs[2],
 			     const AllStubMemory<BARRELPS>* outerStubs,
-			     const VMStubTEOuterMemoryCM<BARRELPS> outerVMStubs[6],
+			     const VMStubTEOuterMemoryCM<BARRELPS,3,3> outerVMStubs[6],
 			     TrackletParameterMemory * trackletParameters,
 			     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
 			     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
@@ -516,6 +516,8 @@ TC::seed Seed, // seed layer combination (TC::L1L2, TC::L3L4, etc.)
   uint8_t NTEUnits, //number of TE units
   regionType InnerRegion, // region type of the inner stubs
   regionType OuterRegion, // region type of the outer stubs
+  uint8_t RZBins,         // number of RZ bins in outer layer/disk
+  uint8_t PhiBins,        // number of Phi bins in outer layer/dsik
   uint8_t NASMemInner, // number of inner all-stub memories
   uint16_t N // maximum number of steps
 > void
@@ -525,7 +527,7 @@ TrackletProcessor(
     const ap_uint<8> regionlut[2048],
     const AllStubInnerMemory<InnerRegion> innerStubs[NASMemInner],
     const AllStubMemory<OuterRegion>* outerStubs,
-    const VMStubTEOuterMemoryCM<OuterRegion> outerVMStubs[6],
+    const VMStubTEOuterMemoryCM<OuterRegion,RZBins,PhiBins> outerVMStubs[6],
     TrackletParameterMemory * const trackletParameters,
     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
