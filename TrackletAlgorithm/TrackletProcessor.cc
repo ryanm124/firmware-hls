@@ -8,16 +8,16 @@ ap_uint<1> nearFullTEBuff(const ap_uint<3>& writeptr, const ap_uint<3>& readptr)
   return result;
 }
 
-ap_uint<256> nearFullTEUnitInit() {
+ap_uint<(1<<(2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer))> nearFullTEUnitInit() {
 
-  ap_uint<256> lut(0);
+  ap_uint<(1<<(2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer))> lut(0);
   int i;
-  for(i=0;i<256;i++) {
-    ap_uint<4> wptr,rptr;
-    ap_uint<8> address(i);
+  for(i=0;i<(1<<(2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer));i++) {
+    ap_uint<TrackletEngineUnit<BARRELPS>::kNBitsBuffer> wptr,rptr;
+    ap_uint<2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer> address(i);
     (rptr,wptr)=address;
-    ap_uint<4> wptr1=wptr+1;
-    ap_uint<4> wptr2=wptr+2;
+    ap_uint<TrackletEngineUnit<BARRELPS>::kNBitsBuffer> wptr1=wptr+1;
+    ap_uint<TrackletEngineUnit<BARRELPS>::kNBitsBuffer> wptr2=wptr+2;
     ap_uint<1> result=wptr1==rptr||wptr2==rptr;
     lut[i]=result;
   }

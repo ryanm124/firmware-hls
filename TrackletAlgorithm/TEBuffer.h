@@ -160,7 +160,7 @@ class TEBuffer {
 
   ap_uint<bufferdepthbits> writeptr_, readptr_;
 
-  ap_uint<7> istub_;
+  ap_uint<kNBits_MemAddr> istub_;
   ap_uint<2> imem_, imembegin_, imemend_;
   
   TEData::TEDATA buffer_[1<<bufferdepthbits];
