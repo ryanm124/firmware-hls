@@ -4,20 +4,26 @@
 #include "Constants.h"
 #include "VMStubTEOuterMemoryCM.h"
 
-class TrackletEngineUnitBase {
+template<int VMSTEType>
+class TrackletEngineUnit {
+
  public:
   enum BitWidths{
-    kNBitsBuffer=4
+    kNBitsBuffer=4,
+    kNBitsRZBin=3,
+    kNBitsRZFine=3,
+    kNBitsPhiBins=3
   };
-};
 
-template<int VMSTEType>
-class TrackletEngineUnit : public TrackletEngineUnitBase {
-
- public:
   typedef ap_uint<VMStubTEOuter<VMSTEType>::kVMSTEOIDSize+AllStubInner<BARRELPS>::kAllStubInnerSize> STUBID;
   typedef ap_uint<kNBits_MemAddrBinned> NSTUBS;
-  typedef ap_uint<TrackletEngineUnitBase::kNBitsBuffer> INDEX;
+  typedef ap_uint<kNBitsBuffer> INDEX;
+  typedef ap_uint<kNBitsRZBin> RZBIN;
+  typedef ap_uint<kNBitsRZFine> RZFINE;
+  typedef ap_uint<kNBitsPhiBins> PHIBIN;
+  typedef ap_uint<2*(1<<kNBitsPhiBins)> MEMMASK;  //Bit mask for used bins for two RZbins
+  typedef ap_uint<2*(1<<kNBitsPhiBins)*4> MEMSTUBS; //Number of stubs in bins for two RZbins //FIXME for 4
+
 
  TrackletEngineUnit() {
 
@@ -43,11 +49,11 @@ class TrackletEngineUnit : public TrackletEngineUnitBase {
 
  inline void init(BXType bxin, 
 		  AllStubInner<BARRELPS>::AllStubInnerData innerstub,
-		  ap_uint<64> memstubs,
-		  ap_uint<16> memmask,
-		  ap_uint<3> slot,
-		  ap_uint<3> rzbinfirst,
-		  ap_uint<3> rzbindiffmax
+		  MEMSTUBS memstubs,
+		  MEMMASK memmask,
+		  RZBIN slot,
+		  RZFINE rzbinfirst,
+		  RZFINE rzbindiffmax
  ) {
 #pragma HLS inline
   bx_ = bxin;
@@ -127,135 +133,17 @@ void write(STUBID stubs) {
   stubids_[writeindex_++]=stubs;
 }
 
- void step( BXType bxin, 
-		   const VMStubTEOuterMemoryCM<VMSTEType> &outervmstubs,
-		   bool nearfull,
-		   ap_uint<1> init,
-		   AllStubInner<BARRELPS>::AllStubInnerData innerstub,
-		   ap_uint<64> memstubs,
-		   ap_uint<16> memmask,
-		   ap_uint<3> slot,
-		   ap_uint<3> rzbinfirst,
-		   ap_uint<3> rzbindiffmax) {
-#pragma HLS inline
-#pragma HLS PIPELINE II=1
-#pragma HLS dependence variable=istub_ intra WAR true   
-#pragma HLS dependence variable=istubnext_ intra WAR true   
-#pragma HLS dependence variable=next intra WAR true   
-#pragma HLS dependence variable=next__ intra WAR true   
-
-   //second step
-
-   const auto& finephi = outervmstub__.getFinePhi();
-   const auto& rzbin = (next__, outervmstub__.getFineZ()); 
-
-   ap_uint<2> iAllstub=1; //FIXME need to be template parameter
-   ap_uint<8> outerfinephi = (iAllstub, ireg__, finephi);
-   
-   ap_uint<5> idphi;
-   ap_uint<3> overflow;
-   (overflow,idphi) =  outerfinephi - AllStubInner<BARRELPS>(innerstub_).getFinePhi();
-
-   bool inrange = overflow==0||overflow==7;
-
-   bool rzcut=!(rzbin<rzbinfirst__ || rzbin > rzbinfirst__+rzbindiffmax__);
-
-   const auto& outerbend = outervmstub__.getBend();
-   const auto& innerbend = innerstub__.getBend();
-     
-   auto ptinnerindex = (idphi, innerbend);
-   auto ptouterindex = (idphi, outerbend);
-   
-   ap_uint<1> savestub = good__&&inrange && stubptinnerlutnew_[ptinnerindex] && stubptouterlutnew_[ptouterindex] && rzcut;
-
-   stubids_[writeindex_] = (outervmstub__.getIndex(), innerstub__.raw());
-   writeindex_=writeindex_+savestub;
-
-   //first step
-
-   //if (init) {
-   //  std::cout << "Initialize TEU:"<<instance_<<std::endl;
-   //}     
-
-   bx_=bxin;
-   innerstub_ = init?innerstub:innerstub_;
-   //istub_=init?ap_uint<4>(0):istub_;
-   slot_=init?slot:slot_;
-   rzbinfirst_=init?rzbinfirst:rzbinfirst_;
-   rzbindiffmax_=init?rzbindiffmax:rzbindiffmax_;
-   idle_ = init ? false : idle_;
-   memmask_ = init?memmask:memmask_;
-   maskmask_ = init?ap_uint<16>(0xFFFF):maskmask_;
-   masktmp = init?memmask:masktmp;
-
-   (ns15,ns14,ns13,ns12,ns11,ns10,ns9,ns8,ns7,ns6,ns5,ns4,ns3,ns2,ns1,ns0) = 
-     init?memstubs:(ns15,ns14,ns13,ns12,ns11,ns10,ns9,ns8,ns7,ns6,ns5,ns4,ns3,ns2,ns1,ns0);
-
- 
-   //bool good=!(idle()||nearfull);
-   bool good=(!nearfull)&&(!init);
-
-   
-   ap_uint<3> ibin(slot_+next);
-   ap_uint<12> stubadd( (ibin, ireg, istub_) );
-
-#ifndef __SYNTHESIS__
-   if (good) {
-     assert(nstubs!=0);
-     assert(nstubs==outervmstubs.getEntries(bx_,(ibin, ireg)));
-   }
-#endif
-   
-   NSTUBS zero(0);
-   NSTUBS istubtmp=istub_+1;
-   ap_uint<5> xorstubs=(istubtmp^nstubs, ap_uint<1>(nearfull));
-   //ap_uint<5> xorstubs=(istubtmp^nstubs, ap_uint<1>(!good));
-
-   //ap_uint<1> notallstubs=istubtmp!=nstubs||(!good);
-   ap_uint<1> notallstubs=xorstubs.or_reduce();
-   istub_=init?zero:good?(notallstubs?istubtmp:zero):istub_;
-   //ap_uint<1> notallstubs=istubtmp!=nstubs;
-   //istub_=notallstubs?istubtmp:zero;
-   maskmask_.range(memindex,memindex)=notallstubs;
-
-   masktmp=memmask_&maskmask_;
-
-   (memindex,nstubs) = masktmp.test(0) ? (ap_uint<4>(0),ns0) :
-     masktmp.test(1) ? (ap_uint<4>(1),ns1) :
-     masktmp.test(2) ? (ap_uint<4>(2),ns2) :
-     masktmp.test(3) ? (ap_uint<4>(3),ns3) :
-     masktmp.test(4) ? (ap_uint<4>(4),ns4) :
-     masktmp.test(5) ? (ap_uint<4>(5),ns5) :
-     masktmp.test(6) ? (ap_uint<4>(6),ns6) :
-     masktmp.test(7) ? (ap_uint<4>(7),ns7) :
-     masktmp.test(8) ? (ap_uint<4>(8),ns8) :
-     masktmp.test(9) ? (ap_uint<4>(9),ns9) :
-     masktmp.test(10) ? (ap_uint<4>(10),ns10) :
-     masktmp.test(11) ? (ap_uint<4>(11),ns11) :
-     masktmp.test(12) ? (ap_uint<4>(12),ns12) :
-     masktmp.test(13) ? (ap_uint<4>(13),ns13) :
-     masktmp.test(14) ? (ap_uint<4>(14),ns14) :
-     (ap_uint<4>(15),ns15);
-
-   next__=next;
-   ireg__=ireg;
-
-   (next, ireg)=memindex;
-
-   idle_=idle_||(!masktmp.or_reduce());
-
-   const auto& outervmstub = outervmstubs.read_mem(bx_,stubadd);
-
-   outervmstub__=outervmstub;
-   rzbinfirst__=rzbinfirst_;
-   rzbindiffmax__=rzbindiffmax_;
-   innerstub__=innerstub_;
-   good__=good;
-
-   return;
-
-} // end step
- 
+// Commented out since now explicitly inlined
+// void step( BXType bxin, 
+//		   const VMStubTEOuterMemoryCM<VMSTEType> &outervmstubs,
+//		   bool nearfull,
+//		   ap_uint<1> init,
+//		   AllStubInner<BARRELPS>::AllStubInnerData innerstub,
+//		   ap_uint<64> memstubs,
+//		   ap_uint<16> memmask,
+//		   ap_uint<3> slot,
+//		   ap_uint<3> rzbinfirst,
+//		   ap_uint<3> rzbindiffmax) { }
 
  //ap_uint<64> memstubs_;
  ap_uint<16> memmask_;
@@ -291,7 +179,7 @@ void write(STUBID stubs) {
  
  NSTUBS istub_=0;
  NSTUBS istubnext_=1;
- STUBID stubids_[1<<TrackletEngineUnitBase::kNBitsBuffer];
+ STUBID stubids_[1<<kNBitsBuffer];
 
  int instance_;
 
