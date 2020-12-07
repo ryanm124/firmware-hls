@@ -20,10 +20,12 @@ template<class DataType, unsigned int NBIT_BX, unsigned int NBIT_ADDR,
 // (1<<NBIT_ADDR): depth of the memory for each BX
 // NBIT_BIN: number of bits used for binning; (1<<NBIT_BIN): number of bins
 class MemoryTemplateBinned{
+
+ public: 
   typedef ap_uint<NBIT_BX> BunchXingT;
   typedef ap_uint<NBIT_ADDR-NBIT_BIN> NEntryT;
   
-protected:
+ protected:
   enum BitWidths {
     kNBxBins = 1<<NBIT_BX,
     kNSlots = 1<<NBIT_BIN,
@@ -46,7 +48,7 @@ protected:
   //ap_uint<64> nentries16_[kNBxBins][8];
 
   
-public:
+ public:
 
   MemoryTemplateBinned()
   {
