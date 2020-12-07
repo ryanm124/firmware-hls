@@ -8,6 +8,8 @@
 #include <vector>
 #endif
 
+//Allow to swap between fully partitioned memory and large ap_uint field
+//#define USE_APUINT
 
 template<class DataType, unsigned int NBIT_BX, unsigned int NBIT_ADDR,
 		 unsigned int NBIT_BIN>
@@ -32,8 +34,16 @@ protected:
   NEntryT nentries_[kNBxBins][kNSlots];     // number of entries
   ap_uint<1> binmask_[kNBxBins][kNSlots];     // true if nonzero # of hits
 
-  ap_uint<16> binmask16_[kNBxBins][8];
-  ap_uint<64> nentries16_[kNBxBins][8];
+#ifdef USE_APUINT
+  ap_uint<64+8> binmask16new_;
+  ap_uint<256+32> nentries16new_;
+#else
+  ap_uint<16> binmask16_[8];
+  ap_uint<64> nentries16_[8];
+#endif
+
+  //ap_uint<16> binmask16_[kNBxBins][8];
+  //ap_uint<64> nentries16_[kNBxBins][8];
 
   
 public:
@@ -71,7 +81,11 @@ public:
 
 	for (unsigned int ibin = 0; ibin < 8; ++ibin) {
 #pragma HLS UNROLL
-	  binmask16_[bx][ibin] = 0;
+#ifdef USE_APUINT
+	  binmask16new_  = 0;
+#else
+	  binmask16_[ibin] = 0;
+#endif
 	}
   }
 
@@ -85,13 +99,23 @@ public:
   }
 
   ap_uint<64> getEntries16(BunchXingT bx, ap_uint<3> ibin) const {
-#pragma HLS ARRAY_PARTITION variable=nentries16_ complete dim=0
-    return nentries16_[bx][ibin];
+
+#ifdef USE_APUINT
+    //return nentries16new_.range((ap_uint<8>(ibin)<<5)+63,(ap_uint<8>(ibin)<<5));
+    return (nentries16new_>>(ap_uint<8>(ibin)<<5))&(ap_int<64>(-1));
+#else
+    #pragma HLS ARRAY_PARTITION variable=nentries16_ complete dim=0
+    return nentries16_[ibin];
+#endif
   }
 
   ap_uint<16> getBinMask16(BunchXingT bx, ap_uint<3> ibin) const {
+#ifdef USE_APUINT
+    return binmask16new_.range(8*ibin+15,8*ibin);
+#else
 #pragma HLS ARRAY_PARTITION variable=binmask16_ complete dim=0
-    return binmask16_[bx][ibin];
+    return binmask16_[ibin];
+#endif
   }
 
   NEntryT getEntries(BunchXingT bx) const {
@@ -143,12 +167,24 @@ public:
 	  //binmask16_[ibx][ibin].set(ireg);
 	  //if (ibin!=0) binmask16_[ibx][ibin-1].set(ireg+8);
 
-	  binmask16_[ibx][ibin].set_bit(ireg,true);
-	  if (ibin!=0) binmask16_[ibx][ibin-1].set_bit(ireg+8,true);
-	  //std::cout << "slot ibin ireg binmask16:"<<slot<<" "<<ibin<<" "<<ireg<<" "<<binmask16_[ibx][ibin]<<std::endl;
+#ifdef USE_APUINT
+	  binmask16new_.set_bit(ibin*8+ireg,true);
+#else
+	  binmask16_[ibin].set_bit(ireg,true);
+	  if (ibin!=0) binmask16_[ibin-1].set_bit(ireg+8,true);
+#endif
+	  //binmask16_[ibx][ibin].set_bit(ireg,true);
+	  //if (ibin!=0) binmask16_[ibx][ibin-1].set_bit(ireg+8,true);
 
-	  nentries16_[ibx][ibin].range(ireg*4+3,ireg*4)=nentries16_[ibx][ibin].range(ireg*4+3,ireg*4)+1;;
-	  if ( ibin!=0) nentries16_[ibx][ibin-1].range(32+ireg*4+3,32+ireg*4)=nentries16_[ibx][ibin-1].range(32+ireg*4+3,32+ireg*4)+1;
+
+#ifdef USE_APUINT
+	  nentries16new_.range(32*ibin+ireg*4+3,32*ibin+ireg*4)=nentries16new_.range(32*ibin+ireg*4+3,32*ibin+ireg*4)+1;
+#else
+	  nentries16_[ibin].range(ireg*4+3,ireg*4)=nentries16_[ibin].range(ireg*4+3,ireg*4)+1;
+	  if ( ibin!=0) nentries16_[ibin-1].range(32+ireg*4+3,32+ireg*4)=nentries16_[ibin-1].range(32+ireg*4+3,32+ireg*4)+1;
+#endif
+	  //nentries16_[ibx][ibin].range(ireg*4+3,ireg*4)=nentries16_[ibx][ibin].range(ireg*4+3,ireg*4)+1;;
+	  //if ( ibin!=0) nentries16_[ibx][ibin-1].range(32+ireg*4+3,32+ireg*4)=nentries16_[ibx][ibin-1].range(32+ireg*4+3,32+ireg*4)+1;
 
 	  return true;
 	}
