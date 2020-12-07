@@ -142,9 +142,9 @@ namespace TC {
   template<TC::seed Seed, regionType InnerRegion, regionType OuterRegion, uint32_t TPROJMaskBarrel, uint32_t TPROJMaskDisk> void
     processStubPair(
 		    const BXType bx,
-		    const ap_uint<7> innerIndex,
+		    const ap_uint<kNBits_MemAddr> innerIndex,
 		    const AllStub<InnerRegion> &innerStub,
-		    const ap_uint<7>  outerIndex,
+		    const ap_uint<kNBits_MemAddr>  outerIndex,
 		    const AllStub<OuterRegion> &outerStub,
 		    const TrackletProjection<BARRELPS>::TProjTCID TCID,
 		    TrackletProjection<BARRELPS>::TProjTrackletIndex &trackletIndex,
@@ -184,7 +184,7 @@ template<TC::seed Seed, TC::itc iTC> constexpr uint32_t TPROJMaskBarrel();
 template<TC::seed Seed, TC::itc iTC> constexpr uint32_t TPROJMaskDisk();
 
 ap_uint<1> nearFullTEBuff(const ap_uint<3>&, const ap_uint<3>&);
-ap_uint<256> nearFullTEUnitInit();
+ap_uint<(1<<(2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer))> nearFullTEUnitInit();
 
 void TrackletProcessor_L1L2D(const BXType bx,
 			     const ap_uint<10> lut[2048],
@@ -395,9 +395,9 @@ TC::addProj(const TrackletProjection<TProjType> &proj, const BXType bx, Tracklet
 template<TC::seed Seed, regionType InnerRegion, regionType OuterRegion, uint32_t TPROJMaskBarrel, uint32_t TPROJMaskDisk> void
 TC::processStubPair(
     const BXType bx,
-    const ap_uint<7> innerIndex,
+    const ap_uint<kNBits_MemAddr> innerIndex,
     const AllStub<InnerRegion> &innerStub,
-    const ap_uint<7>  outerIndex,
+    const ap_uint<kNBits_MemAddr>  outerIndex,
     const AllStub<OuterRegion> &outerStub,
     const TrackletProjection<BARRELPS>::TProjTCID TCID,
     TrackletProjection<BARRELPS>::TProjTrackletIndex &trackletIndex,
@@ -563,9 +563,9 @@ TrackletProcessor(
 
   static TEBuffer tebuffer[NTEBuffer];
 #pragma HLS array_partition variable=tebuffer complete
-  //Need to generalize this
-  static_assert(NASMemInner == 2, "Only handling two inner AS memories");
+  static_assert(NASMemInner <= 2, "Only handling up to two inner AS memories");
   if (NTEBuffer==2) {
+    static_assert(NASMemInner == 2, "With two TE Buffers you need two AS memories");
     tebuffer[0].setMemBegin(0);
     tebuffer[0].setMemEnd(1);
     tebuffer[0].setIStub(0); 
@@ -575,13 +575,14 @@ TrackletProcessor(
   }    
   if (NTEBuffer==1) {
     tebuffer[0].setMemBegin(0);
-    tebuffer[0].setMemEnd(2);
+    tebuffer[0].setMemEnd(NASMemInner);
     tebuffer[0].setIStub(0); 
   }
 
- reset_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++)
+ reset_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++) {
 #pragma HLS unroll
     tebuffer[i].reset();
+  }
 
   TrackletEngineUnit<BARRELPS> teunits[NTEUnits];
 #pragma HLS array_partition variable=teunits complete dim=0
@@ -610,7 +611,7 @@ TrackletProcessor(
   }
 
 
-  static const ap_uint<256> TENearFullUINT=nearFullTEUnitInit();
+  static const ap_uint<(1<<(2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer))> TENearFullUINT=nearFullTEUnitInit();
 
 
 
@@ -622,19 +623,19 @@ TrackletProcessor(
     // Step 0 -  zeroth step is to cache some of data
     //
 
-      TEData tedatatmp[2];
-      bool tebufferempty[2];
-      bool tebufferfull[2];
-      ap_uint<3> writeptr[2];
-      ap_uint<3> writeptrnext[2];
-      ap_uint<3> writeptrnext2[2];
-      ap_uint<3> writeptrnext3[2];
-      ap_uint<3> readptr[2];
-      ap_uint<3> readptrnext[2];
-      ap_uint<3> tebufferwriteptrtmp[2];
-      ap_uint<3> tebufferreadptrtmp[2];
-      ap_uint<7> tebufferistubtmp[2];
-      ap_uint<2> tebufferimemtmp[2];
+      TEData tedatatmp[NTEBuffer];
+      bool tebufferempty[NTEBuffer];
+      bool tebufferfull[NTEBuffer];
+      ap_uint<3> writeptr[NTEBuffer];
+      ap_uint<3> writeptrnext[NTEBuffer];
+      ap_uint<3> writeptrnext2[NTEBuffer];
+      ap_uint<3> writeptrnext3[NTEBuffer];
+      ap_uint<3> readptr[NTEBuffer];
+      ap_uint<3> readptrnext[NTEBuffer];
+      ap_uint<3> tebufferwriteptrtmp[NTEBuffer];
+      ap_uint<3> tebufferreadptrtmp[NTEBuffer];
+      ap_uint<kNBits_MemAddr> tebufferistubtmp[NTEBuffer];
+      ap_uint<2> tebufferimemtmp[NTEBuffer];
   
       bool teuidletmp[NTEUnits]; 
       TrackletEngineUnit<BARRELPS>::INDEX teunitswriteindextmp[NTEUnits];
@@ -676,37 +677,26 @@ TrackletProcessor(
     bool teuidlebefore[NTEUnits];
 #pragma HLS array_partition variable=teuidlebefore complete dim=1
 
-    //ap_uint<1> idlete=0;
 
     ap_uint<1> HaveTEData=0;
     int iTE=0;
-
+    ap_uint<1> idlete=0;
 
 
   prefetchteudata: for (unsigned k = 0; k < NTEUnits; k++){
 #pragma HLS unroll
       teuwriteindex[k]=teunits[k].writeindex_;
       teureadindex[k]=teunits[k].readindex_;
-      //teunearfull[k]=nearFullTEUnit(teuwriteindex[k], teureadindex[k]);
       teunearfull[k]=TENearFullUINT[ (teureadindex[k], teuwriteindex[k]) ];
       teuempty[k]=teuwriteindex[k]==teureadindex[k];
       teudata[k]=teunits[k].stubids_[teureadindex[k]];
       teuidle[k]=teunits[k].idle_;
-      //teuidlebefore[k]=(k==0)?false:(teuidlebefore[k-1]||teuidle[k-1]);
+      teuidlebefore[k]=(k==0)?false:(teuidlebefore[k-1]||teuidle[k-1]);
+      idlete=idlete||teuidle[k];
       HaveTEData=HaveTEData||(!teuempty[k]);
       iTE=teuempty[k]?iTE:k;
       nearfulloridle[k]=teunearfull[k]||teuidle[k];
     }
-
-    teuidlebefore[0]=false;
-    teuidlebefore[1]=teuidle[0];
-    teuidlebefore[2]=teuidle[1]||teuidle[0];
-    teuidlebefore[3]=teuidle[2]||teuidle[1]||teuidle[0];
-    teuidlebefore[4]=teuidle[3]||teuidle[2]||teuidle[1]||teuidle[0];
-    teuidlebefore[5]=teuidle[4]||teuidle[3]||teuidle[2]||teuidle[1]||teuidle[0];
-
-    ap_uint<1> idlete=teuidle[0]|teuidle[1]|teuidle[2]|teuidle[3]|teuidle[4]|teuidle[5];
-
 
     tebufferreadptrtmp[iTEBuff]=(idlete*TEBufferData)?readptrnext[iTEBuff]:readptr[iTEBuff];
 
@@ -718,10 +708,10 @@ TrackletProcessor(
     // Check if TE unit has data - find the first instance with data
 
       
-    ap_uint<36> innerStub;
-    ap_uint<7> innerIndex;
+    AllStub<BARRELPS>::AllStubData innerStub;
+    ap_uint<kNBits_MemAddr> innerIndex;
     ap_uint<8> finephi;
-    ap_uint<7> outerIndex;
+    ap_uint<kNBits_MemAddr> outerIndex;
     (outerIndex, innerStub, innerIndex, finephi)=teudata[iTE];
     teunitsreadindextmp[iTE]=teureadindex[iTE]+HaveTEData;
     
@@ -976,7 +966,7 @@ TrackletProcessor(
      auto istubsave=istub;
      //bool validstub=!istub.and_reduce();
      bool validstub=istub<innerStubs[imem].getEntries(bx);
-     ap_uint<7> istubnext=istub+1;
+     ap_uint<kNBits_MemAddr> istubnext=istub+1;
      //bool validstubnext=!istubnext.and_reduce();
      bool validstubnext=!istubnext<innerStubs[imem].getEntries(bx);
 
@@ -987,7 +977,7 @@ TrackletProcessor(
      ap_uint<1> goodstub=validmem&&(!tebufferfull[i])&&validstub;
 
      //Update istub if goodstub
-     tebufferistubtmp[i]=goodstub?(validstubnext?istubnext:ap_uint<7>(0)):istub; 
+     tebufferistubtmp[i]=goodstub?(validstubnext?istubnext:ap_uint<kNBits_MemAddr>(0)):istub; 
      //Update imem if the next stub isnot valid
      tebufferimemtmp[i]=(goodstub&&(!validstubnext))?imemnext:imem;
 
