@@ -22,11 +22,12 @@ template<class DataType, unsigned int NBIT_BX, unsigned int NBIT_ADDR,
 class MemoryTemplateBinned{
 public:
   static constexpr unsigned int kNBitDataAddr = NBIT_ADDR-NBIT_BIN;
+
   typedef ap_uint<NBIT_BX> BunchXingT;
   typedef ap_uint<kNBitDataAddr+1> NEntryT;
 
   
-protected:
+ protected:
   enum BitWidths {
     kNBxBins = 1<<NBIT_BX,
     kNSlots = 1<<NBIT_BIN,
@@ -49,7 +50,7 @@ protected:
   //ap_uint<64> nentries16_[kNBxBins][8];
 
   
-public:
+ public:
 
   MemoryTemplateBinned()
   {
