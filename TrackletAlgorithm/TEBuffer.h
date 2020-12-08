@@ -51,7 +51,7 @@ class TEData {
     return data_.range(kTEDatarzdiffmaxMSB,kTEDatarzdiffmaxLSB);
   }
 
-  ap_uint<16> getStubMask() const {
+  const TrackletEngineUnit<BARRELPS>::MEMMASK getStubMask() const {
     return data_.range(kTEDataStubMaskMSB,kTEDataStubMaskLSB);
   }
 
@@ -170,12 +170,6 @@ class TEBuffer {
   
 private:
 
-
-  
 };
-
-// Memory definition
-//template<int VMProjType> using ProjectionRouterBufferMemory = MemoryTemplate<ProjectionRouterBuffer<VMProjType>, 1, kNBits_MemAddr>;
-// FIXME: double check number of bits for bx and for memory address
 
 #endif
