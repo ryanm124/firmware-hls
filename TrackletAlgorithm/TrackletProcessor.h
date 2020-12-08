@@ -187,8 +187,8 @@ ap_uint<1> nearFullTEBuff(const ap_uint<3>&, const ap_uint<3>&);
 ap_uint<(1<<(2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer))> nearFullTEUnitInit();
 
 void TrackletProcessor_L1L2D(const BXType bx,
-			     const ap_uint<10> lut[2048],
-			     const ap_uint<8> regionlut[2048],
+			     const ap_uint<1+2*TrackletEngineUnit<BARRELPS>::kNBitsRZFine+TrackletEngineUnit<BARRELPS>::kNBitsRZBin> lut[2048],
+			     const ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> regionlut[2048],
 			     const AllStubInnerMemory<BARRELPS> innerStubs[2],
 			     const AllStubMemory<BARRELPS>* outerStubs,
 			     const VMStubTEOuterMemoryCM<BARRELPS,3,3> outerVMStubs[6],
@@ -516,6 +516,7 @@ TC::seed Seed, // seed layer combination (TC::L1L2, TC::L3L4, etc.)
   uint8_t NTEUnits, //number of TE units
   regionType InnerRegion, // region type of the inner stubs
   regionType OuterRegion, // region type of the outer stubs
+  uint8_t OuterPhiRegion, // outer phi region
   uint8_t RZBins,         // number of RZ bins in outer layer/disk
   uint8_t PhiBins,        // number of Phi bins in outer layer/dsik
   uint8_t NASMemInner, // number of inner all-stub memories
@@ -523,8 +524,8 @@ TC::seed Seed, // seed layer combination (TC::L1L2, TC::L3L4, etc.)
 > void
 TrackletProcessor(
     const BXType bx,
-    const ap_uint<10> lut[2048],
-    const ap_uint<8> regionlut[2048],
+    const ap_uint<1+2*TrackletEngineUnit<BARRELPS>::kNBitsRZFine+TrackletEngineUnit<BARRELPS>::kNBitsRZBin> lut[2048],
+    const ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> regionlut[2048],
     const AllStubInnerMemory<InnerRegion> innerStubs[NASMemInner],
     const AllStubMemory<OuterRegion>* outerStubs,
     const VMStubTEOuterMemoryCM<OuterRegion,RZBins,PhiBins> outerVMStubs[6],
@@ -560,7 +561,8 @@ TrackletProcessor(
     if (TPROJMaskDisk<Seed, iTC>() & (0x1 << i))
       projout_disk[i].clear();
 
-  constexpr unsigned int NfinephiBits=2+TrackletEngineUnit<BARRELPS>::kNBitsPhiBins+VMStubTEOuterBase<BARRELPS>::kVMSTEOFinePhiSize;
+  constexpr unsigned int NBitsPhiRegion=2;
+  constexpr unsigned int NfinephiBits=NBitsPhiRegion+TrackletEngineUnit<BARRELPS>::kNBitsPhiBins+VMStubTEOuterBase<BARRELPS>::kVMSTEOFinePhiSize;
 
   static TEBuffer tebuffer[NTEBuffer];
 #pragma HLS array_partition variable=tebuffer complete
@@ -602,8 +604,8 @@ TrackletProcessor(
   int istub___[NTEBuffer];
   AllStubInner<BARRELPS> stub__[NTEBuffer];
   AllStubInner<BARRELPS> stub___[NTEBuffer];
-  ap_uint<10> lutval___[NTEBuffer];
-  ap_uint<8> useregion___[NTEBuffer];
+  ap_uint<1+2*TrackletEngineUnit<BARRELPS>::kNBitsRZFine+TrackletEngineUnit<BARRELPS>::kNBitsRZBin> lutval___[NTEBuffer];
+  ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> useregion___[NTEBuffer];
 
   initializepipelinevars: for (unsigned i = 0; i < NTEBuffer; i++){
 #pragma HLS unroll
@@ -749,7 +751,7 @@ TrackletProcessor(
       const VMStubTEOuter<BARRELPS>::VMSTEOFINEPHI& finephi = teunits[k].outervmstub___.getFinePhi();
       const ap_uint<1+VMStubTEOuterBase<BARRELPS>::kVMSTEOFineZSize>& rzbin = (teunits[k].next___, teunits[k].outervmstub___.getFineZ()); 
 
-      ap_uint<2> iAllstub=1; //FIXME need to be template parameter
+      ap_uint<NBitsPhiRegion> iAllstub=OuterPhiRegion;
       ap_uint<NfinephiBits> outerfinephi = (iAllstub, teunits[k].ireg___, finephi);
    
       constexpr unsigned int NdphiBits=5;
@@ -934,10 +936,10 @@ TrackletProcessor(
      auto innerfinephi=stub__[i].getFinePhi();
       
      //This LUT tells us which range in r/z to look for stubs in the other layer/disk
-     ap_uint<10> lutval = lut[(indexz,indexr)];
+     ap_uint<1+2*TrackletEngineUnit<BARRELPS>::kNBitsRZFine+TrackletEngineUnit<BARRELPS>::kNBitsRZBin> lutval = lut[(indexz,indexr)];
 
      //This lut tells us which range in phi to loof for stubs the other layer/disk
-     ap_uint<8> useregion=regionlut[(innerfinephi,bend)];
+     ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> useregion=regionlut[(innerfinephi,bend)];
 
      lutval___[i]=lutval;
      useregion___[i]=useregion;
@@ -958,7 +960,7 @@ TrackletProcessor(
      bool validmem=imem<imemend;
      
      //compute the next memory
-     ap_uint<2> imemnext=imem+1;
+     TEData::IMEM imemnext=imem+1;
 
      //Extract the current stub - check if valid. Calculate next stub (counting down!) Chech if valid
      auto& istub=tebuffer[i].getIStub();
