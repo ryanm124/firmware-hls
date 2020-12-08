@@ -35,6 +35,13 @@ constexpr double kphi0 = 1.54259e-05;
 constexpr double kt = 0.00195312;
 constexpr double kz0 = 0.0585938;
 
+// LUT bit sized
+constexpr unsigned int kNbitszfinebintable=7;
+constexpr unsigned int kNbitsrfinebintable=4;
+
+
+
+
 // mean positions of layers and disks (the 1.0e-1 is a fudge factor needed to
 // get the floating point truncation right)
 constexpr int rmean[6] = {

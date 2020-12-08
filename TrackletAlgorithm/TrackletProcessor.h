@@ -187,8 +187,8 @@ ap_uint<1> nearFullTEBuff(const ap_uint<3>&, const ap_uint<3>&);
 ap_uint<(1<<(2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer))> nearFullTEUnitInit();
 
 void TrackletProcessor_L1L2D(const BXType bx,
-			     const ap_uint<1+2*TrackletEngineUnit<BARRELPS>::kNBitsRZFine+TrackletEngineUnit<BARRELPS>::kNBitsRZBin> lut[2048],
-			     const ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> regionlut[2048],
+			     const ap_uint<1+2*TrackletEngineUnit<BARRELPS>::kNBitsRZFine+TrackletEngineUnit<BARRELPS>::kNBitsRZBin> lut[1<<(kNbitszfinebintable+kNbitsrfinebintable)],
+			     const ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> regionlut[1<<(AllStubInner<BARRELPS>::kASBendSize+AllStubInner<BARRELPS>::kASFinePhiSize)],
 			     const AllStubInnerMemory<BARRELPS> innerStubs[2],
 			     const AllStubMemory<BARRELPS>* outerStubs,
 			     const VMStubTEOuterMemoryCM<BARRELPS,3,3> outerVMStubs[6],
@@ -506,6 +506,7 @@ TC::processStubPair(
 }
 
 
+
 // This is the primary interface for the TrackletProcessor.
 template<
 TC::seed Seed, // seed layer combination (TC::L1L2, TC::L3L4, etc.)
@@ -524,8 +525,8 @@ TC::seed Seed, // seed layer combination (TC::L1L2, TC::L3L4, etc.)
 > void
 TrackletProcessor(
     const BXType bx,
-    const ap_uint<1+2*TrackletEngineUnit<BARRELPS>::kNBitsRZFine+TrackletEngineUnit<BARRELPS>::kNBitsRZBin> lut[2048],
-    const ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> regionlut[2048],
+    const ap_uint<1+2*TrackletEngineUnit<BARRELPS>::kNBitsRZFine+TrackletEngineUnit<BARRELPS>::kNBitsRZBin> lut[1<<(kNbitszfinebintable+kNbitsrfinebintable)],
+    const ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> regionlut[1<<(AllStubInner<BARRELPS>::kASBendSize+AllStubInner<BARRELPS>::kASFinePhiSize)],
     const AllStubInnerMemory<InnerRegion> innerStubs[NASMemInner],
     const AllStubMemory<OuterRegion>* outerStubs,
     const VMStubTEOuterMemoryCM<OuterRegion,RZBins,PhiBins> outerVMStubs[6],
@@ -813,11 +814,9 @@ TrackletProcessor(
       
       bool good=(!nearfulloridle[k])&&(!init);
       
-      
       TrackletEngineUnit<BARRELPS>::RZBIN ibin(teunits[k].slot_+teunits[k].next);
-      ap_uint<10> stubadd( (ibin, teunits[k].ireg, teunits[k].istub_) );
 
-      const auto outervmstub = outerVMStubs[k].read_mem(teunits[k].bx_,stubadd);
+      const auto outervmstub = outerVMStubs[k].read_mem(teunits[k].bx_, (ibin, teunits[k].ireg, teunits[k].istub_));
       
 #ifndef __SYNTHESIS__
       if (good) {
@@ -923,13 +922,11 @@ TrackletProcessor(
 
      //Get z-position and top bits for LUT
      auto z=stub__[i].getZ();
-     int nbitszfinebintable=7;
-     auto indexz=z.range(z.length()-1,z.length()-nbitszfinebintable);
+     auto indexz=z.range(z.length()-1,z.length()-kNbitszfinebintable);
 
      //Get r-position and top bits for LUT
      auto r=stub__[i].getR();
-     int nbitsrfinebintable=4;
-     auto indexr=r.range(r.length()-1,r.length()-nbitsrfinebintable);
+     auto indexr=r.range(r.length()-1,r.length()-kNbitsrfinebintable);
       
      //Get bend and fine phi for LUT
      auto bend=stub__[i].getBend();
