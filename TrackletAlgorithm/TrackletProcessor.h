@@ -743,20 +743,22 @@ TrackletProcessor(
 
       //second step
 
-      ap_uint<4> writeindexnext=teuwriteindex[k]+1;
+      TrackletEngineUnit<BARRELPS>::INDEX writeindexnext=teuwriteindex[k]+1;
 
-      const auto& finephi = teunits[k].outervmstub___.getFinePhi();
-      const auto& rzbin = (teunits[k].next___, teunits[k].outervmstub___.getFineZ()); 
+      const VMStubTEOuter<BARRELPS>::VMSTEOFINEPHI& finephi = teunits[k].outervmstub___.getFinePhi();
+      const ap_uint<1+VMStubTEOuterBase<BARRELPS>::kVMSTEOFineZSize>& rzbin = (teunits[k].next___, teunits[k].outervmstub___.getFineZ()); 
 
       ap_uint<2> iAllstub=1; //FIXME need to be template parameter
-      ap_uint<8> outerfinephi = (iAllstub, teunits[k].ireg___, finephi);
+      constexpr unsigned int NfinephiBits=2+TrackletEngineUnit<BARRELPS>::kNBitsPhiBins+VMStubTEOuterBase<BARRELPS>::kVMSTEOFinePhiSize;
+      ap_uint<NfinephiBits> outerfinephi = (iAllstub, teunits[k].ireg___, finephi);
    
-      ap_uint<5> idphi;
-      ap_uint<3> overflow;
+      constexpr unsigned int NdphiBits=5;
+      ap_uint<NdphiBits> idphi;
+      ap_uint<NfinephiBits-NdphiBits> overflow;
       (overflow,idphi) =  outerfinephi - AllStubInner<BARRELPS>(teunits[k].innerstub___).getFinePhi();
       
       ap_uint<1> inrange1 = overflow==0;
-      ap_uint<1> inrange2 = overflow==7;
+      ap_uint<1> inrange2 = overflow==~ap_uint<NfinephiBits-NdphiBits>(0);
       ap_uint<1> inrange = inrange1||inrange2;
 
       ap_uint<1> rzcut1=rzbin >= teunits[k].rzbinfirst___;
@@ -772,8 +774,8 @@ TrackletProcessor(
       ap_uint<1> lutinner = teunits[k].stubptinnerlutnew_[ptinnerindex];
       ap_uint<1> lutouter = teunits[k].stubptouterlutnew_[ptouterindex];
 
-      //ap_uint<1> savestub = teunits[k].good___ & inrange & lutinner & lutouter & rzcut;  //Not OK - don't meet timing
       ap_uint<1> savestub = teunits[k].good___ && inrange && lutinner && lutouter && rzcut; //OK - meets timing
+      //ap_uint<1> savestub = teunits[k].good___ & inrange & lutinner & lutouter & rzcut;  //Not OK - don't meet timing
       //ap_uint<1> savestub = ap_uint<5>( (teunits[k].good___, inrange, lutinner, lutouter, rzcut) ).and_reduce(); //OK - meets timing
    
       teunits[k].stubids_[teuwriteindex[k]] = (teunits[k].outervmstub___.getIndex(), teunits[k].innerstub___.raw());
@@ -810,8 +812,8 @@ TrackletProcessor(
       bool good=(!nearfulloridle[k])&&(!init);
       
       
-      ap_uint<3> ibin(teunits[k].slot_+teunits[k].next);
-      ap_uint<12> stubadd( (ibin, teunits[k].ireg, teunits[k].istub_) );
+      TrackletEngineUnit<BARRELPS>::RZBIN ibin(teunits[k].slot_+teunits[k].next);
+      ap_uint<10> stubadd( (ibin, teunits[k].ireg, teunits[k].istub_) );
 
       const auto outervmstub = outerVMStubs[k].read_mem(teunits[k].bx_,stubadd);
       
@@ -824,41 +826,37 @@ TrackletProcessor(
       
       TrackletEngineUnit<BARRELPS>::NSTUBS zero(0);
       TrackletEngineUnit<BARRELPS>::NSTUBS istubtmp=teunits[k].istubnext_;
-      ap_uint<5> xorstubs=(istubtmp^teunits[k].nstubs, ap_uint<1>(nearfulloridle[k]));
+      ap_uint<kNBits_MemAddr+1> xorstubs=(istubtmp^teunits[k].nstubs, ap_uint<1>(nearfulloridle[k]));
       
-      //ap_uint<1> notallstubs=istubtmp!=nstubs||(!good);
       ap_uint<1> notallstubs=xorstubs.or_reduce();
       teunits[k].istub_=init?zero:good?(notallstubs?istubtmp:zero):teunits[k].istub_;
       teunits[k].istubnext_=teunits[k].istub_+1;
-      //ap_uint<1> notallstubs=istubtmp!=nstubs;
-      //istub_=notallstubs?istubtmp:zero;
       teunits[k].maskmask_.range(teunits[k].memindex,teunits[k].memindex)=notallstubs;
       
-      ap_uint<16> masktmp=teunits[k].memmask_&teunits[k].maskmask_;
+      TrackletEngineUnit<BARRELPS>::MEMMASK masktmp=teunits[k].memmask_&teunits[k].maskmask_;
       
-      (teunits[k].memindex,teunits[k].nstubs) = masktmp.test(0) ? (ap_uint<4>(0),teunits[k].ns0) :
-	masktmp.test(1) ? (ap_uint<4>(1),teunits[k].ns1) :
-	masktmp.test(2) ? (ap_uint<4>(2),teunits[k].ns2) :
-	masktmp.test(3) ? (ap_uint<4>(3),teunits[k].ns3) :
-	masktmp.test(4) ? (ap_uint<4>(4),teunits[k].ns4) :
-	masktmp.test(5) ? (ap_uint<4>(5),teunits[k].ns5) :
-	masktmp.test(6) ? (ap_uint<4>(6),teunits[k].ns6) :
-	masktmp.test(7) ? (ap_uint<4>(7),teunits[k].ns7) :
-	masktmp.test(8) ? (ap_uint<4>(8),teunits[k].ns8) :
-	masktmp.test(9) ? (ap_uint<4>(9),teunits[k].ns9) :
-	masktmp.test(10) ? (ap_uint<4>(10),teunits[k].ns10) :
-	masktmp.test(11) ? (ap_uint<4>(11),teunits[k].ns11) :
-	masktmp.test(12) ? (ap_uint<4>(12),teunits[k].ns12) :
-	masktmp.test(13) ? (ap_uint<4>(13),teunits[k].ns13) :
-	masktmp.test(14) ? (ap_uint<4>(14),teunits[k].ns14) :
-	(ap_uint<4>(15),teunits[k].ns15);
+      (teunits[k].memindex,teunits[k].nstubs) = masktmp.test(0) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(0),teunits[k].ns0) :
+	masktmp.test(1) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(1),teunits[k].ns1) :
+	masktmp.test(2) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(2),teunits[k].ns2) :
+	masktmp.test(3) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(3),teunits[k].ns3) :
+	masktmp.test(4) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(4),teunits[k].ns4) :
+	masktmp.test(5) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(5),teunits[k].ns5) :
+	masktmp.test(6) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(6),teunits[k].ns6) :
+	masktmp.test(7) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(7),teunits[k].ns7) :
+	masktmp.test(8) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(8),teunits[k].ns8) :
+	masktmp.test(9) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(9),teunits[k].ns9) :
+	masktmp.test(10) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(10),teunits[k].ns10) :
+	masktmp.test(11) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(11),teunits[k].ns11) :
+	masktmp.test(12) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(12),teunits[k].ns12) :
+	masktmp.test(13) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(13),teunits[k].ns13) :
+	masktmp.test(14) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(14),teunits[k].ns14) :
+	(TrackletEngineUnit<BARRELPS>::MEMINDEX(15),teunits[k].ns15);
       
       teunits[k].next__=teunits[k].next;
       teunits[k].ireg__=teunits[k].ireg;
 
       (teunits[k].next, teunits[k].ireg)=teunits[k].memindex;
 
-      //teunits[k].idle_=teunits[k].idle_||(!masktmp.or_reduce());
       teuidletmp[k]=teuidletmp[k]||(!masktmp.or_reduce());
       
       teunits[k].outervmstub__=outervmstub;
@@ -890,7 +888,8 @@ TrackletProcessor(
      bool valid=!lutval___[i].and_reduce();
 
      //quantities looked up in LUT
-     ap_uint<3> rzfinebinfirst,start,rzdiffmax;
+     VMStubTEOuter<BARRELPS>::VMSTEOFINEZ rzfinebinfirst,rzdiffmax;
+     ap_uint<3> start;
      ap_uint<1> usenext;
      (rzdiffmax, start, usenext, rzfinebinfirst) = lutval___[i];
 
