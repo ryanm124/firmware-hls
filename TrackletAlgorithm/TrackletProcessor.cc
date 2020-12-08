@@ -73,6 +73,7 @@ void TrackletProcessor_L1L2D(
 			     6, //TE units
 			     BARRELPS, 
 			     BARRELPS,
+			     1, //Outer phi region
 			     3,  //RZBins
 			     3,  //PhiBins
 			     2, 
