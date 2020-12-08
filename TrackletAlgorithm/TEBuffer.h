@@ -9,6 +9,11 @@
 class TEData {
 
  public:
+
+  enum BitWidths {
+    kNBitsIMem = 2
+  };
+
   enum BitLocations {
     // The location of the least significant bit (LSB) and most significant bit (MSB) in the ProjectionRouterBufferMemory word for different fields
     kTEDataStubMaskLSB = 0,
@@ -23,9 +28,7 @@ class TEData {
     kTEDataAllStubMSB = kTEDataAllStubLSB + AllStubInner<BARRELPS>::kAllStubInnerSize - 1
   };
 
-  //typedef ap_uint<3> RZBINFIRST;
-  //typedef ap_uint<3> START;
-  //typedef ap_uint<3> RZDIFFMAX;
+  typedef ap_uint<kNBitsIMem> IMEM;
   typedef ap_uint<kTEDataAllStubMSB+1> TEDATA;
 
  TEData():
@@ -48,7 +51,6 @@ class TEData {
     return data_.range(kTEDatarzdiffmaxMSB,kTEDatarzdiffmaxLSB);
   }
 
-
   ap_uint<16> getStubMask() const {
     return data_.range(kTEDataStubMaskMSB,kTEDataStubMaskLSB);
   }
@@ -61,7 +63,7 @@ class TEData {
   data_(tedata)
   {}
   
- TEData( const ap_uint<16> stubmask,
+ TEData( const TrackletEngineUnit<BARRELPS>::MEMMASK stubmask,
 	 const TrackletEngineUnit<BARRELPS>::RZFINE rzbinfirst, 
 	 const TrackletEngineUnit<BARRELPS>::RZBIN start, 
 	 const TrackletEngineUnit<BARRELPS>::RZFINE rzdiffmax, 
@@ -84,6 +86,13 @@ class TEBuffer {
 
  public:
 
+  enum BitWidths {
+    kNBufferDepthBits=3
+  };
+
+  typedef ap_uint<kNBufferDepthBits> TEBUFFERINDEX;
+  typedef ap_uint<kNBits_MemAddr> NSTUBS;
+
   // Constructors
  TEBuffer():
   writeptr_(0), readptr_(0), istub_(0), imem_(0), imembegin_(0), imemend_(0)
@@ -91,11 +100,11 @@ class TEBuffer {
 #pragma HLS array_partition variable=buffer_ complete dim=0
 }
 
-  void setMemBegin(ap_uint<2> begin) {
+  void setMemBegin(const TEData::IMEM& begin) {
     imembegin_=begin;
   }
   
-  void setMemEnd(ap_uint<2> end) {
+  void setMemEnd(const TEData::IMEM& end) {
     imemend_=end;
   }
 
@@ -105,19 +114,19 @@ class TEBuffer {
     readptr_=0;
   }
 
-  ap_uint<2>& getMem() {
+  TEData::IMEM& getMem() {
     return imem_;
   }
 
-  ap_uint<2> getMemEnd() {
+  const TEData::IMEM& getMemEnd() {
     return imemend_;
   }
 
-  ap_uint<7>& getIStub() {
+  NSTUBS& getIStub() {
     return istub_;
   }
 
-  void setIStub(ap_uint<7> istub) {
+  void setIStub(const NSTUBS& istub) {
     istub_=istub;
   }
 
@@ -136,31 +145,28 @@ class TEBuffer {
   }
 
   bool full() const {
-    ap_uint<3> writeptrnext=writeptr_+1;
-    return ((writeptrnext)&((1<<bufferdepthbits)-1))==readptr_;
+    TEBUFFERINDEX writeptrnext=writeptr_+1;
+    return writeptrnext==readptr_;
   }
 
   bool empty() const {
     return writeptr_==readptr_;
   }
 
-  ap_uint<3> readptr() const {
+  TEBUFFERINDEX readptr() const {
     return readptr_;
   }
 
-  ap_uint<3> writeptr() const {
+  TEBUFFERINDEX writeptr() const {
     return writeptr_;
   }
 
-  //should be private
-  static constexpr int bufferdepthbits=3;
+  TEBUFFERINDEX writeptr_, readptr_;
 
-  ap_uint<bufferdepthbits> writeptr_, readptr_;
-
-  ap_uint<kNBits_MemAddr> istub_;
-  ap_uint<2> imem_, imembegin_, imemend_;
+  NSTUBS istub_;
+  TEData::IMEM imem_, imembegin_, imemend_;
   
-  TEData::TEDATA buffer_[1<<bufferdepthbits];
+  TEData::TEDATA buffer_[1<<kNBufferDepthBits];
   
 private:
 
