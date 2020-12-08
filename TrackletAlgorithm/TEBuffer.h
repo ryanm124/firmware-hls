@@ -4,6 +4,7 @@
 #include "Constants.h"
 #include "MemoryTemplate.h"
 #include "AllStubInnerMemory.h"
+#include "TrackletEngineUnit.h"
 
 class TEData {
 
@@ -11,20 +12,20 @@ class TEData {
   enum BitLocations {
     // The location of the least significant bit (LSB) and most significant bit (MSB) in the ProjectionRouterBufferMemory word for different fields
     kTEDataStubMaskLSB = 0,
-    kTEDataStubMaskMSB = kTEDataStubMaskLSB + 16 - 1,
+    kTEDataStubMaskMSB = kTEDataStubMaskLSB + 2*(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins) - 1,
     kTEDatarzbinfirstLSB = kTEDataStubMaskMSB+1,
-    kTEDatarzbinfirstMSB = kTEDatarzbinfirstLSB + 3 - 1,
+    kTEDatarzbinfirstMSB = kTEDatarzbinfirstLSB + TrackletEngineUnit<BARRELPS>::kNBitsRZFine - 1,
     kTEDatastartLSB = kTEDatarzbinfirstMSB + 1,
-    kTEDatastartMSB = kTEDatastartLSB + 3 - 1,
+    kTEDatastartMSB = kTEDatastartLSB + TrackletEngineUnit<BARRELPS>::kNBitsRZBin - 1,
     kTEDatarzdiffmaxLSB = kTEDatastartMSB + 1,
-    kTEDatarzdiffmaxMSB = kTEDatarzdiffmaxLSB + 3 - 1,
+    kTEDatarzdiffmaxMSB = kTEDatarzdiffmaxLSB + TrackletEngineUnit<BARRELPS>::kNBitsRZFine - 1,
     kTEDataAllStubLSB = kTEDatarzdiffmaxMSB + 1,
     kTEDataAllStubMSB = kTEDataAllStubLSB + AllStubInner<BARRELPS>::kAllStubInnerSize - 1
   };
 
-  typedef ap_uint<3> RZBINFIRST;
-  typedef ap_uint<3> START;
-  typedef ap_uint<3> RZDIFFMAX;
+  //typedef ap_uint<3> RZBINFIRST;
+  //typedef ap_uint<3> START;
+  //typedef ap_uint<3> RZDIFFMAX;
   typedef ap_uint<kTEDataAllStubMSB+1> TEDATA;
 
  TEData():
@@ -35,15 +36,15 @@ class TEData {
     return data_.range(kTEDataAllStubMSB,kTEDataAllStubLSB);
   }
 
-  START getStart() const {
+  TrackletEngineUnit<BARRELPS>::RZBIN getStart() const {
     return data_.range(kTEDatastartMSB,kTEDatastartLSB);
   }
 
-  RZBINFIRST getrzbinfirst() const {
+  TrackletEngineUnit<BARRELPS>::RZFINE getrzbinfirst() const {
     return data_.range(kTEDatarzbinfirstMSB,kTEDatarzbinfirstLSB);
   }
 
-  RZDIFFMAX getrzdiffmax() const {
+  TrackletEngineUnit<BARRELPS>::RZFINE getrzdiffmax() const {
     return data_.range(kTEDatarzdiffmaxMSB,kTEDatarzdiffmaxLSB);
   }
 
@@ -61,9 +62,9 @@ class TEData {
   {}
   
  TEData( const ap_uint<16> stubmask,
-	 const RZBINFIRST rzbinfirst, 
-	 const START start, 
-	 const RZDIFFMAX rzdiffmax, 
+	 const TrackletEngineUnit<BARRELPS>::RZFINE rzbinfirst, 
+	 const TrackletEngineUnit<BARRELPS>::RZBIN start, 
+	 const TrackletEngineUnit<BARRELPS>::RZFINE rzdiffmax, 
 	 const AllStubInner<BARRELPS>::AllStubInnerData stub
 	 ):
   data_( (stub, rzdiffmax, start, rzbinfirst, stubmask) )
@@ -125,10 +126,6 @@ class TEBuffer {
     buffer_[writeptrtmp]=tedata;
     writeptr_++;
   }
-
-  //TEData::TEDATA read() {
-  //  return buffer_[readptr_++];
-  // }
 
   TEData::TEDATA peek() const {
     return buffer_[readptr_];
