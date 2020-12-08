@@ -560,6 +560,7 @@ TrackletProcessor(
     if (TPROJMaskDisk<Seed, iTC>() & (0x1 << i))
       projout_disk[i].clear();
 
+  constexpr unsigned int NfinephiBits=2+TrackletEngineUnit<BARRELPS>::kNBitsPhiBins+VMStubTEOuterBase<BARRELPS>::kVMSTEOFinePhiSize;
 
   static TEBuffer tebuffer[NTEBuffer];
 #pragma HLS array_partition variable=tebuffer complete
@@ -626,16 +627,16 @@ TrackletProcessor(
       TEData tedatatmp[NTEBuffer];
       bool tebufferempty[NTEBuffer];
       bool tebufferfull[NTEBuffer];
-      ap_uint<3> writeptr[NTEBuffer];
-      ap_uint<3> writeptrnext[NTEBuffer];
-      ap_uint<3> writeptrnext2[NTEBuffer];
-      ap_uint<3> writeptrnext3[NTEBuffer];
-      ap_uint<3> readptr[NTEBuffer];
-      ap_uint<3> readptrnext[NTEBuffer];
-      ap_uint<3> tebufferwriteptrtmp[NTEBuffer];
-      ap_uint<3> tebufferreadptrtmp[NTEBuffer];
-      ap_uint<kNBits_MemAddr> tebufferistubtmp[NTEBuffer];
-      ap_uint<2> tebufferimemtmp[NTEBuffer];
+      TEBuffer::TEBUFFERINDEX writeptr[NTEBuffer];
+      TEBuffer::TEBUFFERINDEX writeptrnext[NTEBuffer];
+      TEBuffer::TEBUFFERINDEX writeptrnext2[NTEBuffer];
+      TEBuffer::TEBUFFERINDEX writeptrnext3[NTEBuffer];
+      TEBuffer::TEBUFFERINDEX readptr[NTEBuffer];
+      TEBuffer::TEBUFFERINDEX readptrnext[NTEBuffer];
+      TEBuffer::TEBUFFERINDEX tebufferwriteptrtmp[NTEBuffer];
+      TEBuffer::TEBUFFERINDEX tebufferreadptrtmp[NTEBuffer];
+      TEBuffer::NSTUBS tebufferistubtmp[NTEBuffer];
+      TEData::IMEM tebufferimemtmp[NTEBuffer];
   
       bool teuidletmp[NTEUnits]; 
       TrackletEngineUnit<BARRELPS>::INDEX teunitswriteindextmp[NTEUnits];
@@ -709,9 +710,9 @@ TrackletProcessor(
 
       
     AllStub<BARRELPS>::AllStubData innerStub;
-    ap_uint<kNBits_MemAddr> innerIndex;
-    ap_uint<8> finephi;
-    ap_uint<kNBits_MemAddr> outerIndex;
+    TEBuffer::NSTUBS innerIndex;
+    ap_uint<NfinephiBits> finephi;
+    TEBuffer::NSTUBS outerIndex;
     (outerIndex, innerStub, innerIndex, finephi)=teudata[iTE];
     teunitsreadindextmp[iTE]=teureadindex[iTE]+HaveTEData;
     
@@ -749,7 +750,6 @@ TrackletProcessor(
       const ap_uint<1+VMStubTEOuterBase<BARRELPS>::kVMSTEOFineZSize>& rzbin = (teunits[k].next___, teunits[k].outervmstub___.getFineZ()); 
 
       ap_uint<2> iAllstub=1; //FIXME need to be template parameter
-      constexpr unsigned int NfinephiBits=2+TrackletEngineUnit<BARRELPS>::kNBitsPhiBins+VMStubTEOuterBase<BARRELPS>::kVMSTEOFinePhiSize;
       ap_uint<NfinephiBits> outerfinephi = (iAllstub, teunits[k].ireg___, finephi);
    
       constexpr unsigned int NdphiBits=5;
