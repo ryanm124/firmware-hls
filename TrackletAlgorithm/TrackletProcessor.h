@@ -962,11 +962,9 @@ TrackletProcessor(
      //Extract the current stub - check if valid. Calculate next stub (counting down!) Chech if valid
      auto& istub=tebuffer[i].getIStub();
      auto istubsave=istub;
-     //bool validstub=!istub.and_reduce();
      bool validstub=istub<innerStubs[imem].getEntries(bx);
      ap_uint<kNBits_MemAddr> istubnext=istub+1;
-     //bool validstubnext=!istubnext.and_reduce();
-     bool validstubnext=!istubnext<innerStubs[imem].getEntries(bx);
+     bool validstubnext=istubnext<innerStubs[imem].getEntries(bx);
 
      //Calculate good stub - true if:
      //validmem is true - meaning that we have not exhausted all stub memories

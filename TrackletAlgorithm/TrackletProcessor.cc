@@ -64,19 +64,17 @@ void TrackletProcessor_L1L2D(
 #pragma HLS array_partition variable=projout_barrel_ps complete
 #pragma HLS array_partition variable=projout_barrel_2s complete
 #pragma HLS array_partition variable=projout_disk complete
-  //#pragma HLS resource variable=stubptinnerlut core=ROM_1P_LUTRAM
-  //#pragma HLS resource variable=stubptouterlut core=ROM_1P_LUTRAM
 
  TP_L1L2D: TrackletProcessor<TC::L1L2, 
 			     TC::D, 
-			     2, //TEBuffers
-			     6, //TE units
+			     1, //TEBuffers
+			     4, //TE units
 			     BARRELPS, 
 			     BARRELPS,
 			     1, //Outer phi region
 			     3,  //RZBins
 			     3,  //PhiBins
-			     2, 
+			     2, //Number of inner AS memories
 			     108>(bx, 
 				  lut, 
 				  regionlut, 
