@@ -2,7 +2,7 @@
 #define TrackletAlgorithm_VMStubTEOuterMemory_h
 
 #include "Constants.h"
-#include "MemoryTemplateBinned.h"
+#include "MemoryTemplateBinnedCM.h"
 
 // VMStubTEOuterBase is where we define the bit widths, which depend on the class template parameter.
 template<int VMSTEOType> class VMStubTEOuterBase {};
@@ -142,6 +142,6 @@ private:
 };
 
 // Memory definition
-template<int VMSTEOType, int RZSize, int PhiRegSize > using VMStubTEOuterMemoryCM = MemoryTemplateBinned<VMStubTEOuter<VMSTEOType>, 1, 4+RZSize+PhiRegSize, RZSize+PhiRegSize>;
+template<int VMSTEOType, int RZSize, int PhiRegSize > using VMStubTEOuterMemoryCM = MemoryTemplateBinnedCM<VMStubTEOuter<VMSTEOType>, 1, 4+RZSize+PhiRegSize, RZSize+PhiRegSize>;
 
 #endif
