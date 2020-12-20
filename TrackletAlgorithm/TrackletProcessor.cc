@@ -42,7 +42,7 @@ void TrackletProcessor_L1L2D(
     const ap_uint<8> regionlut[2048],
     const AllStubInnerMemory<BARRELPS> innerStubs[2],
     const AllStubMemory<BARRELPS>* outerStubs,
-    const VMStubTEOuterMemoryCM<BARRELPS,3,3> outerVMStubs[6],
+    const VMStubTEOuterMemoryCM<BARRELPS,3,3,4> outerVMStubs,
     TrackletParameterMemory * trackletParameters,
     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
@@ -54,13 +54,7 @@ void TrackletProcessor_L1L2D(
 #pragma HLS resource variable=innerStubs[0].get_mem() latency=2
 #pragma HLS resource variable=innerStubs[1].get_mem() latency=2
 #pragma HLS resource variable=outerStubs->get_mem() latency=2
-#pragma HLS resource variable=outerVMStubs[0].get_mem() latency=2
-#pragma HLS resource variable=outerVMStubs[1].get_mem() latency=2
-#pragma HLS resource variable=outerVMStubs[2].get_mem() latency=2
-#pragma HLS resource variable=outerVMStubs[3].get_mem() latency=2
-#pragma HLS resource variable=outerVMStubs[4].get_mem() latency=2
-#pragma HLS resource variable=outerVMStubs[5].get_mem() latency=2
-#pragma HLS array_partition variable=outerVMStubs complete dim=1
+#pragma HLS resource variable=outerVMStubs.get_mem() latency=2
 #pragma HLS array_partition variable=projout_barrel_ps complete
 #pragma HLS array_partition variable=projout_barrel_2s complete
 #pragma HLS array_partition variable=projout_disk complete

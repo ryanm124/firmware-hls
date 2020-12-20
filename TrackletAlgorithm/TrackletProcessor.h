@@ -191,7 +191,7 @@ void TrackletProcessor_L1L2D(const BXType bx,
 			     const ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> regionlut[1<<(AllStubInner<BARRELPS>::kASBendSize+AllStubInner<BARRELPS>::kASFinePhiSize)],
 			     const AllStubInnerMemory<BARRELPS> innerStubs[2],
 			     const AllStubMemory<BARRELPS>* outerStubs,
-			     const VMStubTEOuterMemoryCM<BARRELPS,3,3> outerVMStubs[6],
+			     const VMStubTEOuterMemoryCM<BARRELPS,3,3,4> outerVMStubs,
 			     TrackletParameterMemory * trackletParameters,
 			     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
 			     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
@@ -529,7 +529,7 @@ TrackletProcessor(
     const ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> regionlut[1<<(AllStubInner<BARRELPS>::kASBendSize+AllStubInner<BARRELPS>::kASFinePhiSize)],
     const AllStubInnerMemory<InnerRegion> innerStubs[NASMemInner],
     const AllStubMemory<OuterRegion>* outerStubs,
-    const VMStubTEOuterMemoryCM<OuterRegion,RZBins,PhiBins> outerVMStubs[6],
+    const VMStubTEOuterMemoryCM<OuterRegion,RZBins,PhiBins,4> outerVMStubs,
     TrackletParameterMemory * const trackletParameters,
     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
@@ -805,18 +805,18 @@ TrackletProcessor(
       teunits[k].masktmp = init?tedatatmp[iTEBuff].getStubMask():teunits[k].masktmp;
 
       (teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0) = 
-	init?outerVMStubs[0].getEntries16(bx,teunits[k].slot_):(teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0);
+	init?outerVMStubs.getEntries16(bx,teunits[k].slot_):(teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0);
       
       bool good=(!nearfulloridle[k])&&(!init);
       
       TrackletEngineUnit<BARRELPS>::RZBIN ibin(teunits[k].slot_+teunits[k].next);
 
-      const auto outervmstub = outerVMStubs[k].read_mem(teunits[k].bx_, (ibin, teunits[k].ireg, teunits[k].istub_));
+      const auto outervmstub = outerVMStubs.read_mem(k,teunits[k].bx_, (ibin, teunits[k].ireg, teunits[k].istub_));
       
 #ifndef __SYNTHESIS__
       if (good) {
 	assert(teunits[k].nstubs!=0);
-	assert(teunits[k].nstubs==outerVMStubs[k].getEntries(teunits[k].bx_,(ibin, teunits[k].ireg)));
+	assert(teunits[k].nstubs==outerVMStubs.getEntries(teunits[k].bx_,(ibin, teunits[k].ireg)));
       }
 #endif
       
@@ -890,7 +890,7 @@ TrackletProcessor(
      (rzdiffmax, start, usenext, rzfinebinfirst) = lutval___[i];
 
      //Get the mask of bins that has non-zero number of hits
-     ap_uint<16> stubmask16 = outerVMStubs[i].getBinMask16(bx,start);
+     ap_uint<16> stubmask16 = outerVMStubs.getBinMask16(bx,start);
 
      //Calculate the stub mask for which bins have hits _and_ are consistent with the inner stub
      ap_uint<16> mask=( (useregion___[i]*usenext,useregion___[i]) );

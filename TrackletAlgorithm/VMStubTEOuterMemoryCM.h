@@ -142,6 +142,6 @@ private:
 };
 
 // Memory definition
-template<int VMSTEOType, int RZSize, int PhiRegSize > using VMStubTEOuterMemoryCM = MemoryTemplateBinnedCM<VMStubTEOuter<VMSTEOType>, 1, 4+RZSize+PhiRegSize, RZSize+PhiRegSize>;
+template<int VMSTEOType, int RZSize, int PhiRegSize, unsigned int NCOPY > using VMStubTEOuterMemoryCM = MemoryTemplateBinnedCM<VMStubTEOuter<VMSTEOType>, 1, 4+RZSize+PhiRegSize, RZSize+PhiRegSize, NCOPY>;
 
 #endif
