@@ -115,7 +115,7 @@ class MemoryTemplateBinned{
 #ifdef USE_APUINT
     return binmask16new_.range(8*ibin+15,8*ibin);
 #else
-#pragma HLS ARRAY_PARTITION variable=binmask16_ complete dim=0
+    #pragma HLS ARRAY_PARTITION variable=binmask16_ complete dim=0
     return binmask16_[ibin];
 #endif
   }
