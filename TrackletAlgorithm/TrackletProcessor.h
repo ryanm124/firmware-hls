@@ -623,11 +623,11 @@ TrackletProcessor(
 #pragma HLS array_partition variable=vmstubsmask complete dim=1
  entriesloop:for(unsigned int i=0;i<7;i++) {
 #pragma HLS unroll
-  vmstubsentries[i]=(outerVMStubs.getEntries16(bx,i+1),outerVMStubs.getEntries16(bx,i));
-  vmstubsmask[i]=(outerVMStubs.getBinMask16(bx,i+1),outerVMStubs.getBinMask16(bx,i));
+  vmstubsentries[i]=(outerVMStubs.getEntries8(bx,i+1),outerVMStubs.getEntries8(bx,i));
+  vmstubsmask[i]=(outerVMStubs.getBinMask8(bx,i+1),outerVMStubs.getBinMask8(bx,i));
 }
-  vmstubsentries[7]=(ap_uint<32>(0),outerVMStubs.getEntries16(bx,7));
-  vmstubsmask[7]=(ap_uint<8>(0),outerVMStubs.getBinMask16(bx,7));
+  vmstubsentries[7]=(ap_uint<32>(0),outerVMStubs.getEntries8(bx,7));
+  vmstubsmask[7]=(ap_uint<8>(0),outerVMStubs.getBinMask8(bx,7));
 
 
  istep_loop: for(unsigned istep=0;istep<N;istep++) {
