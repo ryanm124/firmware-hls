@@ -617,7 +617,17 @@ TrackletProcessor(
 
   static const ap_uint<(1<<(2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer))> TENearFullUINT=nearFullTEUnitInit();
 
-
+  ap_uint<16> vmstubsmask[8];
+  ap_uint<64> vmstubsentries[8];
+#pragma HLS array_partition variable=vmstubsentries complete dim=1
+#pragma HLS array_partition variable=vmstubsmask complete dim=1
+ entriesloop:for(unsigned int i=0;i<7;i++) {
+#pragma HLS unroll
+  vmstubsentries[i]=(outerVMStubs.getEntries16(bx,i+1),outerVMStubs.getEntries16(bx,i));
+  vmstubsmask[i]=(outerVMStubs.getBinMask16(bx,i+1),outerVMStubs.getBinMask16(bx,i));
+}
+  vmstubsentries[7]=(ap_uint<32>(0),outerVMStubs.getEntries16(bx,7));
+  vmstubsmask[7]=(ap_uint<8>(0),outerVMStubs.getBinMask16(bx,7));
 
 
  istep_loop: for(unsigned istep=0;istep<N;istep++) {
@@ -805,7 +815,7 @@ TrackletProcessor(
       teunits[k].masktmp = init?tedatatmp[iTEBuff].getStubMask():teunits[k].masktmp;
 
       (teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0) = 
-	init?outerVMStubs.getEntries16(bx,teunits[k].slot_):(teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0);
+	init?vmstubsentries[teunits[k].slot_]:(teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0);
       
       bool good=(!nearfulloridle[k])&&(!init);
       
@@ -890,7 +900,7 @@ TrackletProcessor(
      (rzdiffmax, start, usenext, rzfinebinfirst) = lutval___[i];
 
      //Get the mask of bins that has non-zero number of hits
-     ap_uint<16> stubmask16 = outerVMStubs.getBinMask16(bx,start);
+     ap_uint<16> stubmask16 = vmstubsmask[start];
 
      //Calculate the stub mask for which bins have hits _and_ are consistent with the inner stub
      ap_uint<16> mask=( (useregion___[i]*usenext,useregion___[i]) );
