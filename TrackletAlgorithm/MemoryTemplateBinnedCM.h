@@ -32,10 +32,10 @@ class MemoryTemplateBinnedCM{
 
   DataType dataarray_[NCOPY][kNBxBins][kNMemDepth];  // data array
 
-  ap_uint<16> binmask16_[8];
-  ap_uint<64> nentries16_[8];
-  //ap_uint<16> binmask16_[kNBxBins][8];
-  //ap_uint<64> nentries16_[kNBxBins][8];
+  //ap_uint<16> binmask16_[8];
+  //ap_uint<64> nentries16_[8];
+  ap_uint<8> binmask16_[kNBxBins][8];
+  ap_uint<32> nentries16_[kNBxBins][8];
 
   
  public:
@@ -60,8 +60,8 @@ class MemoryTemplateBinnedCM{
 	
   clearloop2:for (unsigned int ibin = 0; ibin < 8; ++ibin) {
 #pragma HLS UNROLL
-      nentries16_[ibin] = 0;
-      binmask16_[ibin] = 0;
+      nentries16_[bx][ibin] = 0;
+      binmask16_[bx][ibin] = 0;
     }
   }
 
@@ -72,17 +72,17 @@ class MemoryTemplateBinnedCM{
   NEntryT getEntries(BunchXingT bx, ap_uint<NBIT_BIN> slot) const {
     ap_uint<3> ibin,ireg;
     (ibin,ireg)=slot;
-    return nentries16_[ibin].range(ireg*4+3,ireg*4);
+    return nentries16_[bx][ibin].range(ireg*4+3,ireg*4);
   }
 
-  ap_uint<64> getEntries16(BunchXingT bx, ap_uint<3> ibin) const {
+  ap_uint<32> getEntries16(BunchXingT bx, ap_uint<3> ibin) const {
     #pragma HLS ARRAY_PARTITION variable=nentries16_ complete dim=0
-    return nentries16_[ibin];
+    return nentries16_[bx][ibin];
   }
 
-  ap_uint<16> getBinMask16(BunchXingT bx, ap_uint<3> ibin) const {
+  ap_uint<8> getBinMask16(BunchXingT bx, ap_uint<3> ibin) const {
     #pragma HLS ARRAY_PARTITION variable=binmask16_ complete dim=0
-    return binmask16_[ibin];
+    return binmask16_[bx][ibin];
   }
 
   NEntryT getEntries(BunchXingT bx) const {
@@ -118,7 +118,7 @@ class MemoryTemplateBinnedCM{
     ap_uint<3> ibin,ireg;    
     (ibin,ireg)=slot;
 
-    NEntryT nentry_ibx = nentries16_[ibin].range(ireg*4+3,ireg*4);
+    NEntryT nentry_ibx = nentries16_[ibx][ibin].range(ireg*4+3,ireg*4);
 
     if (nentry_ibx < (1<<(NBIT_ADDR-NBIT_BIN))) {
       // write address for slot: 1<<(NBIT_ADDR-NBIT_BIN) * slot + nentry_ibx
@@ -128,11 +128,11 @@ class MemoryTemplateBinnedCM{
 	dataarray_[icopy][ibx][(1<<(NBIT_ADDR-NBIT_BIN))*slot+nentry_ibx] = data;
       }
 
-      binmask16_[ibin].set_bit(ireg,true);
-      if (ibin!=0) binmask16_[ibin-1].set_bit(ireg+8,true);
+      binmask16_[ibx][ibin].set_bit(ireg,true);
+      //if (ibin!=0) binmask16_[ibx][ibin-1].set_bit(ireg+8,true);
       
-      nentries16_[ibin].range(ireg*4+3,ireg*4)=nentry_ibx+1;
-      if ( ibin!=0) nentries16_[ibin-1].range(32+ireg*4+3,32+ireg*4)=nentry_ibx+1;
+      nentries16_[ibx][ibin].range(ireg*4+3,ireg*4)=nentry_ibx+1;
+      //if ( ibin!=0) nentries16_[ibx][ibin-1].range(32+ireg*4+3,32+ireg*4)=nentry_ibx+1;
       
       return true;
     }
