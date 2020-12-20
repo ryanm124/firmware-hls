@@ -28,7 +28,7 @@ csynth_design
 cosim_design 
 ##export_design -format ip_catalog
 
-# Adding "-flow impl" runs full Vivado implementation, providing accurate resource use numbers (very slow).
+## Adding "-flow impl" runs full Vivado implementation, providing accurate resource use numbers (very slow).
 #export_design -format ip_catalog -flow impl
 
 exit

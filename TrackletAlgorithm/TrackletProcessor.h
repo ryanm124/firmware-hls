@@ -589,7 +589,7 @@ TrackletProcessor(
   }
 
   TrackletEngineUnit<BARRELPS> teunits[NTEUnits];
-#pragma HLS array_partition variable=teunits complete dim=0
+#pragma HLS array_partition variable=teunits complete dim=1
 
  reset_teunits: for (unsigned i = 0; i < NTEUnits; i++) {
 #pragma HLS unroll
@@ -631,9 +631,6 @@ TrackletProcessor(
       bool tebufferempty[NTEBuffer];
       bool tebufferfull[NTEBuffer];
       TEBuffer::TEBUFFERINDEX writeptr[NTEBuffer];
-      TEBuffer::TEBUFFERINDEX writeptrnext[NTEBuffer];
-      TEBuffer::TEBUFFERINDEX writeptrnext2[NTEBuffer];
-      TEBuffer::TEBUFFERINDEX writeptrnext3[NTEBuffer];
       TEBuffer::TEBUFFERINDEX readptr[NTEBuffer];
       TEBuffer::TEBUFFERINDEX readptrnext[NTEBuffer];
       TEBuffer::TEBUFFERINDEX tebufferwriteptrtmp[NTEBuffer];
@@ -728,8 +725,6 @@ TrackletProcessor(
     if (HaveTEData) {
       TC::processStubPair<Seed, InnerRegion, OuterRegion, TPROJMaskBarrel<Seed, iTC>(), TPROJMaskDisk<Seed, iTC>()>(bx, innerIndex, AllStub<BARRELPS>(innerStub), outerIndex, outerStub, TCID, trackletIndex, trackletParameters, projout_barrel_ps, projout_barrel_2s, projout_disk, npar, nproj_barrel_ps, nproj_barrel_2s, nproj_disk);
     }
-    
-   
     
 
     //
