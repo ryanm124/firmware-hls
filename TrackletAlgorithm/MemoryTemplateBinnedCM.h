@@ -9,13 +9,14 @@
 #endif
 
 template<class DataType, unsigned int NBIT_BX, unsigned int NBIT_ADDR,
-		 unsigned int NBIT_BIN>
+  unsigned int NBIT_BIN, unsigned int NCOPY>
 // DataType: type of data object stored in the array
 // NBIT_BX: number of bits for BX;
 // (1<<NBIT_BIN): number of BXs the memory is keeping track of
 // NBIT_ADDR: number of bits for memory address space per BX
 // (1<<NBIT_ADDR): depth of the memory for each BX
 // NBIT_BIN: number of bits used for binning; (1<<NBIT_BIN): number of bins
+// NCOPY: is the number of memory copies - same as numbr of TE used
 class MemoryTemplateBinnedCM{
 
  public: 
@@ -29,7 +30,7 @@ class MemoryTemplateBinnedCM{
     kNMemDepth = 1<<NBIT_ADDR
   };
 
-  DataType dataarray_[kNBxBins][kNMemDepth];  // data array
+  DataType dataarray_[NCOPY][kNBxBins][kNMemDepth];  // data array
 
   ap_uint<16> binmask16_[8];
   ap_uint<64> nentries16_[8];
@@ -48,7 +49,7 @@ class MemoryTemplateBinnedCM{
   void clear() {
 #pragma HLS inline
 	
-    for (size_t ibx=0; ibx<(kNBxBins); ++ibx) {
+  clearloop1:for (size_t ibx=0; ibx<(kNBxBins); ++ibx) {
 #pragma HLS UNROLL
       clear(ibx);
     }
@@ -57,7 +58,7 @@ class MemoryTemplateBinnedCM{
   void clear(BunchXingT bx) {
 #pragma HLS inline
 	
-    for (unsigned int ibin = 0; ibin < 8; ++ibin) {
+  clearloop2:for (unsigned int ibin = 0; ibin < 8; ++ibin) {
 #pragma HLS UNROLL
       nentries16_[ibin] = 0;
       binmask16_[ibin] = 0;
@@ -93,20 +94,25 @@ class MemoryTemplateBinnedCM{
   }
 
 
-  const DataType (&get_mem() const)[1<<NBIT_BX][1<<NBIT_ADDR] {return dataarray_;}
+  const DataType (&get_mem() const)[NCOPY][1<<NBIT_BX][1<<NBIT_ADDR] {
+    return dataarray_;
+  }
 
-  DataType read_mem(BunchXingT ibx, ap_uint<NBIT_ADDR> index) const {
+  DataType read_mem(unsigned int icopy, BunchXingT ibx, ap_uint<NBIT_ADDR> index) const {
+#pragma HLS ARRAY_PARTITION variable=dataarray_ dim=1
     // TODO: check if valid
-    return dataarray_[ibx][index];
+    return dataarray_[icopy][ibx][index];
   }
   
-  DataType read_mem(BunchXingT ibx, ap_uint<NBIT_BIN> slot,
+  DataType read_mem(unsigned int icopy, BunchXingT ibx, ap_uint<NBIT_BIN> slot,
 		    ap_uint<NBIT_ADDR> index) const {
+#pragma HLS ARRAY_PARTITION variable=dataarray_ dim=1
     // TODO: check if valid
-    return dataarray_[ibx][(1<<(NBIT_ADDR-NBIT_BIN))*slot+index];
+    return dataarray_[icopy][ibx][(1<<(NBIT_ADDR-NBIT_BIN))*slot+index];
   }
   
   bool write_mem(BunchXingT ibx, ap_uint<NBIT_BIN> slot, DataType data) {
+#pragma HLS ARRAY_PARTITION variable=dataarray_ dim=1
 #pragma HLS inline
 
     ap_uint<3> ibin,ireg;    
@@ -115,25 +121,29 @@ class MemoryTemplateBinnedCM{
     NEntryT nentry_ibx = nentries16_[ibin].range(ireg*4+3,ireg*4);
 
     if (nentry_ibx < (1<<(NBIT_ADDR-NBIT_BIN))) {
-	  // write address for slot: 1<<(NBIT_ADDR-NBIT_BIN) * slot + nentry_ibx
-	  dataarray_[ibx][(1<<(NBIT_ADDR-NBIT_BIN))*slot+nentry_ibx] = data;
+      // write address for slot: 1<<(NBIT_ADDR-NBIT_BIN) * slot + nentry_ibx
+  
+    writememloop:for (unsigned int icopy=0;icopy<NCOPY;icopy++) {
+#pragma HLS unroll
+	dataarray_[icopy][ibx][(1<<(NBIT_ADDR-NBIT_BIN))*slot+nentry_ibx] = data;
+      }
 
-	  binmask16_[ibin].set_bit(ireg,true);
-	  if (ibin!=0) binmask16_[ibin-1].set_bit(ireg+8,true);
-
-	  nentries16_[ibin].range(ireg*4+3,ireg*4)=nentry_ibx+1;
-	  if ( ibin!=0) nentries16_[ibin-1].range(32+ireg*4+3,32+ireg*4)=nentry_ibx+1;
-
-	  return true;
-	}
-	else {
+      binmask16_[ibin].set_bit(ireg,true);
+      if (ibin!=0) binmask16_[ibin-1].set_bit(ireg+8,true);
+      
+      nentries16_[ibin].range(ireg*4+3,ireg*4)=nentry_ibx+1;
+      if ( ibin!=0) nentries16_[ibin-1].range(32+ireg*4+3,32+ireg*4)=nentry_ibx+1;
+      
+      return true;
+    }
+    else {
 #ifndef __SYNTHESIS__
-	  std::cout << "Warning out of range. nentry_ibx = "<<nentry_ibx<<" NBIT_ADDR-NBIT_BIN = "<<NBIT_ADDR-NBIT_BIN << std::endl;
+      std::cout << "Warning out of range. nentry_ibx = "<<nentry_ibx<<" NBIT_ADDR-NBIT_BIN = "<<NBIT_ADDR-NBIT_BIN << std::endl;
 #endif
-	  return false;
-	}
+      return false;
+    }
   }
-
+  
 
   // Methods for C simulation only
 #ifndef __SYNTHESIS__
