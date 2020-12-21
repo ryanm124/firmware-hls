@@ -109,10 +109,23 @@ STUBID read() {
   return stubids_[readindex_++];
 }
 
-void write(STUBID stubs) {
+ void write(STUBID stubs) {
 #pragma HLS inline  
-  stubids_[writeindex_++]=stubs;
-}
+   stubids_[writeindex_++]=stubs;
+ }
+
+
+ ap_uint<64> nstubs16() const {
+#pragma HLS array_partition variable=ns complete dim=1
+   return (ns[15],ns[14],ns[13],ns[12],ns[11],ns[10],ns[9],ns[8],
+	   ns[7],ns[6],ns[5],ns[4],ns[3],ns[2],ns[1],ns[0]);
+ }
+
+ void setnstubs16(ap_uint<64> nstub) {
+   (ns[15],ns[14],ns[13],ns[12],ns[11],ns[10],ns[9],ns[8],
+    ns[7],ns[6],ns[5],ns[4],ns[3],ns[2],ns[1],ns[0])=nstub;
+ }
+ 
 
 // Commented out since now explicitly inlined
 // void step( BXType bxin, 

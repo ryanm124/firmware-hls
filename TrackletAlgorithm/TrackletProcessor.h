@@ -813,9 +813,8 @@ TrackletProcessor(
       teunits[k].memmask_ = init?tedatatmp[iTEBuff].getStubMask():teunits[k].memmask_;
       teunits[k].maskmask_ = init?ap_uint<16>(0xFFFF):teunits[k].maskmask_;
       teunits[k].masktmp = init?tedatatmp[iTEBuff].getStubMask():teunits[k].masktmp;
-
-      (teunits[k].ns[15],teunits[k].ns[14],teunits[k].ns[13],teunits[k].ns[12],teunits[k].ns[11],teunits[k].ns[10],teunits[k].ns[9],teunits[k].ns[8],teunits[k].ns[7],teunits[k].ns[6],teunits[k].ns[5],teunits[k].ns[4],teunits[k].ns[3],teunits[k].ns[2],teunits[k].ns[1],teunits[k].ns[0]) = 
-	init?vmstubsentries[teunits[k].slot_]:(teunits[k].ns[15],teunits[k].ns[14],teunits[k].ns[13],teunits[k].ns[12],teunits[k].ns[11],teunits[k].ns[10],teunits[k].ns[9],teunits[k].ns[8],teunits[k].ns[7],teunits[k].ns[6],teunits[k].ns[5],teunits[k].ns[4],teunits[k].ns[3],teunits[k].ns[2],teunits[k].ns[1],teunits[k].ns[0]);
+      
+      teunits[k].setnstubs16(init ? vmstubsentries[teunits[k].slot_] : teunits[k].nstubs16());
 
       bool good=(!nearfulloridle[k])&&(!init);
       
