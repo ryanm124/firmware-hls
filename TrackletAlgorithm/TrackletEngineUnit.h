@@ -77,8 +77,6 @@ class TrackletEngineUnit {
    readindex_ = 0;
    idle_ = true;
    good__=0;
-   good___=0;
-   good____=0;
    instance_=instance;
  }
 
@@ -142,8 +140,8 @@ STUBID read() {
  RZBIN slot_;
  RZFINE rzbinfirst_;
  RZFINE rzbindiffmax_;
- RZFINE rzbinfirst__, rzbinfirst___, rzbinfirst____;
- RZFINE rzbindiffmax__, rzbindiffmax___, rzbindiffmax____;
+ RZFINE rzbinfirst__;
+ RZFINE rzbindiffmax__;
 
  NSTUBS nstubs;
  MEMINDEX memindex;
@@ -151,12 +149,12 @@ STUBID read() {
  PHIBIN ireg;
 
 
- AllStubInner<BARRELPS> innerstub_,innerstub__, innerstub___, innerstub____; 
- ap_uint<1> good__, good___, good____;
- ap_uint<1> next__, next___, next____;
- PHIBIN ireg__, ireg___, ireg____;
+ AllStubInner<BARRELPS> innerstub_,innerstub__;
+ ap_uint<1> good__;
+ ap_uint<1> next__;
+ PHIBIN ireg__;
 
- VMStubTEOuter<VMSTEType> outervmstub__, outervmstub___, outervmstub____;
+ VMStubTEOuter<VMSTEType> outervmstub__;
 
  NSTUBS ns[16];
 

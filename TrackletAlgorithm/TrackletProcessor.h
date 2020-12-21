@@ -754,27 +754,27 @@ TrackletProcessor(
 
       TrackletEngineUnit<BARRELPS>::INDEX writeindexnext=teuwriteindex[k]+1;
 
-      const VMStubTEOuter<BARRELPS>::VMSTEOFINEPHI& finephi = teunits[k].outervmstub___.getFinePhi();
-      const ap_uint<1+VMStubTEOuterBase<BARRELPS>::kVMSTEOFineZSize>& rzbin = (teunits[k].next___, teunits[k].outervmstub___.getFineZ()); 
+      const VMStubTEOuter<BARRELPS>::VMSTEOFINEPHI& finephi = teunits[k].outervmstub__.getFinePhi();
+      const ap_uint<1+VMStubTEOuterBase<BARRELPS>::kVMSTEOFineZSize>& rzbin = (teunits[k].next__, teunits[k].outervmstub__.getFineZ()); 
 
       ap_uint<NBitsPhiRegion> iAllstub=OuterPhiRegion;
-      ap_uint<NfinephiBits> outerfinephi = (iAllstub, teunits[k].ireg___, finephi);
+      ap_uint<NfinephiBits> outerfinephi = (iAllstub, teunits[k].ireg__, finephi);
    
       constexpr unsigned int NdphiBits=5;
       ap_uint<NdphiBits> idphi;
       ap_uint<NfinephiBits-NdphiBits> overflow;
-      (overflow,idphi) =  outerfinephi - AllStubInner<BARRELPS>(teunits[k].innerstub___).getFinePhi();
+      (overflow,idphi) =  outerfinephi - AllStubInner<BARRELPS>(teunits[k].innerstub__).getFinePhi();
       
       ap_uint<1> inrange1 = overflow==0;
       ap_uint<1> inrange2 = overflow==~ap_uint<NfinephiBits-NdphiBits>(0);
       ap_uint<1> inrange = inrange1||inrange2;
 
-      ap_uint<1> rzcut1=rzbin >= teunits[k].rzbinfirst___;
-      ap_uint<1> rzcut2=rzbin <= teunits[k].rzbinfirst___+teunits[k].rzbindiffmax___;
+      ap_uint<1> rzcut1=rzbin >= teunits[k].rzbinfirst__;
+      ap_uint<1> rzcut2=rzbin <= teunits[k].rzbinfirst__+teunits[k].rzbindiffmax__;
       ap_uint<1> rzcut= rzcut1 && rzcut2;
       
-      const auto& outerbend = teunits[k].outervmstub___.getBend();
-      const auto& innerbend = teunits[k].innerstub___.getBend();
+      const auto& outerbend = teunits[k].outervmstub__.getBend();
+      const auto& innerbend = teunits[k].innerstub__.getBend();
       
       auto ptinnerindex = (idphi, innerbend);
       auto ptouterindex = (idphi, outerbend);
@@ -782,25 +782,11 @@ TrackletProcessor(
       ap_uint<1> lutinner = teunits[k].stubptinnerlutnew_[ptinnerindex];
       ap_uint<1> lutouter = teunits[k].stubptouterlutnew_[ptouterindex];
 
-      ap_uint<1> savestub = teunits[k].good___ && inrange && lutinner && lutouter && rzcut; //OK - meets timing
-      //ap_uint<1> savestub = teunits[k].good___ & inrange & lutinner & lutouter & rzcut;  //Not OK - don't meet timing
-      //ap_uint<1> savestub = ap_uint<5>( (teunits[k].good___, inrange, lutinner, lutouter, rzcut) ).and_reduce(); //OK - meets timing
+      ap_uint<1> savestub = teunits[k].good__ && inrange && lutinner && lutouter && rzcut;
    
-      teunits[k].stubids_[teuwriteindex[k]] = (teunits[k].outervmstub___.getIndex(), teunits[k].innerstub___.raw());
+      teunits[k].stubids_[teuwriteindex[k]] = (teunits[k].outervmstub__.getIndex(), teunits[k].innerstub__.raw());
       teunitswriteindextmp[k]=savestub?writeindexnext:teuwriteindex[k];
       
-      //first and half step
-
-      teunits[k].next___=teunits[k].next__;
-      teunits[k].ireg___=teunits[k].ireg__;
-      teunits[k].outervmstub___=teunits[k].outervmstub__;
-      teunits[k].rzbinfirst___=teunits[k].rzbinfirst__;
-      teunits[k].rzbindiffmax___=teunits[k].rzbindiffmax__;
-      teunits[k].innerstub___=teunits[k].innerstub__;
-      teunits[k].good___=teunits[k].good__;
-
-      
-
       //first step
       
 
@@ -812,7 +798,6 @@ TrackletProcessor(
       teuidletmp[k]=init ? false : teuidle[k];
       teunits[k].memmask_ = init ? tedatatmp[iTEBuff].getStubMask():teunits[k].memmask_;
       teunits[k].memindex = init ? TrackletEngineUnit<BARRELPS>::MEMINDEX(__builtin_ctz(teunits[k].memmask_)) : teunits[k].memindex;
-      //teunits[k].maskmask_ = init?ap_uint<16>(0xFFFF):teunits[k].maskmask_;
       
       teunits[k].setnstubs16(init ? vmstubsentries[teunits[k].slot_] : teunits[k].nstubs16());
 
@@ -836,12 +821,8 @@ TrackletProcessor(
       ap_uint<1> notallstubs=xorstubs.or_reduce();
       teunits[k].istub_=init?zero:good?(notallstubs?istubtmp:zero):teunits[k].istub_;
       teunits[k].istubnext_=teunits[k].istub_+1;
-      //teunits[k].maskmask_.range(teunits[k].memindex,teunits[k].memindex)=notallstubs;
       teunits[k].memmask_.range(teunits[k].memindex,teunits[k].memindex)=notallstubs;
       
-      //TrackletEngineUnit<BARRELPS>::MEMMASK masktmp=teunits[k].memmask_&teunits[k].maskmask_;
-      
-      //teunits[k].memindex=__builtin_ctz(masktmp);
       teunits[k].memindex=__builtin_ctz(teunits[k].memmask_);
       teunits[k].nstubs=teunits[k].ns[teunits[k].memindex];
 
@@ -850,7 +831,6 @@ TrackletProcessor(
 
       (teunits[k].next, teunits[k].ireg)=teunits[k].memindex;
 
-      //teuidletmp[k]=teuidletmp[k]||(!masktmp.or_reduce());
       teuidletmp[k]=teuidletmp[k]||(!teunits[k].memmask_.or_reduce());
       
       teunits[k].outervmstub__=outervmstub;
