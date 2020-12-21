@@ -65,26 +65,6 @@ class TrackletEngineUnit {
   maskmask_ = 0xFFFFFFFF;
   masktmp=memmask;
 
-  (ns15,ns14,ns13,ns12,ns11,ns10,ns9,ns8,ns7,ns6,ns5,ns4,ns3,ns2,ns1,ns0)=memstubs;
-
-  (memindex,nstubs) = masktmp.test(0) ? (MEMINDEX(0),ns0) :
-     masktmp.test(1) ? (MEMINDEX(1),ns1) :
-     masktmp.test(2) ? (MEMINDEX(2),ns2) :
-     masktmp.test(3) ? (MEMINDEX(3),ns3) :
-     masktmp.test(4) ? (MEMINDEX(4),ns4) :
-     masktmp.test(5) ? (MEMINDEX(5),ns5) :
-     masktmp.test(6) ? (MEMINDEX(6),ns6) :
-     masktmp.test(7) ? (MEMINDEX(7),ns7) :
-     masktmp.test(8) ? (MEMINDEX(8),ns8) :
-     masktmp.test(9) ? (MEMINDEX(9),ns9) :
-     masktmp.test(10) ? (MEMINDEX(10),ns10) :
-     masktmp.test(11) ? (MEMINDEX(11),ns11) :
-     masktmp.test(12) ? (MEMINDEX(12),ns12) :
-     masktmp.test(13) ? (MEMINDEX(13),ns13) :
-     masktmp.test(14) ? (MEMINDEX(14),ns14) :
-     (MEMINDEX(15),ns15);
-
-
   istub_=0;
   istubnext_=1;
   innerstub_=innerstub;
@@ -169,7 +149,7 @@ void write(STUBID stubs) {
 
  VMStubTEOuter<VMSTEType> outervmstub__, outervmstub___, outervmstub____;
 
- NSTUBS ns0,ns1,ns2,ns3,ns4,ns5,ns6,ns7,ns8,ns9,ns10,ns11,ns12,ns13,ns14,ns15;
+ NSTUBS ns[16];
 
  INDEX writeindex_;
  INDEX readindex_;

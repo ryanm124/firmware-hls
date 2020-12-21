@@ -623,9 +623,9 @@ TrackletProcessor(
 #pragma HLS array_partition variable=vmstubsmask complete dim=1
  entriesloop:for(unsigned int i=0;i<7;i++) {
 #pragma HLS unroll
-  vmstubsentries[i]=(outerVMStubs.getEntries8(bx,i+1),outerVMStubs.getEntries8(bx,i));
-  vmstubsmask[i]=(outerVMStubs.getBinMask8(bx,i+1),outerVMStubs.getBinMask8(bx,i));
-}
+    vmstubsentries[i]=(outerVMStubs.getEntries8(bx,i+1),outerVMStubs.getEntries8(bx,i));
+    vmstubsmask[i]=(outerVMStubs.getBinMask8(bx,i+1),outerVMStubs.getBinMask8(bx,i));
+  }
   vmstubsentries[7]=(ap_uint<32>(0),outerVMStubs.getEntries8(bx,7));
   vmstubsmask[7]=(ap_uint<8>(0),outerVMStubs.getBinMask8(bx,7));
 
@@ -814,9 +814,9 @@ TrackletProcessor(
       teunits[k].maskmask_ = init?ap_uint<16>(0xFFFF):teunits[k].maskmask_;
       teunits[k].masktmp = init?tedatatmp[iTEBuff].getStubMask():teunits[k].masktmp;
 
-      (teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0) = 
-	init?vmstubsentries[teunits[k].slot_]:(teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0);
-      
+      (teunits[k].ns[15],teunits[k].ns[14],teunits[k].ns[13],teunits[k].ns[12],teunits[k].ns[11],teunits[k].ns[10],teunits[k].ns[9],teunits[k].ns[8],teunits[k].ns[7],teunits[k].ns[6],teunits[k].ns[5],teunits[k].ns[4],teunits[k].ns[3],teunits[k].ns[2],teunits[k].ns[1],teunits[k].ns[0]) = 
+	init?vmstubsentries[teunits[k].slot_]:(teunits[k].ns[15],teunits[k].ns[14],teunits[k].ns[13],teunits[k].ns[12],teunits[k].ns[11],teunits[k].ns[10],teunits[k].ns[9],teunits[k].ns[8],teunits[k].ns[7],teunits[k].ns[6],teunits[k].ns[5],teunits[k].ns[4],teunits[k].ns[3],teunits[k].ns[2],teunits[k].ns[1],teunits[k].ns[0]);
+
       bool good=(!nearfulloridle[k])&&(!init);
       
       TrackletEngineUnit<BARRELPS>::RZBIN ibin(teunits[k].slot_+teunits[k].next);
@@ -841,23 +841,9 @@ TrackletProcessor(
       
       TrackletEngineUnit<BARRELPS>::MEMMASK masktmp=teunits[k].memmask_&teunits[k].maskmask_;
       
-      (teunits[k].memindex,teunits[k].nstubs) = masktmp.test(0) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(0),teunits[k].ns0) :
-	masktmp.test(1) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(1),teunits[k].ns1) :
-	masktmp.test(2) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(2),teunits[k].ns2) :
-	masktmp.test(3) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(3),teunits[k].ns3) :
-	masktmp.test(4) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(4),teunits[k].ns4) :
-	masktmp.test(5) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(5),teunits[k].ns5) :
-	masktmp.test(6) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(6),teunits[k].ns6) :
-	masktmp.test(7) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(7),teunits[k].ns7) :
-	masktmp.test(8) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(8),teunits[k].ns8) :
-	masktmp.test(9) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(9),teunits[k].ns9) :
-	masktmp.test(10) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(10),teunits[k].ns10) :
-	masktmp.test(11) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(11),teunits[k].ns11) :
-	masktmp.test(12) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(12),teunits[k].ns12) :
-	masktmp.test(13) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(13),teunits[k].ns13) :
-	masktmp.test(14) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(14),teunits[k].ns14) :
-	(TrackletEngineUnit<BARRELPS>::MEMINDEX(15),teunits[k].ns15);
-      
+      teunits[k].memindex=__builtin_ctz(masktmp);
+      teunits[k].nstubs=teunits[k].ns[teunits[k].memindex];
+
       teunits[k].next__=teunits[k].next;
       teunits[k].ireg__=teunits[k].ireg;
 
