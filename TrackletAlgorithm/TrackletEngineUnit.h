@@ -62,8 +62,6 @@ class TrackletEngineUnit {
   //memstubs_ = memstubs;
   idle_ = false;
   memmask_ = memmask;
-  maskmask_ = 0xFFFFFFFF;
-  masktmp=memmask;
 
   istub_=0;
   istubnext_=1;
@@ -140,7 +138,6 @@ STUBID read() {
 //		   ap_uint<3> rzbindiffmax) { }
 
  MEMMASK memmask_;
- MEMMASK maskmask_;
 
  RZBIN slot_;
  RZFINE rzbinfirst_;
@@ -148,7 +145,6 @@ STUBID read() {
  RZFINE rzbinfirst__, rzbinfirst___, rzbinfirst____;
  RZFINE rzbindiffmax__, rzbindiffmax___, rzbindiffmax____;
 
- MEMMASK masktmp;
  NSTUBS nstubs;
  MEMINDEX memindex;
  ap_uint<1> next;

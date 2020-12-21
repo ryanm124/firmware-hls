@@ -810,9 +810,9 @@ TrackletProcessor(
       teunits[k].rzbinfirst_=init?tedatatmp[iTEBuff].getrzbinfirst():teunits[k].rzbinfirst_;
       teunits[k].rzbindiffmax_=init?tedatatmp[iTEBuff].getrzdiffmax():teunits[k].rzbindiffmax_;
       teuidletmp[k]=init ? false : teuidle[k];
-      teunits[k].memmask_ = init?tedatatmp[iTEBuff].getStubMask():teunits[k].memmask_;
-      teunits[k].maskmask_ = init?ap_uint<16>(0xFFFF):teunits[k].maskmask_;
-      teunits[k].masktmp = init?tedatatmp[iTEBuff].getStubMask():teunits[k].masktmp;
+      teunits[k].memmask_ = init ? tedatatmp[iTEBuff].getStubMask():teunits[k].memmask_;
+      teunits[k].memindex = init ? TrackletEngineUnit<BARRELPS>::MEMINDEX(__builtin_ctz(teunits[k].memmask_)) : teunits[k].memindex;
+      //teunits[k].maskmask_ = init?ap_uint<16>(0xFFFF):teunits[k].maskmask_;
       
       teunits[k].setnstubs16(init ? vmstubsentries[teunits[k].slot_] : teunits[k].nstubs16());
 
@@ -836,11 +836,13 @@ TrackletProcessor(
       ap_uint<1> notallstubs=xorstubs.or_reduce();
       teunits[k].istub_=init?zero:good?(notallstubs?istubtmp:zero):teunits[k].istub_;
       teunits[k].istubnext_=teunits[k].istub_+1;
-      teunits[k].maskmask_.range(teunits[k].memindex,teunits[k].memindex)=notallstubs;
+      //teunits[k].maskmask_.range(teunits[k].memindex,teunits[k].memindex)=notallstubs;
+      teunits[k].memmask_.range(teunits[k].memindex,teunits[k].memindex)=notallstubs;
       
-      TrackletEngineUnit<BARRELPS>::MEMMASK masktmp=teunits[k].memmask_&teunits[k].maskmask_;
+      //TrackletEngineUnit<BARRELPS>::MEMMASK masktmp=teunits[k].memmask_&teunits[k].maskmask_;
       
-      teunits[k].memindex=__builtin_ctz(masktmp);
+      //teunits[k].memindex=__builtin_ctz(masktmp);
+      teunits[k].memindex=__builtin_ctz(teunits[k].memmask_);
       teunits[k].nstubs=teunits[k].ns[teunits[k].memindex];
 
       teunits[k].next__=teunits[k].next;
@@ -848,7 +850,8 @@ TrackletProcessor(
 
       (teunits[k].next, teunits[k].ireg)=teunits[k].memindex;
 
-      teuidletmp[k]=teuidletmp[k]||(!masktmp.or_reduce());
+      //teuidletmp[k]=teuidletmp[k]||(!masktmp.or_reduce());
+      teuidletmp[k]=teuidletmp[k]||(!teunits[k].memmask_.or_reduce());
       
       teunits[k].outervmstub__=outervmstub;
       teunits[k].rzbinfirst__=teunits[k].rzbinfirst_;
