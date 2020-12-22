@@ -788,7 +788,14 @@ TrackletProcessor(
       //first step
       
 
-      teunits[k].bx_=bx;
+      bool good = (!nearfulloridle[k])&&(!init);
+      
+      teunits[k].rzbinfirst__=teunits[k].rzbinfirst_;
+      teunits[k].rzbindiffmax__=teunits[k].rzbindiffmax_;
+      teunits[k].innerstub__=teunits[k].innerstub_;
+      (teunits[k].next__, teunits[k].ireg__)=teunits[k].memindex;
+      teunits[k].good__=good;
+
       teunits[k].innerstub_ = init?tedatatmp[iTEBuff].getAllStub():teunits[k].innerstub_;
       teunits[k].slot_=init?tedatatmp[iTEBuff].getStart():teunits[k].slot_;
       teunits[k].rzbinfirst_=init?tedatatmp[iTEBuff].getrzbinfirst():teunits[k].rzbinfirst_;
@@ -798,44 +805,32 @@ TrackletProcessor(
       
       teunits[k].setnstubs16(init ? vmstubsentries[teunits[k].slot_] : teunits[k].nstubs16());
 
-      bool good=(!nearfulloridle[k])&&(!init);
-      
-      TrackletEngineUnit<BARRELPS>::RZBIN ibin(teunits[k].slot_+teunits[k].next);
+      TrackletEngineUnit<BARRELPS>::RZBIN ibin(teunits[k].slot_+teunits[k].next__);
 
-      const auto outervmstub = outerVMStubs.read_mem(k,teunits[k].bx_, (ibin, teunits[k].ireg, teunits[k].istub_));
+      teunits[k].outervmstub__ = outerVMStubs.read_mem(k, bx, (ibin, teunits[k].ireg__, teunits[k].istub_));
+
       
 #ifndef __SYNTHESIS__
       if (good) {
 	assert(teunits[k].nstubs!=0);
-	assert(teunits[k].nstubs==outerVMStubs.getEntries(teunits[k].bx_,(ibin, teunits[k].ireg)));
+	assert(teunits[k].nstubs==outerVMStubs.getEntries(bx, (ibin, teunits[k].ireg__)));
       }
 #endif
       
       TrackletEngineUnit<BARRELPS>::NSTUBS zero(0);
-      TrackletEngineUnit<BARRELPS>::NSTUBS istubtmp=teunits[k].istubnext_;
-      ap_uint<kNBits_MemAddr+1> xorstubs=(istubtmp^teunits[k].nstubs, ap_uint<1>(nearfulloridle[k]));
-      
-      ap_uint<1> notallstubs=xorstubs.or_reduce();
-      teunits[k].istub_=init?zero:good?(notallstubs?istubtmp:zero):teunits[k].istub_;
+
+      ap_uint<1> notallstubs = (teunits[k].istubnext_!=teunits[k].nstubs)||nearfulloridle[k];
+
+      teunits[k].istub_=init?zero:good?(notallstubs?teunits[k].istubnext_:zero):teunits[k].istub_;
       teunits[k].istubnext_=teunits[k].istub_+1;
-      teunits[k].memmask_.range(teunits[k].memindex,teunits[k].memindex)=notallstubs;
+      teunits[k].memmask_[teunits[k].memindex]=notallstubs;
       
       teunits[k].memindex=__builtin_ctz(teunits[k].memmask_);
       teunits[k].nstubs=teunits[k].ns[teunits[k].memindex];
 
-      teunits[k].next__=teunits[k].next;
-      teunits[k].ireg__=teunits[k].ireg;
-
-      (teunits[k].next, teunits[k].ireg)=teunits[k].memindex;
-
       //Can this logic by simplified?
       teunits[k].idle_=(init ? false : teuidle[k])||(!teunits[k].memmask_.or_reduce());
       
-      teunits[k].outervmstub__=outervmstub;
-      teunits[k].rzbinfirst__=teunits[k].rzbinfirst_;
-      teunits[k].rzbindiffmax__=teunits[k].rzbindiffmax_;
-      teunits[k].innerstub__=teunits[k].innerstub_;
-      teunits[k].good__=good;
 
 
     }

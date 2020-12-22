@@ -16,7 +16,7 @@ class TrackletEngineUnit {
     kNBitsPTLut=256
   };
 
-  typedef ap_uint<VMStubTEOuter<VMSTEType>::kVMSTEOIDSize+AllStubInner<BARRELPS>::kAllStubInnerSize> STUBID;
+  typedef ap_uint<VMStubTEOuter<VMSTEType>::kVMSTEOIDSize+kNBits_MemAddr+AllStub<BARRELPS>::kAllStubSize> STUBID;
   typedef ap_uint<kNBits_MemAddrBinned> NSTUBS;
   typedef ap_uint<kNBitsBuffer> INDEX;
   typedef ap_uint<kNBitsRZBin> RZBIN;
@@ -58,8 +58,6 @@ class TrackletEngineUnit {
 		  RZFINE rzbindiffmax
  ) {
 #pragma HLS inline
-  bx_ = bxin;
-  //memstubs_ = memstubs;
   idle_ = false;
   memmask_ = memmask;
 
@@ -145,9 +143,6 @@ STUBID read() {
 
  NSTUBS nstubs;
  MEMINDEX memindex;
- ap_uint<1> next;
- PHIBIN ireg;
-
 
  AllStubInner<BARRELPS> innerstub_,innerstub__;
  ap_uint<1> good__;
@@ -161,7 +156,6 @@ STUBID read() {
  INDEX writeindex_;
  INDEX readindex_;
  bool idle_;
- BXType bx_;
  
  NSTUBS istub_=0;
  NSTUBS istubnext_=1;
