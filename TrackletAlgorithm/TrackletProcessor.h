@@ -601,8 +601,8 @@ TrackletProcessor(
   //pipeline variables
   bool goodstub__[NTEBuffer];
   bool goodstub___[NTEBuffer];
-  int istub__[NTEBuffer];
-  int istub___[NTEBuffer];
+  ap_uint<kNBits_MemAddr> istub__[NTEBuffer];
+  ap_uint<kNBits_MemAddr> istub___[NTEBuffer];
   AllStubInner<BARRELPS> stub__[NTEBuffer];
   AllStubInner<BARRELPS> stub___[NTEBuffer];
   ap_uint<1+2*TrackletEngineUnit<BARRELPS>::kNBitsRZFine+TrackletEngineUnit<BARRELPS>::kNBitsRZBin> lutval___[NTEBuffer];
@@ -643,16 +643,7 @@ TrackletProcessor(
       TEBuffer::TEBUFFERINDEX writeptr[NTEBuffer];
       TEBuffer::TEBUFFERINDEX readptr[NTEBuffer];
       TEBuffer::TEBUFFERINDEX readptrnext[NTEBuffer];
-      TEBuffer::TEBUFFERINDEX tebufferwriteptrtmp[NTEBuffer];
-      TEBuffer::TEBUFFERINDEX tebufferreadptrtmp[NTEBuffer];
-      TEBuffer::NSTUBS tebufferistubtmp[NTEBuffer];
-      TEData::IMEM tebufferimemtmp[NTEBuffer];
   
-      TrackletEngineUnit<BARRELPS>::INDEX teunitsreadindextmp[NTEUnits];
-#pragma HLS array_partition variable=teunitsreadindextmp complete dim=1
-      
-      
-      
       ap_uint<1> TEBufferData=0;
       unsigned int iTEBuff=0;
 
@@ -706,7 +697,8 @@ TrackletProcessor(
       nearfulloridle[k]=teunearfull[k]||teuidle[k];
     }
 
-    tebufferreadptrtmp[iTEBuff]=(idlete*TEBufferData)?readptrnext[iTEBuff]:readptr[iTEBuff];
+    tebuffer[iTEBuff].readptr_=(idlete*TEBufferData)?readptrnext[iTEBuff]:readptr[iTEBuff];
+
 
     //
     // Step 1 - In this first step we check if there are stubs to be sent to the TC
@@ -720,7 +712,6 @@ TrackletProcessor(
     TEBuffer::NSTUBS innerIndex;
     TEBuffer::NSTUBS outerIndex;
     (outerIndex, innerStub, innerIndex)=teudata[iTE];
-    //teunitsreadindextmp[iTE]=teureadindex[iTE]+HaveTEData;
     teunits[iTE].readindex_=teureadindex[iTE]+HaveTEData;
 
 
@@ -875,7 +866,7 @@ TrackletProcessor(
      //Create TEData and save in buffer - but only increment point if data good
      TEData tedatatmp(stubmask, rzfinebinfirst,start,rzdiffmax,stub___[i].raw());
      tebuffer[i].buffer_[tebuffer[i].writeptr_]=tedatatmp.raw();
-     tebufferwriteptrtmp[i]=tebuffer[i].writeptr_+addtedata;
+     tebuffer[i].writeptr_=tebuffer[i].writeptr_+addtedata;
 
      //
      // Read LUTs and find valid regions in r/z and phi
@@ -895,13 +886,11 @@ TrackletProcessor(
      auto innerfinephi=stub__[i].getFinePhi();
       
      //This LUT tells us which range in r/z to look for stubs in the other layer/disk
-     ap_uint<1+2*TrackletEngineUnit<BARRELPS>::kNBitsRZFine+TrackletEngineUnit<BARRELPS>::kNBitsRZBin> lutval = lut[(indexz,indexr)];
+     lutval___[i] = lut[(indexz,indexr)];
 
      //This lut tells us which range in phi to loof for stubs the other layer/disk
-     ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> useregion=regionlut[(innerfinephi,bend)];
+     useregion___[i] = regionlut[(innerfinephi,bend)];
 
-     lutval___[i]=lutval;
-     useregion___[i]=useregion;
      goodstub___[i]=goodstub__[i];
      stub___[i]=stub__[i];
      istub___[i]=istub__[i];
@@ -913,52 +902,33 @@ TrackletProcessor(
 
 
      //Extract the memory and range this TE buffer is processing
-     auto& imem=tebuffer[i].getMem();
-     auto imemsave=imem;
-     auto imemend=tebuffer[i].getMemEnd();
-     bool validmem=imem<imemend;
+     auto imem = tebuffer[i].getMem();
+     bool validmem = imem<tebuffer[i].getMemEnd();
      
      //compute the next memory
-     TEData::IMEM imemnext=imem+1;
+     TEData::IMEM imemnext = imem+1;
 
-     //Extract the current stub - check if valid. Calculate next stub (counting down!) Chech if valid
-     auto& istub=tebuffer[i].getIStub();
-     auto istubsave=istub;
-     bool validstub=istub<innerStubs[imem].getEntries(bx);
-     ap_uint<kNBits_MemAddr> istubnext=istub+1;
-     bool validstubnext=istubnext<innerStubs[imem].getEntries(bx);
+     //Extract the current stub - check if valid. Calculate next stub. Check if valid
+     istub__[i] = tebuffer[i].getIStub();
+     bool validstub = istub__[i]<innerStubs[imem].getEntries(bx);
+     ap_uint<kNBits_MemAddr> istubnext = istub__[i]+1;
+     bool validstubnext = istubnext<innerStubs[imem].getEntries(bx);
 
      //Calculate good stub - true if:
      //validmem is true - meaning that we have not exhausted all stub memories
      //tebuffer not full - can not process stub if buffere is full and we can not store 
      //validstub - should be redundant with validmem - FIXME
-     ap_uint<1> goodstub=validmem&&(!tebufferfull[i])&&validstub;
+     goodstub__[i] = validmem&&(!tebufferfull[i])&&validstub;
 
      //Update istub if goodstub
-     tebufferistubtmp[i]=goodstub?(validstubnext?istubnext:ap_uint<kNBits_MemAddr>(0)):istub; 
+     tebuffer[i].getIStub()=goodstub__[i]?(validstubnext?istubnext:ap_uint<kNBits_MemAddr>(0)):istub__[i]; 
      //Update imem if the next stub isnot valid
-     tebufferimemtmp[i]=(goodstub&&(!validstubnext))?imemnext:imem;
+     tebuffer[i].getMem()=(goodstub__[i]&&(!validstubnext))?imemnext:imem;
 
      //Read stub from memory - BRAM with latency of one or two clks
-     auto stub=innerStubs[imemsave].read_mem(bx,istubsave);
+     stub__[i] = innerStubs[imem].read_mem(bx,istub__[i]);
 
-     goodstub__[i]=goodstub;
-     stub__[i]=stub;
-     istub__[i]=istubsave;
-     
     }
-    
-    //This could be earlier???
-    //Increment TE bufer read ptr if we initalized a TE unit.
-    tebuffer[iTEBuff].readptr_=tebufferreadptrtmp[iTEBuff];
-    //    teunits[iTE].readindex_=teunitsreadindextmp[iTE];    
-
- update_tebufferss: for (unsigned int i = 0 ; i < NTEBuffer; i++){
-      tebuffer[i].writeptr_=tebufferwriteptrtmp[i];
-      tebuffer[i].getMem()=tebufferimemtmp[i];
-      tebuffer[i].getIStub()=tebufferistubtmp[i];
-    }
-    
     
   } //end of istep
   
