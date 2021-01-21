@@ -23,13 +23,11 @@ int main()
   ap_uint<8> useregion[2048] =
 #include "../emData/TP/tables/TP_L1L2D_usereg.tab"
 
-  constexpr unsigned int NTEUNITS=4;
-
   ///////////////////////////
   // input memories
   static AllStubInnerMemory<BARRELPS> innerStubs[2];
   static AllStubMemory<BARRELPS> outerStubs;
-  static VMStubTEOuterMemoryCM<BARRELPS,3,3,NTEUNITS> outervmStubs;
+  static VMStubTEOuterMemoryCM<BARRELPS,3,3,1> outervmStubs[kNTEUnits];
 
 
   // output memories
@@ -53,8 +51,14 @@ int main()
   ifstream fin_outerStubs;
   if (not openDataFile(fin_outerStubs, dir + "/AllStubs_AS_L2PHIBn2_04.dat")) return -1;
 
-  ifstream fin_outervmstubs;
-  if (not openDataFile(fin_outervmstubs, dir + "/VMStubs_VMSTE_L2PHIBn1_04.dat")) return -1;
+  ifstream fin_outervmstubs0;
+  if (not openDataFile(fin_outervmstubs0, dir + "/VMStubs_VMSTE_L2PHIBn1_04.dat")) return -1;
+  ifstream fin_outervmstubs1;
+  if (not openDataFile(fin_outervmstubs1, dir + "/VMStubs_VMSTE_L2PHIBn1_04.dat")) return -1;
+  ifstream fin_outervmstubs2;
+  if (not openDataFile(fin_outervmstubs2, dir + "/VMStubs_VMSTE_L2PHIBn1_04.dat")) return -1;
+  ifstream fin_outervmstubs3;
+  if (not openDataFile(fin_outervmstubs3, dir + "/VMStubs_VMSTE_L2PHIBn1_04.dat")) return -1;
 
   ///////////////////////////
   // open output files
@@ -138,7 +142,10 @@ int main()
     writeMemFromFile<AllStubInnerMemory<BARRELPS> >(innerStubs[1], fin_innerStubs1, ievt);
     writeMemFromFile<AllStubMemory<BARRELPS> >(outerStubs, fin_outerStubs, ievt);
     cout << "Will read vmstubs"<<endl;
-    writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS,3,3, NTEUNITS> >(outervmStubs, fin_outervmstubs, ievt);
+    writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS,3,3, 1> >(outervmStubs[0], fin_outervmstubs0, ievt);
+    writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS,3,3, 1> >(outervmStubs[1], fin_outervmstubs1, ievt);
+    writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS,3,3, 1> >(outervmStubs[2], fin_outervmstubs2, ievt);
+    writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS,3,3, 1> >(outervmStubs[3], fin_outervmstubs3, ievt);
 
     // bx
     BXType bx = ievt;

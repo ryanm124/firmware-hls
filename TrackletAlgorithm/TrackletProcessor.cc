@@ -12,7 +12,7 @@ ap_uint<(1<<(2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer))> nearFullTEUnitInit(
 
   ap_uint<(1<<(2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer))> lut(0);
   int i;
-  for(i=0;i<(1<<(2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer));i++) {
+ nearfullloop:for(i=0;i<(1<<(2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer));i++) {
     ap_uint<TrackletEngineUnit<BARRELPS>::kNBitsBuffer> wptr,rptr;
     ap_uint<2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer> address(i);
     (rptr,wptr)=address;
@@ -42,7 +42,7 @@ void TrackletProcessor_L1L2D(
     const ap_uint<8> regionlut[2048],
     const AllStubInnerMemory<BARRELPS> innerStubs[2],
     const AllStubMemory<BARRELPS>* outerStubs,
-    const VMStubTEOuterMemoryCM<BARRELPS,3,3,4> outerVMStubs,
+    const VMStubTEOuterMemoryCM<BARRELPS,3,3,1> outerVMStubs[kNTEUnits],
     TrackletParameterMemory * trackletParameters,
     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
@@ -54,7 +54,11 @@ void TrackletProcessor_L1L2D(
 #pragma HLS resource variable=innerStubs[0].get_mem() latency=2
 #pragma HLS resource variable=innerStubs[1].get_mem() latency=2
 #pragma HLS resource variable=outerStubs->get_mem() latency=2
-#pragma HLS resource variable=outerVMStubs.get_mem() latency=2
+#pragma HLS resource variable=outerVMStubs[0].get_mem() latency=2
+#pragma HLS resource variable=outerVMStubs[1].get_mem() latency=2
+#pragma HLS resource variable=outerVMStubs[2].get_mem() latency=2
+#pragma HLS resource variable=outerVMStubs[3].get_mem() latency=2
+#pragma HLS array_partition variable=outerVMStubs complete
 #pragma HLS array_partition variable=projout_barrel_ps complete
 #pragma HLS array_partition variable=projout_barrel_2s complete
 #pragma HLS array_partition variable=projout_disk complete
@@ -62,7 +66,7 @@ void TrackletProcessor_L1L2D(
  TP_L1L2D: TrackletProcessor<TC::L1L2, 
 			     TC::D, 
 			     1, //TEBuffers
-			     4, //TE units
+			     kNTEUnits, //TE units
 			     BARRELPS, 
 			     BARRELPS,
 			     1, //Outer phi region

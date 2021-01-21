@@ -30,10 +30,13 @@ class MemoryTemplateBinnedCM{
     kNMemDepth = 1<<NBIT_ADDR
   };
 
-  DataType dataarray_[NCOPY][kNBxBins][kNMemDepth];  // data array
-
-  ap_uint<8> binmask8_[kNBxBins][8];
-  ap_uint<32> nentries8_[kNBxBins][8];
+  //DataType dataarray_[NCOPY][kNBxBins][kNMemDepth];  // data array
+  //ap_uint<8> binmask8_[kNBxBins][8];
+  //ap_uint<32> nentries8_[kNBxBins][8];
+  //DataType dataarray_[NCOPY][kNMemDepth];  // data array
+  DataType dataarray_[kNMemDepth];  // data array
+  ap_uint<8> binmask8_[8];
+  ap_uint<32> nentries8_[8];
 
   
  public:
@@ -58,8 +61,10 @@ class MemoryTemplateBinnedCM{
 	
   clearloop2:for (unsigned int ibin = 0; ibin < 8; ++ibin) {
 #pragma HLS UNROLL
-      nentries8_[bx][ibin] = 0;
-      binmask8_[bx][ibin] = 0;
+      //nentries8_[bx][ibin] = 0;
+      //binmask8_[bx][ibin] = 0;
+      nentries8_[ibin] = 0;
+      binmask8_[ibin] = 0;
     }
   }
 
@@ -70,65 +75,81 @@ class MemoryTemplateBinnedCM{
   NEntryT getEntries(BunchXingT bx, ap_uint<NBIT_BIN> slot) const {
     ap_uint<3> ibin,ireg;
     (ibin,ireg)=slot;
-    return nentries8_[bx][ibin].range(ireg*4+3,ireg*4);
+    //return nentries8_[bx][ibin].range(ireg*4+3,ireg*4);
+    return nentries8_[ibin].range(ireg*4+3,ireg*4);
   }
 
   ap_uint<32> getEntries8(BunchXingT bx, ap_uint<3> ibin) const {
     #pragma HLS ARRAY_PARTITION variable=nentries8_ complete dim=0
-    return nentries8_[bx][ibin];
+    //return nentries8_[bx][ibin];
+    return nentries8_[ibin];
   }
 
   ap_uint<8> getBinMask8(BunchXingT bx, ap_uint<3> ibin) const {
     #pragma HLS ARRAY_PARTITION variable=binmask8_ complete dim=0
-    return binmask8_[bx][ibin];
+    //return binmask8_[bx][ibin];
+    return binmask8_[ibin];
   }
 
   NEntryT getEntries(BunchXingT bx) const {
     NEntryT val = 0;
-    for ( auto i = 0; i < getDepth(); ++i ) {
+  getEntriesLoop:for ( auto i = 0; i < getDepth(); ++i ) {
       val += getEntries(bx, i);
     }
     return val;
   }
 
 
-  const DataType (&get_mem() const)[NCOPY][1<<NBIT_BX][1<<NBIT_ADDR] {
+  //const DataType (&get_mem() const)[NCOPY][1<<NBIT_BX][1<<NBIT_ADDR] {
+  //const DataType (&get_mem() const)[NCOPY][1<<NBIT_ADDR] {
+  const DataType (&get_mem() const)[1<<NBIT_ADDR] {
     return dataarray_;
   }
 
-  DataType read_mem(unsigned int icopy, BunchXingT ibx, ap_uint<NBIT_ADDR> index) const {
-#pragma HLS ARRAY_PARTITION variable=dataarray_ dim=1
+  DataType read_mem(BunchXingT ibx, ap_uint<NBIT_ADDR> index) const {
+  //DataType read_mem(unsigned int icopy, BunchXingT ibx, ap_uint<NBIT_ADDR> index) const {
+  //#pragma HLS ARRAY_PARTITION variable=dataarray_ dim=1
     // TODO: check if valid
-    return dataarray_[icopy][ibx][index];
+    //return dataarray_[icopy][ibx][index];
+    //return dataarray_[icopy][index];
+    return dataarray_[index];
   }
   
-  DataType read_mem(unsigned int icopy, BunchXingT ibx, ap_uint<NBIT_BIN> slot,
+  //DataType read_mem(unsigned int icopy, BunchXingT ibx, ap_uint<NBIT_BIN> slot,
+  //		    ap_uint<NBIT_ADDR> index) const {
+  DataType read_mem(BunchXingT ibx, ap_uint<NBIT_BIN> slot,
 		    ap_uint<NBIT_ADDR> index) const {
-#pragma HLS ARRAY_PARTITION variable=dataarray_ dim=1
+  //#pragma HLS ARRAY_PARTITION variable=dataarray_ dim=1
     // TODO: check if valid
-    return dataarray_[icopy][ibx][(1<<(NBIT_ADDR-NBIT_BIN))*slot+index];
+    //return dataarray_[icopy][ibx][(1<<(NBIT_ADDR-NBIT_BIN))*slot+index];
+    //return dataarray_[icopy][(1<<(NBIT_ADDR-NBIT_BIN))*slot+index];
+    return dataarray_[(1<<(NBIT_ADDR-NBIT_BIN))*slot+index];
   }
   
   bool write_mem(BunchXingT ibx, ap_uint<NBIT_BIN> slot, DataType data) {
-#pragma HLS ARRAY_PARTITION variable=dataarray_ dim=1
+  //#pragma HLS ARRAY_PARTITION variable=dataarray_ dim=1
 #pragma HLS inline
 
     ap_uint<3> ibin,ireg;    
     (ibin,ireg)=slot;
 
-    NEntryT nentry_ibx = nentries8_[ibx][ibin].range(ireg*4+3,ireg*4);
+    //NEntryT nentry_ibx = nentries8_[ibx][ibin].range(ireg*4+3,ireg*4);
+    NEntryT nentry_ibx = nentries8_[ibin].range(ireg*4+3,ireg*4);
 
     if (nentry_ibx < (1<<(NBIT_ADDR-NBIT_BIN))) {
       // write address for slot: 1<<(NBIT_ADDR-NBIT_BIN) * slot + nentry_ibx
   
-    writememloop:for (unsigned int icopy=0;icopy<NCOPY;icopy++) {
-#pragma HLS unroll
-	dataarray_[icopy][ibx][(1<<(NBIT_ADDR-NBIT_BIN))*slot+nentry_ibx] = data;
-      }
+  //writememloop:for (unsigned int icopy=0;icopy<NCOPY;icopy++) {
+  //#pragma HLS unroll
+	//dataarray_[icopy][ibx][(1<<(NBIT_ADDR-NBIT_BIN))*slot+nentry_ibx] = data;
+	//dataarray_[icopy][(1<<(NBIT_ADDR-NBIT_BIN))*slot+nentry_ibx] = data;
+	dataarray_[(1<<(NBIT_ADDR-NBIT_BIN))*slot+nentry_ibx] = data;
+	//  }
 
-      binmask8_[ibx][ibin].set_bit(ireg,true);
-      
-      nentries8_[ibx][ibin].range(ireg*4+3,ireg*4)=nentry_ibx+1;
+      //binmask8_[ibx][ibin].set_bit(ireg,true);
+      //nentries8_[ibx][ibin].range(ireg*4+3,ireg*4)=nentry_ibx+1;
+      binmask8_[ibin].set_bit(ireg,true);
+      nentries8_[ibin].range(ireg*4+3,ireg*4)=nentry_ibx+1;
       
       return true;
     }
@@ -185,15 +206,17 @@ class MemoryTemplateBinnedCM{
 
   void print_entry(BunchXingT bx, ap_uint<NBIT_ADDR> index) const
   {
-	print_data(dataarray_[bx][index]);
+    //print_data(dataarray_[bx][index]);
+	print_data(dataarray_[index]);
   }
 
   void print_mem(BunchXingT bx) const
   {
-	for(int slot=0;slot<8;slot++) {
+  printmemloop1:for(int slot=0;slot<8;slot++) {
       //std::cout << "slot "<<slot<<" entries "
       //		<<nentries_[bx%NBX].range((slot+1)*4-1,slot*4)<<endl;
-      for (int i = 0; i < nentries8_[bx][slot]; ++i) {
+      //printmemloop2:for (int i = 0; i < nentries8_[bx][slot]; ++i) {
+    printmemloop2:for (int i = 0; i < nentries8_[slot]; ++i) {
 		std::cout << bx << " " << i << " ";
 		print_entry(bx, i + slot*(1<<(NBIT_ADDR-NBIT_BIN)) );
       }
@@ -202,8 +225,8 @@ class MemoryTemplateBinnedCM{
 
   void print_mem() const
   {
-	for (int ibx = 0; ibx < kNBxBins; ++ibx) {
-	  for (int i = 0; i < 8; ++i) {
+  printmemloop3:for (int ibx = 0; ibx < kNBxBins; ++ibx) {
+    printmemloop4:for (int i = 0; i < 8; ++i) {
 		std::cout << ibx << " " << i << " ";
 		print_entry(ibx,i);
 	  }

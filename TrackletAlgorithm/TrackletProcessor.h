@@ -191,7 +191,7 @@ void TrackletProcessor_L1L2D(const BXType bx,
 			     const ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> regionlut[1<<(AllStubInner<BARRELPS>::kASBendSize+AllStubInner<BARRELPS>::kASFinePhiSize)],
 			     const AllStubInnerMemory<BARRELPS> innerStubs[2],
 			     const AllStubMemory<BARRELPS>* outerStubs,
-			     const VMStubTEOuterMemoryCM<BARRELPS,3,3,4> outerVMStubs,
+			     const VMStubTEOuterMemoryCM<BARRELPS,3,3,1> outerVMStubs[kNTEUnits],
 			     TrackletParameterMemory * trackletParameters,
 			     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
 			     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
@@ -529,7 +529,7 @@ TrackletProcessor(
     const ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> regionlut[1<<(AllStubInner<BARRELPS>::kASBendSize+AllStubInner<BARRELPS>::kASFinePhiSize)],
     const AllStubInnerMemory<InnerRegion> innerStubs[NASMemInner],
     const AllStubMemory<OuterRegion>* outerStubs,
-    const VMStubTEOuterMemoryCM<OuterRegion,RZBins,PhiBins,4> outerVMStubs,
+    const VMStubTEOuterMemoryCM<OuterRegion,RZBins,PhiBins,1> outerVMStubs[kNTEUnits],
     TrackletParameterMemory * const trackletParameters,
     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
@@ -623,11 +623,11 @@ TrackletProcessor(
 #pragma HLS array_partition variable=vmstubsmask complete dim=1
  entriesloop:for(unsigned int i=0;i<7;i++) {
 #pragma HLS unroll
-    vmstubsentries[i]=(outerVMStubs.getEntries8(bx,i+1),outerVMStubs.getEntries8(bx,i));
-    vmstubsmask[i]=(outerVMStubs.getBinMask8(bx,i+1),outerVMStubs.getBinMask8(bx,i));
+    vmstubsentries[i]=(outerVMStubs[0].getEntries8(bx,i+1),outerVMStubs[0].getEntries8(bx,i));
+    vmstubsmask[i]=(outerVMStubs[0].getBinMask8(bx,i+1),outerVMStubs[0].getBinMask8(bx,i));
   }
-  vmstubsentries[7]=(ap_uint<32>(0),outerVMStubs.getEntries8(bx,7));
-  vmstubsmask[7]=(ap_uint<8>(0),outerVMStubs.getBinMask8(bx,7));
+  vmstubsentries[7]=(ap_uint<32>(0),outerVMStubs[0].getEntries8(bx,7));
+  vmstubsmask[7]=(ap_uint<8>(0),outerVMStubs[0].getBinMask8(bx,7));
 
 
  istep_loop: for(unsigned istep=0;istep<N;istep++) {
@@ -795,13 +795,13 @@ TrackletProcessor(
 
       TrackletEngineUnit<BARRELPS>::RZBIN ibin(teunits[k].slot_+teunits[k].next__);
 
-      teunits[k].outervmstub__ = outerVMStubs.read_mem(k, bx, (ibin, teunits[k].ireg__, teunits[k].istub_));
+      teunits[k].outervmstub__ = outerVMStubs[k].read_mem(bx, (ibin, teunits[k].ireg__, teunits[k].istub_));
 
       
 #ifndef __SYNTHESIS__
       if (!nearfulloridle[k]) {
 	assert(teunits[k].nstubs!=0);
-	assert(teunits[k].nstubs==outerVMStubs.getEntries(bx, (ibin, teunits[k].ireg__)));
+	assert(teunits[k].nstubs==outerVMStubs[0].getEntries(bx, (ibin, teunits[k].ireg__)));
       }
 #endif
       
@@ -831,8 +831,8 @@ TrackletProcessor(
   process_tebuffers: for (unsigned i = 0; i < NTEBuffer; i++){
 #pragma HLS unroll
 
-      //Implement as a manual pipeline ugh...
 
+     TEBuffer::TEBUFFERINDEX wrtptrnext = tebuffer[i].writeptr_+1;
 
       //
       // Get stubmask and save in TE Buffer
@@ -862,11 +862,10 @@ TrackletProcessor(
      //havestubs means that at least one memory bin has stubs
      //goodstub means that we had a valid inner stub
      ap_uint<1> addtedata=valid&&havestubs&&goodstub___[i];
-
      //Create TEData and save in buffer - but only increment point if data good
      TEData tedatatmp(stubmask, rzfinebinfirst,start,rzdiffmax,stub___[i].raw());
      tebuffer[i].buffer_[tebuffer[i].writeptr_]=tedatatmp.raw();
-     tebuffer[i].writeptr_=tebuffer[i].writeptr_+addtedata;
+     tebuffer[i].writeptr_ = addtedata ? wrtptrnext : tebuffer[i].writeptr_;
 
      //
      // Read LUTs and find valid regions in r/z and phi
