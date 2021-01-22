@@ -91,7 +91,6 @@ class TrackletEngineUnit {
    idle_ = true;
    good__=0;
    good___=0;
-   good____=0;
    instance_=instance;
  }
 
@@ -142,8 +141,8 @@ void write(STUBID stubs) {
  RZBIN slot_;
  RZFINE rzbinfirst_;
  RZFINE rzbindiffmax_;
- RZFINE rzbinfirst__, rzbinfirst___, rzbinfirst____;
- RZFINE rzbindiffmax__, rzbindiffmax___, rzbindiffmax____;
+ RZFINE rzbinfirst__, rzbinfirst___;
+ RZFINE rzbindiffmax__, rzbindiffmax___;
 
  NSTUBS nstubs;
  MEMINDEX memindex;
@@ -151,14 +150,13 @@ void write(STUBID stubs) {
  PHIBIN ireg;
 
 
- AllStubInner<BARRELPS> innerstub_,innerstub__, innerstub___, innerstub____; 
- ap_uint<1> good__, good___, good____;
- ap_uint<1> next__, next___, next____;
- PHIBIN ireg__, ireg___, ireg____;
+ AllStubInner<BARRELPS> innerstub_,innerstub__, innerstub___;
+ ap_uint<1> good__, good___;
+ ap_uint<1> next__, next___;
+ PHIBIN ireg__, ireg___;
 
- VMStubTEOuter<VMSTEType> outervmstub__, outervmstub___, outervmstub____;
+ VMStubTEOuter<VMSTEType> outervmstub__, outervmstub___;
 
- //NSTUBS ns0,ns1,ns2,ns3,ns4,ns5,ns6,ns7,ns8,ns9,ns10,ns11,ns12,ns13,ns14,ns15;
  NSTUBS ns[16];
 
  INDEX writeindex_;
