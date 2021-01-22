@@ -16,7 +16,7 @@ class TrackletEngineUnit {
     kNBitsPTLut=256
   };
 
-  typedef ap_uint<VMStubTEOuter<VMSTEType>::kVMSTEOIDSize+AllStubInner<BARRELPS>::kAllStubInnerSize> STUBID;
+  typedef ap_uint<VMStubTEOuter<VMSTEType>::kVMSTEOIDSize+AllStubInner<BARRELPS>::kAllStubInnerSize-AllStubInnerBase<BARRELPS>::kASFinePhiSize> STUBID;
   typedef ap_uint<kNBits_MemAddrBinned> NSTUBS;
   typedef ap_uint<kNBitsBuffer> INDEX;
   typedef ap_uint<kNBitsRZBin> RZBIN;
