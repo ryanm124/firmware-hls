@@ -637,7 +637,6 @@ TrackletProcessor(
     // Step 0 -  zeroth step is to cache some of data
     //
 
-      TEData tedatatmp[NTEBuffer];
       bool tebufferempty[NTEBuffer];
       bool tebufferfull[NTEBuffer];
       TEBuffer::TEBUFFERINDEX writeptr[NTEBuffer];
@@ -652,7 +651,6 @@ TrackletProcessor(
 	writeptr[i]=tebuffer[i].writeptr_;
 	readptr[i]=tebuffer[i].readptr_;
 	readptrnext[i]=readptr[i]+1;
-	tedatatmp[i]=tebuffer[i].buffer_[readptr[i]];
 	tebufferempty[i]=(writeptr[i]==readptr[i]);
 	tebufferfull[i]=nearFullTEBuff(writeptr[i],readptr[i]);
 	TEBufferData=TEBufferData||(!tebufferempty[i]);
@@ -796,14 +794,16 @@ TrackletProcessor(
       (teunits[k].next__, teunits[k].ireg__)=teunits[k].memindex;
       teunits[k].good__ = !nearfulloridle[k];
 
-      teunits[k].innerstub_ = init?tedatatmp[iTEBuff].getAllStub():teunits[k].innerstub_;
-      teunits[k].slot_=init?tedatatmp[iTEBuff].getStart():teunits[k].slot_;
-      teunits[k].rzbinfirst_=init?tedatatmp[iTEBuff].getrzbinfirst():teunits[k].rzbinfirst_;
-      teunits[k].rzbindiffmax_=init?tedatatmp[iTEBuff].getrzdiffmax():teunits[k].rzbindiffmax_;
-      teunits[k].memmask_ = init?tedatatmp[iTEBuff].getStubMask():teunits[k].memmask_;
-      teunits[k].memindex = init ? TrackletEngineUnit<BARRELPS>::MEMINDEX(__builtin_ctz(tedatatmp[iTEBuff].getStubMask())) : teunits[k].memindex;
+      TEData tedatatmp = tebuffer[iTEBuff].buffer_[readptr[iTEBuff]];
 
-      teunits[k].setnstub16(init?vmstubsentries[tedatatmp[iTEBuff].getStart()]:teunits[k].nstub16());
+      teunits[k].innerstub_ = init?tedatatmp.getAllStub():teunits[k].innerstub_;
+      teunits[k].slot_=init?tedatatmp.getStart():teunits[k].slot_;
+      teunits[k].rzbinfirst_=init?tedatatmp.getrzbinfirst():teunits[k].rzbinfirst_;
+      teunits[k].rzbindiffmax_=init?tedatatmp.getrzdiffmax():teunits[k].rzbindiffmax_;
+      teunits[k].memmask_ = init?tedatatmp.getStubMask():teunits[k].memmask_;
+      teunits[k].memindex = init ? TrackletEngineUnit<BARRELPS>::MEMINDEX(__builtin_ctz(tedatatmp.getStubMask())) : teunits[k].memindex;
+
+      teunits[k].setnstub16(init?vmstubsentries[tedatatmp.getStart()]:teunits[k].nstub16());
 
       TrackletEngineUnit<BARRELPS>::RZBIN ibin(teunits[k].slot_+teunits[k].next__);
       
