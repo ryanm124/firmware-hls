@@ -648,7 +648,6 @@ TrackletProcessor(
       TEBuffer::NSTUBS tebufferistubtmp[NTEBuffer];
       TEData::IMEM tebufferimemtmp[NTEBuffer];
   
-      bool teuidletmp[NTEUnits]; 
       TrackletEngineUnit<BARRELPS>::INDEX teunitswriteindextmp[NTEUnits];
 #pragma HLS array_partition variable=teunitswriteindextmp complete dim=1
       TrackletEngineUnit<BARRELPS>::INDEX teunitsreadindextmp[NTEUnits];
@@ -746,9 +745,7 @@ TrackletProcessor(
     //initialized if there is data in TE Buffer from above
   step_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
 #pragma HLS unroll
-      ap_uint<1> teuidletemp(teuidle[k]);
-      ap_uint<1> notidlebefore(!teuidlebefore[k]);
-      ap_uint<1> init=teuidletemp&TEBufferData&notidlebefore;
+      ap_uint<1> init=teuidle[k]&TEBufferData&(!teuidlebefore[k]);
 
       //second step
 
@@ -810,7 +807,6 @@ TrackletProcessor(
       teunits[k].slot_=init?tedatatmp[iTEBuff].getStart():teunits[k].slot_;
       teunits[k].rzbinfirst_=init?tedatatmp[iTEBuff].getrzbinfirst():teunits[k].rzbinfirst_;
       teunits[k].rzbindiffmax_=init?tedatatmp[iTEBuff].getrzdiffmax():teunits[k].rzbindiffmax_;
-      teuidletmp[k]=init ? false : teuidle[k];
       teunits[k].memmask_ = init?tedatatmp[iTEBuff].getStubMask():teunits[k].memmask_;
       teunits[k].memindex = init ? TrackletEngineUnit<BARRELPS>::MEMINDEX(__builtin_ctz(tedatatmp[iTEBuff].getStubMask())) : teunits[k].memindex;
 
@@ -850,8 +846,8 @@ TrackletProcessor(
 
       (teunits[k].next, teunits[k].ireg)=teunits[k].memindex;
 
-      teuidletmp[k]=teuidletmp[k]||(!teunits[k].memmask_.or_reduce());
-      
+      teunits[k].idle_ = (init ? false : teuidle[k])||(!teunits[k].memmask_.or_reduce());
+
       teunits[k].outervmstub__=outervmstub;
       teunits[k].rzbinfirst__=teunits[k].rzbinfirst_;
       teunits[k].rzbindiffmax__=teunits[k].rzbindiffmax_;
@@ -984,7 +980,6 @@ TrackletProcessor(
     teunits[iTE].readindex_=teunitsreadindextmp[iTE];    
 
  update_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
-      teunits[k].idle_ = teuidletmp[k]; 
       teunits[k].writeindex_=teunitswriteindextmp[k];
     }
 
