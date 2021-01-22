@@ -16,7 +16,7 @@ class TrackletEngineUnit {
     kNBitsPTLut=256
   };
 
-  typedef ap_uint<VMStubTEOuter<VMSTEType>::kVMSTEOIDSize+AllStubInner<BARRELPS>::kAllStubInnerSize-AllStubInnerBase<BARRELPS>::kASFinePhiSize> STUBID;
+  typedef ap_uint<VMStubTEOuter<VMSTEType>::kVMSTEOIDSize+kNBits_MemAddr+AllStub<BARRELPS>::kAllStubSize> STUBID;
   typedef ap_uint<kNBits_MemAddrBinned> NSTUBS;
   typedef ap_uint<kNBitsBuffer> INDEX;
   typedef ap_uint<kNBitsRZBin> RZBIN;
@@ -146,8 +146,6 @@ void write(STUBID stubs) {
 
  NSTUBS nstubs;
  MEMINDEX memindex;
- ap_uint<1> next;
- PHIBIN ireg;
 
 
  AllStubInner<BARRELPS> innerstub_,innerstub__, innerstub___;
@@ -162,7 +160,6 @@ void write(STUBID stubs) {
  INDEX writeindex_;
  INDEX readindex_;
  bool idle_;
- BXType bx_;
  
  NSTUBS istub_=0;
  NSTUBS istubnext_=1;
