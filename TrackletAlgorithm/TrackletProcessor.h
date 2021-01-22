@@ -648,12 +648,6 @@ TrackletProcessor(
       TEBuffer::NSTUBS tebufferistubtmp[NTEBuffer];
       TEData::IMEM tebufferimemtmp[NTEBuffer];
   
-      TrackletEngineUnit<BARRELPS>::INDEX teunitswriteindextmp[NTEUnits];
-#pragma HLS array_partition variable=teunitswriteindextmp complete dim=1
-      TrackletEngineUnit<BARRELPS>::INDEX teunitsreadindextmp[NTEUnits];
-#pragma HLS array_partition variable=teunitsreadindextmp complete dim=1
-      
-      
       
       ap_uint<1> TEBufferData=0;
       unsigned int iTEBuff=0;
@@ -722,8 +716,7 @@ TrackletProcessor(
     TEBuffer::NSTUBS innerIndex;
     TEBuffer::NSTUBS outerIndex;
     (outerIndex, innerStub, innerIndex)=teudata[iTE];
-    teunitsreadindextmp[iTE]=teureadindex[iTE]+HaveTEData;
-    
+    teunits[iTE].readindex_=teureadindex[iTE]+HaveTEData;
 
     const TrackletProjection<BARRELPS>::TProjTCID TCID(3);
       
@@ -786,8 +779,7 @@ TrackletProcessor(
 					       teunits[k].innerstub___.getAllStub(),
 					       teunits[k].innerstub___.getIndex());
 
-      teunitswriteindextmp[k]=savestub?writeindexnext:teuwriteindex[k];
-
+      teunits[k].writeindex_=savestub?writeindexnext:teuwriteindex[k];
       
       //first and half step. Tried to remove this pipelining stage but failed timing.
 
@@ -803,13 +795,11 @@ TrackletProcessor(
 
       //first step
 
-      bool good=(!nearfulloridle[k])&&(!init);
-      
       teunits[k].rzbinfirst__=teunits[k].rzbinfirst_;
       teunits[k].rzbindiffmax__=teunits[k].rzbindiffmax_;
       teunits[k].innerstub__=teunits[k].innerstub_;
       (teunits[k].next__, teunits[k].ireg__)=teunits[k].memindex;
-      teunits[k].good__=good;
+      teunits[k].good__ = !nearfulloridle[k];
 
       teunits[k].innerstub_ = init?tedatatmp[iTEBuff].getAllStub():teunits[k].innerstub_;
       teunits[k].slot_=init?tedatatmp[iTEBuff].getStart():teunits[k].slot_;
@@ -825,16 +815,18 @@ TrackletProcessor(
       teunits[k].outervmstub__ = outerVMStubs.read_mem(k, bx, (ibin, teunits[k].ireg__, teunits[k].istub_));
       
 #ifndef __SYNTHESIS__
-      if (good) {
+      if (!nearfulloridle[k]) {
 	assert(teunits[k].nstubs!=0);
 	assert(teunits[k].nstubs==outerVMStubs.getEntries(bx,(ibin, teunits[k].ireg__)));
       }
 #endif
       
-      TrackletEngineUnit<BARRELPS>::NSTUBS zero(0);
       ap_uint<1> notallstubs = (teunits[k].istubnext_!=teunits[k].nstubs)||nearfulloridle[k];
 
+      TrackletEngineUnit<BARRELPS>::NSTUBS zero(0);
+      bool good = (!nearfulloridle[k])&&(!init);
       teunits[k].istub_=init?zero:good?(notallstubs?teunits[k].istubnext_:zero):teunits[k].istub_;
+
       teunits[k].istubnext_=teunits[k].istub_+1;
       teunits[k].memmask_[teunits[k].memindex]=notallstubs;
 
@@ -971,11 +963,6 @@ TrackletProcessor(
     //This could be earlier???
     //Increment TE bufer read ptr if we initalized a TE unit.
     tebuffer[iTEBuff].readptr_=tebufferreadptrtmp[iTEBuff];
-    teunits[iTE].readindex_=teunitsreadindextmp[iTE];    
-
- update_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
-      teunits[k].writeindex_=teunitswriteindextmp[k];
-    }
 
  update_tebufferss: for (unsigned int i = 0 ; i < NTEBuffer; i++){
       tebuffer[i].writeptr_=tebufferwriteptrtmp[i];
