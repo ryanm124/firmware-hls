@@ -49,59 +49,6 @@ class TrackletEngineUnit {
   }
 
 
- inline void init(BXType bxin, 
-		  AllStubInner<BARRELPS>::AllStubInnerData innerstub,
-		  MEMSTUBS memstubs,
-		  MEMMASK memmask,
-		  RZBIN slot,
-		  RZFINE rzbinfirst,
-		  RZFINE rzbindiffmax
- ) {
-#pragma HLS inline
-  bx_ = bxin;
-  //memstubs_ = memstubs;
-  idle_ = false;
-  memmask_ = memmask;
-  maskmask_ = 0xFFFFFFFF;
-  masktmp=memmask;
-
-  istub_=0;
-  istubnext_=1;
-  innerstub_=innerstub;
-  slot_=slot;
-  rzbinfirst_=rzbinfirst;
-  rzbindiffmax_=rzbindiffmax;
-}
-
- /* 
- MEMSTUBS nstub16() const {
-   return (ns15,ns14,ns13,ns12,ns11,ns10,ns9,ns8,ns7,ns6,ns5,ns4,ns3,ns2,ns1,ns0);
- }
-
- void setnstub16(MEMSTUBS nstubs) {
-   (ns15,ns14,ns13,ns12,ns11,ns10,ns9,ns8,ns7,ns6,ns5,ns4,ns3,ns2,ns1,ns0) = nstubs;
- }
-
- void setnstub(MEMMASK masktmp) {
-
-   nstubs = masktmp.test(0) ? ns0 :
-     masktmp.test(1) ? ns1 :
-     masktmp.test(2) ? ns2 :
-     masktmp.test(3) ? ns3 :
-     masktmp.test(4) ? ns4 :
-     masktmp.test(5) ? ns5 :
-     masktmp.test(6) ? ns6 :
-     masktmp.test(7) ? ns7 :
-     masktmp.test(8) ? ns8 :
-     masktmp.test(9) ? ns9 :
-     masktmp.test(10) ? ns10 :
-     masktmp.test(11) ? ns11 :
-     masktmp.test(12) ? ns12 :
-     masktmp.test(13) ? ns13 :
-     masktmp.test(14) ? ns14 : ns15;
- }
- */
-
  MEMSTUBS nstub16() const {
 #pragma HLS array_partition variable=ns complete dim=1
    return (ns[15],ns[14],ns[13],ns[12],ns[11],ns[10],ns[9],ns[8],ns[7],ns[6],ns[5],ns[4],ns[3],ns[2],ns[1],ns[0]);
@@ -191,7 +138,6 @@ void write(STUBID stubs) {
 //		   ap_uint<3> rzbindiffmax) { }
 
  MEMMASK memmask_;
- MEMMASK maskmask_;
 
  RZBIN slot_;
  RZFINE rzbinfirst_;
@@ -199,7 +145,6 @@ void write(STUBID stubs) {
  RZFINE rzbinfirst__, rzbinfirst___, rzbinfirst____;
  RZFINE rzbindiffmax__, rzbindiffmax___, rzbindiffmax____;
 
- MEMMASK masktmp;
  NSTUBS nstubs;
  MEMINDEX memindex;
  ap_uint<1> next;
