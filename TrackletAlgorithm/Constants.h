@@ -6,6 +6,8 @@
 //#include <cmath>
 //#include "hls_math.h"
 
+constexpr int kNTEUnits = 6;
+
 constexpr int kMaxStubsFromLink = 256;
 
 constexpr int kTMUX = 18;   //For hourglass project
