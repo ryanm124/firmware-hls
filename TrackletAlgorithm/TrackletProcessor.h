@@ -788,8 +788,9 @@ TrackletProcessor(
    
       teunits[k].stubids_[teuwriteindex[k]] = (teunits[k].outervmstub___.getIndex(), teunits[k].innerstub___.raw());
       teunitswriteindextmp[k]=savestub?writeindexnext:teuwriteindex[k];
+
       
-      //first and half step
+      //first and half step. Tried to remove this pipelining stage but failed timing.
 
       teunits[k].next___=teunits[k].next__;
       teunits[k].ireg___=teunits[k].ireg__;
