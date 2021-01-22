@@ -65,26 +65,6 @@ class TrackletEngineUnit {
   maskmask_ = 0xFFFFFFFF;
   masktmp=memmask;
 
-  (ns15,ns14,ns13,ns12,ns11,ns10,ns9,ns8,ns7,ns6,ns5,ns4,ns3,ns2,ns1,ns0)=memstubs;
-
-  (memindex,nstubs) = masktmp.test(0) ? (MEMINDEX(0),ns0) :
-     masktmp.test(1) ? (MEMINDEX(1),ns1) :
-     masktmp.test(2) ? (MEMINDEX(2),ns2) :
-     masktmp.test(3) ? (MEMINDEX(3),ns3) :
-     masktmp.test(4) ? (MEMINDEX(4),ns4) :
-     masktmp.test(5) ? (MEMINDEX(5),ns5) :
-     masktmp.test(6) ? (MEMINDEX(6),ns6) :
-     masktmp.test(7) ? (MEMINDEX(7),ns7) :
-     masktmp.test(8) ? (MEMINDEX(8),ns8) :
-     masktmp.test(9) ? (MEMINDEX(9),ns9) :
-     masktmp.test(10) ? (MEMINDEX(10),ns10) :
-     masktmp.test(11) ? (MEMINDEX(11),ns11) :
-     masktmp.test(12) ? (MEMINDEX(12),ns12) :
-     masktmp.test(13) ? (MEMINDEX(13),ns13) :
-     masktmp.test(14) ? (MEMINDEX(14),ns14) :
-     (MEMINDEX(15),ns15);
-
-
   istub_=0;
   istubnext_=1;
   innerstub_=innerstub;
@@ -92,7 +72,71 @@ class TrackletEngineUnit {
   rzbinfirst_=rzbinfirst;
   rzbindiffmax_=rzbindiffmax;
 }
- 
+
+ /* 
+ MEMSTUBS nstub16() const {
+   return (ns15,ns14,ns13,ns12,ns11,ns10,ns9,ns8,ns7,ns6,ns5,ns4,ns3,ns2,ns1,ns0);
+ }
+
+ void setnstub16(MEMSTUBS nstubs) {
+   (ns15,ns14,ns13,ns12,ns11,ns10,ns9,ns8,ns7,ns6,ns5,ns4,ns3,ns2,ns1,ns0) = nstubs;
+ }
+
+ void setnstub(MEMMASK masktmp) {
+
+   nstubs = masktmp.test(0) ? ns0 :
+     masktmp.test(1) ? ns1 :
+     masktmp.test(2) ? ns2 :
+     masktmp.test(3) ? ns3 :
+     masktmp.test(4) ? ns4 :
+     masktmp.test(5) ? ns5 :
+     masktmp.test(6) ? ns6 :
+     masktmp.test(7) ? ns7 :
+     masktmp.test(8) ? ns8 :
+     masktmp.test(9) ? ns9 :
+     masktmp.test(10) ? ns10 :
+     masktmp.test(11) ? ns11 :
+     masktmp.test(12) ? ns12 :
+     masktmp.test(13) ? ns13 :
+     masktmp.test(14) ? ns14 : ns15;
+ }
+ */
+
+ MEMSTUBS nstub16() const {
+#pragma HLS array_partition variable=ns complete dim=1
+   return (ns[15],ns[14],ns[13],ns[12],ns[11],ns[10],ns[9],ns[8],ns[7],ns[6],ns[5],ns[4],ns[3],ns[2],ns[1],ns[0]);
+ }
+
+ void setnstub16(MEMSTUBS nstubs) {
+#pragma HLS array_partition variable=ns complete dim=1
+   (ns[15],ns[14],ns[13],ns[12],ns[11],ns[10],ns[9],ns[8],ns[7],ns[6],ns[5],ns[4],ns[3],ns[2],ns[1],ns[0]) = nstubs;
+ }
+
+ void setnstub2(MEMINDEX index) {
+#pragma HLS array_partition variable=ns complete dim=1
+
+   nstubs = ns[index];
+ }
+
+ void setnstub(MEMMASK masktmp) {
+#pragma HLS array_partition variable=ns complete dim=1
+
+   nstubs = masktmp.test(0) ? ns[0] :
+     masktmp.test(1) ? ns[1] :
+     masktmp.test(2) ? ns[2] :
+     masktmp.test(3) ? ns[3] :
+     masktmp.test(4) ? ns[4] :
+     masktmp.test(5) ? ns[5] :
+     masktmp.test(6) ? ns[6] :
+     masktmp.test(7) ? ns[7] :
+     masktmp.test(8) ? ns[8] :
+     masktmp.test(9) ? ns[9] :
+     masktmp.test(10) ? ns[10] :
+     masktmp.test(11) ? ns[11] :
+     masktmp.test(12) ? ns[12] :
+     masktmp.test(13) ? ns[13] :
+     masktmp.test(14) ? ns[14] : ns[15];
+ }
 
  void reset(int instance) {
    writeindex_ = 0;
@@ -169,7 +213,8 @@ void write(STUBID stubs) {
 
  VMStubTEOuter<VMSTEType> outervmstub__, outervmstub___, outervmstub____;
 
- NSTUBS ns0,ns1,ns2,ns3,ns4,ns5,ns6,ns7,ns8,ns9,ns10,ns11,ns12,ns13,ns14,ns15;
+ //NSTUBS ns0,ns1,ns2,ns3,ns4,ns5,ns6,ns7,ns8,ns9,ns10,ns11,ns12,ns13,ns14,ns15;
+ NSTUBS ns[16];
 
  INDEX writeindex_;
  INDEX readindex_;
