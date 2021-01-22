@@ -119,6 +119,7 @@ public:
   typedef ap_uint<AllStubInnerBase<ASType>::kASIndexSize> ASINDEX;
   typedef ap_uint<AllStubInnerBase<ASType>::kASFinePhiSize> ASFINEPHI;
   typedef ap_uint<AllStubInnerBase<ASType>::kAllStubInnerSize> AllStubInnerData;
+  typedef ap_uint<AllStubInnerBase<ASType>::kAllStubInnerSize-AllStubInnerBase<ASType>::kASIndexSize-AllStubInnerBase<ASType>::kASFinePhiSize> AllStubData;
 
   // Constructors
   AllStubInner(const AllStubInnerData& newdata):
@@ -154,6 +155,10 @@ public:
   static constexpr int getWidth() {return AllStubInnerBase<ASType>::kAllStubInnerSize;}
 
   AllStubInnerData raw() const {return data_; }
+
+  AllStubData getAllStub() const {
+    return data_.range(kASRMSB,kASBendLSB);
+  }
 
   ASR getR() const {
     return data_.range(kASRMSB,kASRLSB);
