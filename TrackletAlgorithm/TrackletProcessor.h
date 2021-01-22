@@ -720,9 +720,8 @@ TrackletProcessor(
       
     AllStub<BARRELPS>::AllStubData innerStub;
     TEBuffer::NSTUBS innerIndex;
-    ap_uint<NfinephiBits> finephi;
     TEBuffer::NSTUBS outerIndex;
-    (outerIndex, innerStub, innerIndex, finephi)=teudata[iTE];
+    (outerIndex, innerStub, innerIndex)=teudata[iTE];
     teunitsreadindextmp[iTE]=teureadindex[iTE]+HaveTEData;
     
 
@@ -783,7 +782,10 @@ TrackletProcessor(
       //ap_uint<1> savestub = teunits[k].good___ & inrange & lutinner & lutouter & rzcut;  //Not OK - don't meet timing
       //ap_uint<1> savestub = ap_uint<5>( (teunits[k].good___, inrange, lutinner, lutouter, rzcut) ).and_reduce(); //OK - meets timing
    
-      teunits[k].stubids_[teuwriteindex[k]] = (teunits[k].outervmstub___.getIndex(), teunits[k].innerstub___.raw());
+      teunits[k].stubids_[teuwriteindex[k]] = (teunits[k].outervmstub___.getIndex(), 
+					       teunits[k].innerstub___.getAllStub(),
+					       teunits[k].innerstub___.getIndex());
+
       teunitswriteindextmp[k]=savestub?writeindexnext:teuwriteindex[k];
 
       
