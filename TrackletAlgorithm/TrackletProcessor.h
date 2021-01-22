@@ -191,7 +191,7 @@ void TrackletProcessor_L1L2D(const BXType bx,
 			     const ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> regionlut[1<<(AllStubInner<BARRELPS>::kASBendSize+AllStubInner<BARRELPS>::kASFinePhiSize)],
 			     const AllStubInnerMemory<BARRELPS> innerStubs[2],
 			     const AllStubMemory<BARRELPS>* outerStubs,
-			     const VMStubTEOuterMemoryCM<BARRELPS,3,3,4> outerVMStubs,
+			     const VMStubTEOuterMemoryCM<BARRELPS,3,3,kNTEUnits> outerVMStubs,
 			     TrackletParameterMemory * trackletParameters,
 			     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
 			     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
@@ -529,7 +529,7 @@ TrackletProcessor(
     const ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> regionlut[1<<(AllStubInner<BARRELPS>::kASBendSize+AllStubInner<BARRELPS>::kASFinePhiSize)],
     const AllStubInnerMemory<InnerRegion> innerStubs[NASMemInner],
     const AllStubMemory<OuterRegion>* outerStubs,
-    const VMStubTEOuterMemoryCM<OuterRegion,RZBins,PhiBins,4> outerVMStubs,
+    const VMStubTEOuterMemoryCM<OuterRegion,RZBins,PhiBins,kNTEUnits>& outerVMStubs,
     TrackletParameterMemory * const trackletParameters,
     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
@@ -814,9 +814,8 @@ TrackletProcessor(
       teunits[k].maskmask_ = init?ap_uint<16>(0xFFFF):teunits[k].maskmask_;
       teunits[k].masktmp = init?tedatatmp[iTEBuff].getStubMask():teunits[k].masktmp;
 
-      (teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0) = 
-	init?vmstubsentries[teunits[k].slot_]:(teunits[k].ns15,teunits[k].ns14,teunits[k].ns13,teunits[k].ns12,teunits[k].ns11,teunits[k].ns10,teunits[k].ns9,teunits[k].ns8,teunits[k].ns7,teunits[k].ns6,teunits[k].ns5,teunits[k].ns4,teunits[k].ns3,teunits[k].ns2,teunits[k].ns1,teunits[k].ns0);
-      
+      teunits[k].setnstub16(init?vmstubsentries[tedatatmp[iTEBuff].getStart()]:teunits[k].nstub16());
+
       bool good=(!nearfulloridle[k])&&(!init);
       
       TrackletEngineUnit<BARRELPS>::RZBIN ibin(teunits[k].slot_+teunits[k].next);
@@ -840,24 +839,14 @@ TrackletProcessor(
       teunits[k].maskmask_.range(teunits[k].memindex,teunits[k].memindex)=notallstubs;
       
       TrackletEngineUnit<BARRELPS>::MEMMASK masktmp=teunits[k].memmask_&teunits[k].maskmask_;
-      
-      (teunits[k].memindex,teunits[k].nstubs) = masktmp.test(0) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(0),teunits[k].ns0) :
-	masktmp.test(1) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(1),teunits[k].ns1) :
-	masktmp.test(2) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(2),teunits[k].ns2) :
-	masktmp.test(3) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(3),teunits[k].ns3) :
-	masktmp.test(4) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(4),teunits[k].ns4) :
-	masktmp.test(5) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(5),teunits[k].ns5) :
-	masktmp.test(6) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(6),teunits[k].ns6) :
-	masktmp.test(7) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(7),teunits[k].ns7) :
-	masktmp.test(8) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(8),teunits[k].ns8) :
-	masktmp.test(9) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(9),teunits[k].ns9) :
-	masktmp.test(10) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(10),teunits[k].ns10) :
-	masktmp.test(11) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(11),teunits[k].ns11) :
-	masktmp.test(12) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(12),teunits[k].ns12) :
-	masktmp.test(13) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(13),teunits[k].ns13) :
-	masktmp.test(14) ? (TrackletEngineUnit<BARRELPS>::MEMINDEX(14),teunits[k].ns14) :
-	(TrackletEngineUnit<BARRELPS>::MEMINDEX(15),teunits[k].ns15);
-      
+
+      teunits[k].memindex=__builtin_ctz(masktmp);      
+
+      teunits[k].setnstub(masktmp);
+
+      //Using method bease on index don't meet timing
+      //teunits[k].setnstub2(teunits[k].memindex);
+
       teunits[k].next__=teunits[k].next;
       teunits[k].ireg__=teunits[k].ireg;
 

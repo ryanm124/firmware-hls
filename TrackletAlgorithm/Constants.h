@@ -10,6 +10,8 @@ inline const int floatToInt(const double x, const double k) {
   return static_cast<int>(x / k + 1.0e-1);
 }
 
+constexpr int kNTEUnits = 6;
+
 constexpr int kMaxStubsFromLink = 256;
 
 constexpr int kTMUX = 18;   //For hourglass project

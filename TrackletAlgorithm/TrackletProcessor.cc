@@ -42,7 +42,7 @@ void TrackletProcessor_L1L2D(
     const ap_uint<8> regionlut[2048],
     const AllStubInnerMemory<BARRELPS> innerStubs[2],
     const AllStubMemory<BARRELPS>* outerStubs,
-    const VMStubTEOuterMemoryCM<BARRELPS,3,3,4> outerVMStubs,
+    const VMStubTEOuterMemoryCM<BARRELPS,3,3,kNTEUnits> outerVMStubs,
     TrackletParameterMemory * trackletParameters,
     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
@@ -62,7 +62,7 @@ void TrackletProcessor_L1L2D(
  TP_L1L2D: TrackletProcessor<TC::L1L2, 
 			     TC::D, 
 			     1, //TEBuffers
-			     4, //TE units
+			     kNTEUnits, //TE units
 			     BARRELPS, 
 			     BARRELPS,
 			     1, //Outer phi region

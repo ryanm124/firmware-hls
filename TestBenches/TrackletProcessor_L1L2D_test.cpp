@@ -23,13 +23,11 @@ int main()
   ap_uint<8> useregion[2048] =
 #include "../emData/TP/tables/TP_L1L2D_usereg.tab"
 
-  constexpr unsigned int NTEUNITS=4;
-
   ///////////////////////////
   // input memories
   static AllStubInnerMemory<BARRELPS> innerStubs[2];
   static AllStubMemory<BARRELPS> outerStubs;
-  static VMStubTEOuterMemoryCM<BARRELPS,3,3,NTEUNITS> outervmStubs;
+  static VMStubTEOuterMemoryCM<BARRELPS,3,3,kNTEUnits> outervmStubs;
 
 
   // output memories
@@ -138,7 +136,7 @@ int main()
     writeMemFromFile<AllStubInnerMemory<BARRELPS> >(innerStubs[1], fin_innerStubs1, ievt);
     writeMemFromFile<AllStubMemory<BARRELPS> >(outerStubs, fin_outerStubs, ievt);
     cout << "Will read vmstubs"<<endl;
-    writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS,3,3, NTEUNITS> >(outervmStubs, fin_outervmstubs, ievt);
+    writeMemFromFile<VMStubTEOuterMemoryCM<BARRELPS,3,3, kNTEUnits> >(outervmStubs, fin_outervmstubs, ievt);
 
     // bx
     BXType bx = ievt;
