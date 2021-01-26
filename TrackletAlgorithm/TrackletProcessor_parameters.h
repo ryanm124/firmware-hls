@@ -38,10 +38,10 @@ template<> constexpr uint16_t ASOuterMask<TC::L1L2, TC::D>() {
   return 0x0000;
 }
 template<> constexpr uint32_t TPROJMaskBarrel<TC::L1L2, TC::D>() {
-  return 0x7777000;
+  return 0x7733000;
 }
 template<> constexpr uint32_t TPROJMaskDisk<TC::L1L2, TC::D>() {
-  return 0x7777;
+  return 0xFFFF;
 }
 
 #endif
