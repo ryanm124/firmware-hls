@@ -8,8 +8,6 @@
 #include <vector>
 #endif
 
-//Allow to swap between fully partitioned memory and large ap_uint field
-//#define USE_APUINT
 
 template<class DataType, unsigned int NBIT_BX, unsigned int NBIT_ADDR,
 		 unsigned int NBIT_BIN>
@@ -22,12 +20,10 @@ template<class DataType, unsigned int NBIT_BX, unsigned int NBIT_ADDR,
 class MemoryTemplateBinned{
 public:
   static constexpr unsigned int kNBitDataAddr = NBIT_ADDR-NBIT_BIN;
-
   typedef ap_uint<NBIT_BX> BunchXingT;
   typedef ap_uint<kNBitDataAddr+1> NEntryT;
-
   
- protected:
+protected:
   enum BitWidths {
     kNBxBins = 1<<NBIT_BX,
     kNSlots = 1<<NBIT_BIN,
@@ -36,62 +32,8 @@ public:
 
   DataType dataarray_[kNBxBins][kNMemDepth];  // data array
   NEntryT nentries_[kNBxBins][kNSlots];     // number of entries
-  ap_uint<1> binmask_[kNBxBins][kNSlots];     // true if nonzero # of hits
-
-#ifdef USE_APUINT
-  ap_uint<64+8> binmask16new_;
-  ap_uint<256+32> nentries16new_;
-#else
-  ap_uint<16> binmask16_[8];
-  ap_uint<64> nentries16_[8];
-#endif
-
-  //ap_uint<16> binmask16_[kNBxBins][8];
-  //ap_uint<64> nentries16_[kNBxBins][8];
-
   
- public:
-
-  MemoryTemplateBinned()
-  {
-#pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
-	clear();
-  }
-  
-  ~MemoryTemplateBinned(){}
-  
-  void clear()
-  {
-#pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
-#pragma HLS inline
-	
-	for (size_t ibx=0; ibx<(kNBxBins); ++ibx) {
-#pragma HLS UNROLL
-	  clear(ibx);
-	}
-  }
-
-  void clear(BunchXingT bx)
-  {
-#pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
-#pragma HLS ARRAY_PARTITION variable=binmask_ complete dim=0
-#pragma HLS inline
-	
-	for (unsigned int ibin = 0; ibin < (kNSlots); ++ibin) {
-#pragma HLS UNROLL
-	  nentries_[bx][ibin] = 0;
-	  binmask_[bx][ibin] = 0;
-	}
-
-	for (unsigned int ibin = 0; ibin < 8; ++ibin) {
-#pragma HLS UNROLL
-#ifdef USE_APUINT
-	  binmask16new_  = 0;
-#else
-	  binmask16_[ibin] = 0;
-#endif
-	}
-  }
+public:
 
   unsigned int getDepth() const {return kNMemDepth;}
   unsigned int getNBX() const {return kNBxBins;}
@@ -100,7 +42,7 @@ public:
 
   NEntryT getEntries(BunchXingT bx, ap_uint<NBIT_BIN> ibin) const {
 #pragma HLS ARRAY_PARTITION variable=nentries_ complete dim=0
-    return nentries_[bx][ibin];
+	return nentries_[bx][ibin];
   }
 
   const DataType (&get_mem() const)[1<<NBIT_BX][1<<NBIT_ADDR] {return dataarray_;}
@@ -128,7 +70,7 @@ public:
 	}
 	else {
 #ifndef __SYNTHESIS__
-	  std::cout << "Warning out of range. nentry_ibx = "<<nentry_ibx<<" NBIT_ADDR-NBIT_BIN = "<<NBIT_ADDR-NBIT_BIN << std::endl;
+	  std::cout << "Warning out of range" << std::endl;
 #endif
 	  return false;
 	}
@@ -179,11 +121,6 @@ public:
 
     int slot = (int)strtol(split(line, ' ').front().c_str(), nullptr, base); // Convert string (in hexadecimal) to int
     // Originally: atoi(split(line, ' ').front().c_str()); but that didn't work for disks with 16 bins
-
-    //change order HACK...
-    ap_uint<3> ireg,bin;
-    (ireg,bin)=ap_uint<6>(slot);
-    int newslot=(bin,ireg);
 
     DataType data(datastr.c_str(), base);
     int nent = nentries_[bx][slot];
