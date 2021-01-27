@@ -17,6 +17,9 @@ constexpr int kMaxStubsFromLink = 256;
 constexpr int kTMUX = 18;   //For hourglass project
 constexpr int kMaxProc = kTMUX * 6;
 
+constexpr unsigned int kNbitszfinebintable = 7;
+constexpr unsigned int kNbitsrfinebintable = 4;
+
 // List of module types
 namespace module {
   enum type {UNKNOWN, IR, VMR, TE, TC, PR, ME, MC, NMODULES};

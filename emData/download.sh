@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
 # fw_synch_201005
-memprints_url="https://cernbox.cern.ch/index.php/s/y7IWeDG4x7Sg7Im/download"
-luts_url="https://cernbox.cern.ch/index.php/s/DuhCjcykSHZLRhM/download"
+#tarball_url="https://cernbox.cern.ch/index.php/s/y7IWeDG4x7Sg7Im/download"
+#luts_url="https://cernbox.cern.ch/index.php/s/DuhCjcykSHZLRhM/download"
 
-#tarball_url="https://www.dropbox.com/s/82ptvzg076o6cut/MemPrintsStandard.tgz?dl=0"
+tarball_url="https://www.dropbox.com/s/82ptvzg076o6cut/MemPrintsStandard.tgz?dl=0"
+luts_url="https://www.dropbox.com/s/3bsnivrz1pc4tw1/LUTsStandard.tgz?dl=0"
 # Combined modules - temporary
 tarball_url_cm="https://www.dropbox.com/s/i10rc9ox4li88n0/MemPrints.tgz?dl=0"
 
@@ -148,7 +149,7 @@ do
 	  find MemPrintsCM/ -type f -regex ".*_${mem}_04\.dat$" -exec ln -s ../../{} ${target_dir}/ \;
       done
   else 
-      for mem in `grep "${module}\." MemPrints/wires.dat | awk '{print $1}' | sort -u`;
+      for mem in `grep "${module}\." LUTs/wires.dat | awk '{print $1}' | sort -u`;
       do
 	  find MemPrints/ -type f -regex ".*_${mem}_04\.dat$" -exec ln -s ../../{} ${target_dir}/ \;
       done
@@ -192,7 +193,7 @@ do
       layer=`echo ${module} | sed "s/VMR_\(..\).*/\1/g"`
       find ${table_location} -type f -name "${module}_*.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
       find ${table_location} -type f -name "VM*${layer}*" ! -name "*PHI*" -exec ln -sf ../../{} ${table_target_dir}/ \;
-      for mem in `grep "${module}\." wires_hourglass.dat | awk '{print $1}' | sort -u`;
+      for mem in `grep "${module}\." LUTs/wires.dat | awk '{print $1}' | sort -u`;
       do
           find ${table_location} -type f -name "${mem}*.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
       done

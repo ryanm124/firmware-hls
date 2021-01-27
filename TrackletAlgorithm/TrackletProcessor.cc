@@ -59,7 +59,7 @@ void TrackletProcessor_L1L2D(
 #pragma HLS array_partition variable=projout_barrel_2s complete
 #pragma HLS array_partition variable=projout_disk complete
 
- TP_L1L2D: TrackletProcessor<TC::L1L2, 
+ TP_L1L2D: TrackletProcessor<TF::L1L2, 
 			     TC::D, 
 			     1, //TEBuffers
 			     kNTEUnits, //TE units
