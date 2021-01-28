@@ -1,6 +1,9 @@
 #include "TrackletProcessor.h"
 
-ap_uint<1> nearFullTEBuff(const ap_uint<3>& writeptr, const ap_uint<3>& readptr) {
+
+
+ap_uint<1> nearFullTEBuff(const ap_uint<TEBuffer::kNBufferDepthBits>& writeptr, 
+			  const ap_uint<TEBuffer::kNBufferDepthBits>& readptr) {
   ap_uint<3> writeptr1=writeptr+1;
   ap_uint<3> writeptr2=writeptr+2;
   ap_uint<3> writeptr3=writeptr+3;
@@ -42,7 +45,7 @@ void TrackletProcessor_L1L2D(
     const ap_uint<8> regionlut[2048],
     const AllStubInnerMemory<BARRELPS> innerStubs[2],
     const AllStubMemory<BARRELPS>* outerStubs,
-    const VMStubTEOuterMemoryCM<BARRELPS,3,3,kNTEUnits> outerVMStubs,
+    const VMStubTEOuterMemoryCM<BARRELPS, kNbitsrzbin, kNbitsphibin, kNTEUnits> outerVMStubs,
     TrackletParameterMemory * trackletParameters,
     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
@@ -61,13 +64,13 @@ void TrackletProcessor_L1L2D(
 
  TP_L1L2D: TrackletProcessor<TF::L1L2, 
 			     TC::D, 
-			     1, //TEBuffers
-			     kNTEUnits, //TE units
+			     kNTEBuffers,
+			     kNTEUnits,
 			     BARRELPS, 
 			     BARRELPS,
 			     1, //Outer phi region
-			     3,  //RZBins
-			     3,  //PhiBins
+			     kNbitsrzbin,
+			     kNbitsphibin,
 			     2, //Number of inner AS memories
 			     108>(bx, 
 				  lut, 

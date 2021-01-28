@@ -11,6 +11,9 @@ inline const int floatToInt(const double x, const double k) {
 }
 
 constexpr int kNTEUnits = 6;
+constexpr int kNTEBuffers = 1;
+constexpr int kNbitsrzbin = 3;
+constexpr int kNbitsphibin = 3;
 
 constexpr int kMaxStubsFromLink = 256;
 
