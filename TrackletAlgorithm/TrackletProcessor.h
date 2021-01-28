@@ -191,7 +191,7 @@ void TrackletProcessor_L1L2D(const BXType bx,
 			     const ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> regionlut[1<<(AllStubInner<BARRELPS>::kASBendSize+AllStubInner<BARRELPS>::kASFinePhiSize)],
 			     const AllStubInnerMemory<BARRELPS> innerStubs[2],
 			     const AllStubMemory<BARRELPS>* outerStubs,
-			     const VMStubTEOuterMemoryCM<BARRELPS,3,3,kNTEUnits> outerVMStubs,
+			     const VMStubTEOuterMemoryCM<BARRELPS, kNbitsrzbin, kNbitsphibin, kNTEUnits> outerVMStubs,
 			     TrackletParameterMemory * trackletParameters,
 			     TrackletProjectionMemory<BARRELPS> projout_barrel_ps[TC::N_PROJOUT_BARRELPS],
 			     TrackletProjectionMemory<BARREL2S> projout_barrel_2s[TC::N_PROJOUT_BARREL2S],
@@ -619,17 +619,19 @@ TrackletProcessor(
 
   static const ap_uint<(1<<(2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer))> TENearFullUINT=nearFullTEUnitInit();
 
-  ap_uint<16> vmstubsmask[8];
-  ap_uint<64> vmstubsentries[8];
+  constexpr int NRZBINS = (1<<TrackletEngineUnit<BARRELPS>::kNBitsRZBin);
+
+  TrackletEngineUnit<BARRELPS>::MEMMASK vmstubsmask[NRZBINS];
+  TrackletEngineUnit<BARRELPS>::MEMSTUBS  vmstubsentries[NRZBINS];
 #pragma HLS array_partition variable=vmstubsentries complete dim=1
 #pragma HLS array_partition variable=vmstubsmask complete dim=1
- entriesloop:for(unsigned int i=0;i<7;i++) {
+ entriesloop:for(unsigned int i=0;i<NRZBINS-1;i++) {
 #pragma HLS unroll
   vmstubsentries[i]=(outerVMStubs.getEntries8(bx,i+1),outerVMStubs.getEntries8(bx,i));
   vmstubsmask[i]=(outerVMStubs.getBinMask8(bx,i+1),outerVMStubs.getBinMask8(bx,i));
 }
-  vmstubsentries[7]=(ap_uint<32>(0),outerVMStubs.getEntries8(bx,7));
-  vmstubsmask[7]=(ap_uint<8>(0),outerVMStubs.getBinMask8(bx,7));
+  vmstubsentries[NRZBINS-1]=(ap_uint<32>(0),outerVMStubs.getEntries8(bx,NRZBINS-1));
+  vmstubsmask[NRZBINS-1]=(ap_uint<8>(0),outerVMStubs.getBinMask8(bx,NRZBINS-1));
 
 
  istep_loop: for(unsigned istep=0;istep<N;istep++) {
@@ -861,16 +863,16 @@ TrackletProcessor(
 
      //quantities looked up in LUT
      VMStubTEOuter<BARRELPS>::VMSTEOFINEZ rzfinebinfirst,rzdiffmax;
-     ap_uint<3> start;
+     TrackletEngineUnit<BARRELPS>::RZBIN start;
      ap_uint<1> usenext;
      (rzdiffmax, start, usenext, rzfinebinfirst) = lutval___[i];
 
      //Get the mask of bins that has non-zero number of hits
-     ap_uint<16> stubmask16 = vmstubsmask[start];
+     TrackletEngineUnit<BARRELPS>::MEMMASK stubmask16 = vmstubsmask[start];
 
      //Calculate the stub mask for which bins have hits _and_ are consistent with the inner stub
-     ap_uint<16> mask=( (useregion___[i]*usenext,useregion___[i]) );
-     ap_uint<16> stubmask=stubmask16&mask;
+     TrackletEngineUnit<BARRELPS>::MEMMASK mask = ( (useregion___[i]*usenext,useregion___[i]) );
+     TrackletEngineUnit<BARRELPS>::MEMMASK stubmask = stubmask16&mask;
 
      //Find if there are _any_ bins with hits that needs to be tried. If so will store stub in buffer
      bool havestubs=stubmask.or_reduce();
