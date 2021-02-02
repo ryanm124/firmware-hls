@@ -359,7 +359,7 @@ TC::addProj(const TrackletProjection<TProjType> &proj, const BXType bx, Tracklet
       proj_success = false;
   }
   else {
-    if (proj.getRZ() < 205 || proj.getRZ() > 1911)
+    if (proj.getRZ() < 20.0/(2*kr) || proj.getRZ() > 120.0/(2*kr))
       proj_success = false;
   }
 

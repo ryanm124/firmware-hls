@@ -7,7 +7,8 @@
 tarball_url="https://www.dropbox.com/s/82ptvzg076o6cut/MemPrintsStandard.tgz?dl=0"
 luts_url="https://www.dropbox.com/s/3bsnivrz1pc4tw1/LUTsStandard.tgz?dl=0"
 # Combined modules - temporary
-tarball_url_cm="https://www.dropbox.com/s/i10rc9ox4li88n0/MemPrints.tgz?dl=0"
+tarball_url_cm="https://www.dropbox.com/s/h5fzg46vro127h0/MemPrintsCombined.tgz?dl=0"
+luts_url_cm="https://www.dropbox.com/s/dk5ftlbtjrqdr26/LUTsCombined.tgz?dl=0"
 
 # The following modules will have dedicated directories of test-bench files
 # prepared for them.
@@ -100,6 +101,10 @@ fi
 # Download and unpack LUTs.tar.gz.
 if [[ $memprints_only == 0 ]]
 then
+  wget -O LUTs.tgz --quiet ${luts_url_cm}
+  tar -xzf LUTs.tgz
+  mv LUTs LUTsCM
+  rm -f LUTs.tgz
   wget -O LUTs.tar.gz --quiet ${luts_url}
   tar -xzf LUTs.tar.gz
   rm -f LUTs.tar.gz
@@ -144,7 +149,7 @@ do
 
   if [[ ${cm} == "true" ]]
   then
-      for mem in `grep "${module}\." MemPrintsCM/wires.dat | awk '{print $1}' | sort -u`;
+      for mem in `grep "${module}\." LUTsCM/wires.dat | awk '{print $1}' | sort -u`;
       do
 	  find MemPrintsCM/ -type f -regex ".*_${mem}_04\.dat$" -exec ln -s ../../{} ${target_dir}/ \;
       done
@@ -159,7 +164,7 @@ do
   table_location="LUTs/"
   if [[ ${cm} == "true" ]]
   then
-      table_location="MemPrintsCM/Tables/"
+      table_location="LUTsCM/"
   fi
 
   table_target_dir="${module_type}/tables"
