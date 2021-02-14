@@ -131,6 +131,14 @@ int main()
   for (unsigned int ievt = 0; ievt < nevents; ++ievt) {
     cout << "Event: " << dec << ievt << endl;
 
+    tpar.clear();
+    for (unsigned i = 0; i < TC::N_PROJOUT_BARRELPS; i++)
+      tproj_barrel_ps[i].clear();
+    for (unsigned i = 0; i < TC::N_PROJOUT_BARREL2S; i++)
+      tproj_barrel_2s[i].clear();
+    for (unsigned i = 0; i < TC::N_PROJOUT_DISK; i++)
+      tproj_disk[i].clear();    
+
     // read event and write to memories
     writeMemFromFile<AllStubInnerMemory<BARRELPS> >(innerStubs[0], fin_innerStubs0, ievt);
     writeMemFromFile<AllStubInnerMemory<BARRELPS> >(innerStubs[1], fin_innerStubs1, ievt);
