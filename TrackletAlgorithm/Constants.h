@@ -11,7 +11,6 @@ inline const int floatToInt(const double x, const double k) {
 }
 
 constexpr int kNTEUnits = 5;
-constexpr int kNTEBuffers = 1;
 constexpr int kNbitsrzbin = 3;
 constexpr int kNbitsphibin = 3;
 
