@@ -64,7 +64,6 @@ void TrackletProcessor_L1L2D(
 
  TP_L1L2D: TrackletProcessor<TF::L1L2, 
 			     TC::D, 
-			     kNTEBuffers,
 			     kNTEUnits,
 			     BARRELPS, 
 			     BARRELPS,
