@@ -163,8 +163,6 @@ void write(STUBID stubs) {
  MEMMASK memmask_;
 
  RZBIN slot_;
- RZFINE rzbinfirst_;
- RZFINE rzbindiffmax_;
  RZFINE rzbinfirst__, rzbinfirst___;
  RZFINE rzbindiffmax__, rzbindiffmax___;
 
@@ -172,7 +170,7 @@ void write(STUBID stubs) {
  MEMINDEX memindex;
  MEMINDEX lastmemindex;
 
- AllStubInner<BARRELPS> innerstub_,innerstub__, innerstub___;
+ AllStubInner<BARRELPS> innerstub__, innerstub___;
  ap_uint<1> good__, good___;
  ap_uint<1> next__, next___;
  PHIBIN ireg__, ireg___;
