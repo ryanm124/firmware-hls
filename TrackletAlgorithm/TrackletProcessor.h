@@ -781,7 +781,7 @@ TrackletProcessor(
 
       //Do 'regular' processing here
       TrackletEngineUnit<BARRELPS>::MEMMASK memmask_reg = teunits[k].memmask_;
-      TrackletEngineUnit<BARRELPS>::MEMINDEX memindex_reg = teunits[k].memindex;
+      TrackletEngineUnit<BARRELPS>::MEMINDEX memindex_reg = __builtin_ctz(teunits[k].memmask_);
       TrackletEngineUnit<BARRELPS>::MEMINDEX memindexlast_reg = teunits[k].lastmemindex;
       TrackletEngineUnit<BARRELPS>::MEMSTUBS memstubs_reg = teunits[k].nstub16();
       TrackletEngineUnit<BARRELPS>::NSTUBS nstubs_reg(teunits[k].calcNStubs(memstubs_reg,memmask_reg));
@@ -809,7 +809,6 @@ TrackletProcessor(
       teunits[k].good__ = init?good_init:good_reg;
 
       teunits[k].memmask_ = init?memmask_init:memmask_reg;
-      teunits[k].memindex = __builtin_ctz(teunits[k].memmask_);
       teunits[k].lastmemindex = init?memindexlast_init:memindexlast_reg;
       teunits[k].setnstub16(init?memstubs_init:memstubs_reg);
 
