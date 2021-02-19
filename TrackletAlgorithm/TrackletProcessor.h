@@ -546,22 +546,7 @@ TrackletProcessor(
 #pragma HLS array_partition variable=nproj_barrel_2s complete
 #pragma HLS array_partition variable=nproj_disk complete
 
-// Clear all output memories before starting.
-/*
-  trackletParameters->clear();
- clear_barrel_ps: for (unsigned i = 0; i < TC::N_PROJOUT_BARRELPS; i++)
-#pragma HLS unroll
-    if (TPROJMaskBarrel<Seed, iTC>() & (0x1 << i))
-      projout_barrel_ps[i].clear();
- clear_barrel_2s: for (unsigned i = 0; i < TC::N_PROJOUT_BARREL2S; i++)
-#pragma HLS unroll
-    if (TPROJMaskBarrel<Seed, iTC>() & (0x1 << (i + TC::N_PROJOUT_BARRELPS)))
-      projout_barrel_2s[i].clear();
- clear_disk: for (unsigned i = 0; i < TC::N_PROJOUT_DISK; i++)
-#pragma HLS unroll
-    if (TPROJMaskDisk<Seed, iTC>() & (0x1 << i))
-      projout_disk[i].clear();
-*/
+  bool trace=true;
 
   constexpr unsigned int NBitsPhiRegion=2;
   constexpr unsigned int NfinephiBits=NBitsPhiRegion+TrackletEngineUnit<BARRELPS>::kNBitsPhiBins+VMStubTEOuterBase<BARRELPS>::kVMSTEOFinePhiSize;
@@ -615,6 +600,17 @@ TrackletProcessor(
  istep_loop: for(unsigned istep=0;istep<N;istep++) {
 #pragma HLS pipeline II=1
 
+    
+
+    std::cout << "istep="<<istep<<" TEBuffer: "<<tebuffer.getIStub()<<" "<<tebuffer.getMem()<<" "
+              << tebuffer.readptr()<<" "<<tebuffer.writeptr();
+    for (unsigned k = 0; k < NTEUnits; k++){
+      std::cout<<" ["<<k<<" "<<teunits[k].readindex_<<" "<<teunits[k].writeindex_<<" "<<teunits[k].idle_<<"]";
+    }
+    std::cout << std::endl;
+
+   
+
     //
     // Step 0 -  zeroth step is to cache some of data
     //
@@ -638,8 +634,8 @@ TrackletProcessor(
 #pragma HLS array_partition variable=nearfulloridle complete dim=1
     bool teuempty[NTEUnits];
 #pragma HLS array_partition variable=teuempty complete dim=1
-    bool teuidle[NTEUnits];
-#pragma HLS array_partition variable=teuidle complete dim=1
+    ap_uint<NTEUnits> teuidle;
+    //#pragma HLS array_partition variable=teuidle complete dim=1
     bool teuidlebefore[NTEUnits];
 #pragma HLS array_partition variable=teuidlebefore complete dim=1
 
@@ -658,12 +654,13 @@ TrackletProcessor(
       teudata[k]=teunits[k].stubids_[teureadindex[k]];
       teuidle[k]=teunits[k].idle_;
       teuidlebefore[k]=(k==0)?false:(teuidlebefore[k-1]||teuidle[k-1]);
-      idlete=idlete||teuidle[k];
+      //idlete=idlete||teuidle[k];
       HaveTEData=HaveTEData||(!teuempty[k]);
       iTE=teuempty[k]?iTE:k;
       nearfulloridle[k]=teunearfull[k]||teuidle[k];
     }
 
+    idlete = teuidle.or_reduce();
     tebuffer.readptr_ = (idlete*TEBufferData)?readptrnext:readptr;
 
     //
@@ -699,7 +696,7 @@ TrackletProcessor(
     //initialized if there is data in TE Buffer from above
   step_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
 #pragma HLS unroll
-      ap_uint<1> init=teuidle[k]&TEBufferData&(!teuidlebefore[k]);
+      ap_uint<1> init=teuidle[k]&&TEBufferData&&(!teuidlebefore[k]);
 
       //second step
 
@@ -756,54 +753,135 @@ TrackletProcessor(
       
 
       //first step
+      TEData tedatatmp = tebuffer.buffer_[readptr];
+
+      teunits[k].innerstub_ = init?tedatatmp.getAllStub():teunits[k].innerstub_;
+      teunits[k].rzbinfirst_=init?tedatatmp.getrzbinfirst():teunits[k].rzbinfirst_;
+      teunits[k].rzbindiffmax_=init?tedatatmp.getrzdiffmax():teunits[k].rzbindiffmax_;
+
+      //Do init path here
+      TrackletEngineUnit<BARRELPS>::MEMMASK memmask_init = tedatatmp.getStubMask();
+      TrackletEngineUnit<BARRELPS>::MEMINDEX memindex_init = __builtin_ctz(tedatatmp.getStubMask());
+      TrackletEngineUnit<BARRELPS>::MEMINDEX memindexlast_init = __builtin_clz(tedatatmp.getStubMask());
+      TrackletEngineUnit<BARRELPS>::MEMSTUBS memstubs_init = vmstubsentries[tedatatmp.getStart()];
+      TrackletEngineUnit<BARRELPS>::NSTUBS nstubs_init(teunits[k].calcNStubs(memstubs_init,memmask_init));
+      TrackletEngineUnit<BARRELPS>::NSTUBS istub_tmp_init(0);
+      TrackletEngineUnit<BARRELPS>::NSTUBS istubnext_init(1);
+      TrackletEngineUnit<BARRELPS>::PHIBIN rzbin_init=tedatatmp.getStart();
+      ap_uint<1> next_init;
+      TrackletEngineUnit<BARRELPS>::PHIBIN ireg_init;
+      (next_init, ireg_init) = memindex_init;
+      TrackletEngineUnit<BARRELPS>::RZBIN ibin_init(rzbin_init+next_init);
+      ap_uint<1> good_init = !teunearfull[k];
+      ap_uint<1> notallstubs_init = nstubs_init!=1;
+      memmask_init[memindex_init] = good_init ? notallstubs_init : ap_uint<1>(1);
+      TrackletEngineUnit<BARRELPS>::NSTUBS istub_init = 
+	good_init?(notallstubs_init?istubnext_init:TrackletEngineUnit<BARRELPS>::NSTUBS(0)):istub_tmp_init;
+      istubnext_init = istub_init+1;
+      ap_uint<1> idle_init = good_init && (!notallstubs_init) && (memindex_init+memindexlast_init==15);
+      memindex_init = __builtin_ctz(memmask_init);
+      nstubs_init = teunits[k].calcNStubs(memstubs_init,memmask_init);
+
+      //Do 'regular' processing here
+      TrackletEngineUnit<BARRELPS>::MEMMASK memmask_reg = teunits[k].memmask_;
+      TrackletEngineUnit<BARRELPS>::MEMINDEX memindex_reg = teunits[k].memindex;
+      TrackletEngineUnit<BARRELPS>::MEMINDEX memindexlast_reg = teunits[k].lastmemindex;
+      TrackletEngineUnit<BARRELPS>::MEMSTUBS memstubs_reg = teunits[k].nstub16();
+      TrackletEngineUnit<BARRELPS>::NSTUBS nstubs_reg = teunits[k].nstubs;
+      TrackletEngineUnit<BARRELPS>::NSTUBS istub_tmp_reg = teunits[k].istub_;
+      TrackletEngineUnit<BARRELPS>::NSTUBS istubnext_reg = teunits[k].istubnext_;
+      TrackletEngineUnit<BARRELPS>::PHIBIN rzbin_reg=teunits[k].slot_;
+      ap_uint<1> next_reg;
+      TrackletEngineUnit<BARRELPS>::PHIBIN ireg_reg;
+      (next_reg, ireg_reg) = memindex_reg;
+      TrackletEngineUnit<BARRELPS>::RZBIN ibin_reg(rzbin_reg+next_reg);
+      ap_uint<1> good_reg = !(teunearfull[k]||teuidle[k]);
+      ap_uint<1> notallstubs_reg = nstubs_reg!=istubnext_reg;
+      TrackletEngineUnit<BARRELPS>::NSTUBS istub_reg = 
+	good_reg?(notallstubs_reg?istubnext_reg:TrackletEngineUnit<BARRELPS>::NSTUBS(0)):istub_tmp_reg;
+      istubnext_reg = istub_reg+1;
+      memmask_reg[memindex_reg] = good_reg ? notallstubs_reg : ap_uint<1>(1);
+      ap_uint<1> idle_reg = teuidle[k] || (good_reg && (!notallstubs_reg) && (memindex_reg+memindexlast_reg==15));
+      memindex_reg = __builtin_ctz(memmask_reg);
+      nstubs_reg = teunits[k].calcNStubs(memstubs_reg,memmask_reg);
+      
+
+      //Fill the result
+
+      teunits[k].outervmstub__ = outerVMStubs.read_mem(k, bx, 
+						       init?(ibin_init, ireg_init, istub_tmp_init):(ibin_reg, ireg_reg, istub_tmp_reg));
+      teunits[k].memmask_ = init?memmask_init:memmask_reg;
+      teunits[k].memindex = init?memindex_init:memindex_reg;
+      teunits[k].lastmemindex = init?memindexlast_init:memindexlast_reg;
+      teunits[k].nstubs = init?nstubs_init:nstubs_reg;
+      teunits[k].setnstub16(init?memstubs_init:memstubs_reg);
+
+      teunits[k].istub_ = init?istub_init:istub_reg;
+      teunits[k].istubnext_ = init?istubnext_init:istubnext_reg;
+      teunits[k].slot_ = init?rzbin_init:rzbin_reg;
+      teunits[k].idle_ = init?idle_init:idle_reg;
+
+
+      teunits[k].next__ = init?next_init:next_reg;
+      teunits[k].ireg__ = init?ireg_init:ireg_reg;
+      teunits[k].good__ = init?good_init:good_reg;
 
       teunits[k].rzbinfirst__=teunits[k].rzbinfirst_;
       teunits[k].rzbindiffmax__=teunits[k].rzbindiffmax_;
       teunits[k].innerstub__=teunits[k].innerstub_;
-      (teunits[k].next__, teunits[k].ireg__)=teunits[k].memindex;
-      teunits[k].good__ = !nearfulloridle[k];
 
-      TEData tedatatmp = tebuffer.buffer_[readptr];
 
-      teunits[k].innerstub_ = init?tedatatmp.getAllStub():teunits[k].innerstub_;
-      teunits[k].slot_=init?tedatatmp.getStart():teunits[k].slot_;
-      teunits[k].rzbinfirst_=init?tedatatmp.getrzbinfirst():teunits[k].rzbinfirst_;
-      teunits[k].rzbindiffmax_=init?tedatatmp.getrzdiffmax():teunits[k].rzbindiffmax_;
+      /* 
+      
+
       teunits[k].memmask_ = init?tedatatmp.getStubMask():teunits[k].memmask_;
       teunits[k].memindex = init ? TrackletEngineUnit<BARRELPS>::MEMINDEX(__builtin_ctz(tedatatmp.getStubMask())) : teunits[k].memindex;
-
+      teunits[k].lastmemindex = init ? TrackletEngineUnit<BARRELPS>::MEMINDEX(__builtin_clz(tedatatmp.getStubMask())) : teunits[k].lastmemindex;
       teunits[k].setnstub16(init?vmstubsentries[tedatatmp.getStart()]:teunits[k].nstub16());
+      teunits[k].setnstub(teunits[k].memmask_);
+      (teunits[k].next__, teunits[k].ireg__)=teunits[k].memindex;
+      TrackletEngineUnit<BARRELPS>::NSTUBS zero(0);
+      TrackletEngineUnit<BARRELPS>::NSTUBS one(1);
+      teunits[k].istub_=init?zero:teunits[k].istub_;
+      teunits[k].istubnext_=init?one:teunits[k].istubnext_;
+      //teunits[k].istubnext_=teunits[k].istub_+1;
+      teunits[k].rzbinfirst__=teunits[k].rzbinfirst_;
+      teunits[k].rzbindiffmax__=teunits[k].rzbindiffmax_;
+      teunits[k].innerstub__=teunits[k].innerstub_;
+      teunits[k].idle_=init ? false : teunits[k].idle_;
+
+      ap_uint<1> lastmem = ((teunits[k].memindex+teunits[k].lastmemindex)==15);
 
       TrackletEngineUnit<BARRELPS>::RZBIN ibin(teunits[k].slot_+teunits[k].next__);
-      
+
       teunits[k].outervmstub__ = outerVMStubs.read_mem(k, bx, (ibin, teunits[k].ireg__, teunits[k].istub_));
-      
-#ifndef __SYNTHESIS__
-      if (!nearfulloridle[k]) {
-	assert(teunits[k].nstubs!=0);
-	assert(teunits[k].nstubs==outerVMStubs.getEntries(bx,(ibin, teunits[k].ireg__)));
-      }
-#endif
-      
-      ap_uint<1> notallstubs = (teunits[k].istubnext_!=teunits[k].nstubs)||nearfulloridle[k];
 
-      TrackletEngineUnit<BARRELPS>::NSTUBS zero(0);
-      bool good = (!nearfulloridle[k])&&(!init);
-      teunits[k].istub_=init?zero:good?(notallstubs?teunits[k].istubnext_:zero):teunits[k].istub_;
+      ap_uint<1> notallstubs = ((teunits[k].istubnext_!=teunits[k].nstubs)||teunearfull[k])&&(teunits[k].memmask_.or_reduce());
 
-      teunits[k].istubnext_=teunits[k].istub_+1;
-      teunits[k].memmask_[teunits[k].memindex]=notallstubs;
+      //ap_uint<1> stubend = (teunits[k].istubnext_==teunits[k].nstubs);
+      //ap_uint<1> notallstubs = ((!stubend)||teunearfull[k])&&(!teunits[k].idle_);
 
-      teunits[k].memindex=__builtin_ctz(teunits[k].memmask_);      
+      bool good = (!teunearfull[k])&&(init||((!init)&&(!teuidle[k])));
+
+      TrackletEngineUnit<BARRELPS>::NSTUBS istubnextsave=teunits[k].istubnext_;
+      TrackletEngineUnit<BARRELPS>::NSTUBS istubnextnext=teunits[k].istubnext_+1;
+
+      teunits[k].istubnext_=notallstubs?(good?istubnextnext:teunits[k].istubnext_):one;
+      teunits[k].istub_=notallstubs?(good?istubnextsave:teunits[k].istub_):zero;
+      //teunits[k].istub_=notallstubs?(good?teunits[k].istubnext_:teunits[k].istub_):zero;
+      teunits[k].good__ = good;
+
+      //teunits[k].istubnext_=teunits[k].istub_+1;
+      teunits[k].memmask_[teunits[k].memindex] = notallstubs;
+      //teunits[k].memmask_[teunits[k].memindex] = lastmem ? ap_uint<1>(1):notallstubs;
+
+      teunits[k].memindex= __builtin_ctz(teunits[k].memmask_);
 
       teunits[k].setnstub(teunits[k].memmask_);
 
-      //Using method bease on index don't meet timing
-      //teunits[k].setnstub2(teunits[k].memindex);
-
-      //Can this be simplified?
-      teunits[k].idle_ = (init ? false : teuidle[k])||(!teunits[k].memmask_.or_reduce());
-
+      //teunits[k].idle_ = !teunits[k].memmask_.or_reduce();
+      teunits[k].idle_ = good ? (lastmem&&(!notallstubs)): teunits[k].idle_;
+      */
 
     }
 
