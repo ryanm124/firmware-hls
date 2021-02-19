@@ -570,14 +570,14 @@ TrackletProcessor(
   TrackletProjection<BARRELPS>::TProjTrackletIndex trackletIndex = 0;
 
   //pipeline variables
-  bool goodstub___[1];
+  bool goodstub___;
   ap_uint<kNBits_MemAddr> istub__, istub___;
   AllStubInner<BARRELPS> stub__, stub___;
   ap_uint<1+2*TrackletEngineUnit<BARRELPS>::kNBitsRZFine+TrackletEngineUnit<BARRELPS>::kNBitsRZBin> lutval___;
   ap_uint<(1<<TrackletEngineUnit<BARRELPS>::kNBitsPhiBins)> useregion___;
 
   bool goodstub__ = false;
-  goodstub___[0] = false;
+  goodstub___ = false;
 
 
   static const ap_uint<(1<<(2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer))> TENearFullUINT=nearFullTEUnitInit();
@@ -855,7 +855,7 @@ TrackletProcessor(
      //valid means that r/z project is in valid range
      //havestubs means that at least one memory bin has stubs
      //goodstub means that we had a valid inner stub
-     ap_uint<1> addtedata=valid&&havestubs&&goodstub___[0];
+     ap_uint<1> addtedata=valid&&havestubs&&goodstub___;
 
      //Create TEData and save in buffer - but only increment point if data good
      TEData tedatatmp(stubmask, rzfinebinfirst,start, rzdiffmax,stub___.raw());
@@ -885,9 +885,9 @@ TrackletProcessor(
      //This lut tells us which range in phi to loof for stubs the other layer/disk
      useregion___ = regionlut[(innerfinephi,bend)];
 
-     goodstub___[0]=goodstub__;
-     stub___=stub__;
-     istub___=istub__;
+     goodstub___ = goodstub__;
+     stub___ = stub__;
+     istub___ = istub__;
 
 
      //
