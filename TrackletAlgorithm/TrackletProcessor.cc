@@ -21,7 +21,8 @@ ap_uint<(1<<(2*TrackletEngineUnit<BARRELPS>::kNBitsBuffer))> nearFullTEUnitInit(
     (rptr,wptr)=address;
     ap_uint<TrackletEngineUnit<BARRELPS>::kNBitsBuffer> wptr1=wptr+1;
     ap_uint<TrackletEngineUnit<BARRELPS>::kNBitsBuffer> wptr2=wptr+2;
-    ap_uint<1> result=wptr1==rptr||wptr2==rptr;
+    ap_uint<TrackletEngineUnit<BARRELPS>::kNBitsBuffer> wptr3=wptr+3;
+    ap_uint<1> result=wptr1==rptr||wptr2==rptr||wptr3==rptr;
     lut[i]=result;
   }
   return lut;
@@ -71,7 +72,7 @@ void TrackletProcessor_L1L2D(
 			     kNbitsrzbin,
 			     kNbitsphibin,
 			     2, //Number of inner AS memories
-			     108>(bx, 
+			     105>(bx, 
 				  lut, 
 				  regionlut, 
 				  innerStubs, 
