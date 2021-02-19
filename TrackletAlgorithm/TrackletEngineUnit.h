@@ -85,13 +85,37 @@ class TrackletEngineUnit {
      masktmp.test(14) ? ns[14] : ns[15];
  }
 
+ NSTUBS calcNStubs(MEMSTUBS nstubs, MEMMASK mask) {
+
+ NSTUBS n[16];
+#pragma HLS array_partition variable=n complete dim=1
+   (n[15],n[14],n[13],n[12],n[11],n[10],n[9],n[8],n[7],n[6],n[5],n[4],n[3],n[2],n[1],n[0]) = nstubs;
+   
+   return mask.test(0) ? n[0] :
+     mask.test(1) ? n[1] :
+     mask.test(2) ? n[2] :
+     mask.test(3) ? n[3] :
+     mask.test(4) ? n[4] :
+     mask.test(5) ? n[5] :
+     mask.test(6) ? n[6] :
+     mask.test(7) ? n[7] :
+     mask.test(8) ? n[8] :
+     mask.test(9) ? n[9] :
+     mask.test(10) ? n[10] :
+     mask.test(11) ? n[11] :
+     mask.test(12) ? n[12] :
+     mask.test(13) ? n[13] :
+     mask.test(14) ? n[14] : n[15];
+ }
+
  void reset(int instance) {
    writeindex_ = 0;
    readindex_ = 0;
    idle_ = true;
-   good__=0;
-   good___=0;
-   instance_=instance;
+   good__ = 0;
+   good___ = 0;
+   memmask_ = 0;
+   instance_ = instance;
  }
 
 bool empty() {
@@ -146,7 +170,7 @@ void write(STUBID stubs) {
 
  NSTUBS nstubs;
  MEMINDEX memindex;
-
+ MEMINDEX lastmemindex;
 
  AllStubInner<BARRELPS> innerstub_,innerstub__, innerstub___;
  ap_uint<1> good__, good___;
