@@ -777,7 +777,6 @@ TrackletProcessor(
             memmask_init[memindex_init] = good_init ? notallstubs_init : ap_uint<1>(1);
       TrackletEngineUnit<BARRELPS>::NSTUBS istub_init = 
 	good_init?(notallstubs_init?istubnext_init:TrackletEngineUnit<BARRELPS>::NSTUBS(0)):istub_tmp_init;
-      istubnext_init = istub_init+1;
       ap_uint<1> idle_init = good_init && (!notallstubs_init) && (memindex_init+memindexlast_init==15);
 
       //Do 'regular' processing here
@@ -787,8 +786,8 @@ TrackletProcessor(
       TrackletEngineUnit<BARRELPS>::MEMSTUBS memstubs_reg = teunits[k].nstub16();
       TrackletEngineUnit<BARRELPS>::NSTUBS nstubs_reg(teunits[k].calcNStubs(memstubs_reg,memmask_reg));
       TrackletEngineUnit<BARRELPS>::NSTUBS istub_tmp_reg = teunits[k].istub_;
-      TrackletEngineUnit<BARRELPS>::NSTUBS istubnext_reg = teunits[k].istubnext_;
-      TrackletEngineUnit<BARRELPS>::PHIBIN rzbin_reg=teunits[k].slot_;
+      TrackletEngineUnit<BARRELPS>::NSTUBS istubnext_reg = teunits[k].istub_+1;
+      TrackletEngineUnit<BARRELPS>::PHIBIN rzbin_reg=teunits[k].rzbin_;
       ap_uint<1> next_reg;
       TrackletEngineUnit<BARRELPS>::PHIBIN ireg_reg;
       (next_reg, ireg_reg) = memindex_reg;
@@ -797,7 +796,6 @@ TrackletProcessor(
       ap_uint<1> notallstubs_reg = nstubs_reg!=istubnext_reg;
       TrackletEngineUnit<BARRELPS>::NSTUBS istub_reg = 
 	good_reg?(notallstubs_reg?istubnext_reg:TrackletEngineUnit<BARRELPS>::NSTUBS(0)):istub_tmp_reg;
-      istubnext_reg = istub_reg+1;
       memmask_reg[memindex_reg] = good_reg ? notallstubs_reg : ap_uint<1>(1);
       ap_uint<1> idle_reg = teuidle[k] || (good_reg && (!notallstubs_reg) && (memindex_reg+memindexlast_reg==15));
       
@@ -816,8 +814,7 @@ TrackletProcessor(
       teunits[k].setnstub16(init?memstubs_init:memstubs_reg);
 
       teunits[k].istub_ = init?istub_init:istub_reg;
-      teunits[k].istubnext_ = init?istubnext_init:istubnext_reg;
-      teunits[k].slot_ = init?rzbin_init:rzbin_reg;
+      teunits[k].rzbin_ = init?rzbin_init:rzbin_reg;
       teunits[k].idle_ = init?idle_init:idle_reg;
 
 

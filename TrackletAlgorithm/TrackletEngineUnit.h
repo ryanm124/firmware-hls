@@ -125,7 +125,7 @@ void write(STUBID stubs) {
 
  MEMMASK memmask_;
 
- RZBIN slot_;
+ RZBIN rzbin_;
  RZFINE rzbinfirst__, rzbinfirst___;
  RZFINE rzbindiffmax__, rzbindiffmax___;
 
@@ -147,7 +147,6 @@ void write(STUBID stubs) {
  bool idle_;
  
  NSTUBS istub_=0;
- NSTUBS istubnext_=1;
  STUBID stubids_[1<<kNBitsBuffer];
 
  int instance_;
