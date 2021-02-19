@@ -601,14 +601,14 @@ TrackletProcessor(
 #pragma HLS pipeline II=1
 
     
-
+    /*
     std::cout << "istep="<<istep<<" TEBuffer: "<<tebuffer.getIStub()<<" "<<tebuffer.getMem()<<" "
               << tebuffer.readptr()<<" "<<tebuffer.writeptr();
     for (unsigned k = 0; k < NTEUnits; k++){
       std::cout<<" ["<<k<<" "<<teunits[k].readindex_<<" "<<teunits[k].writeindex_<<" "<<teunits[k].idle_<<"]";
     }
     std::cout << std::endl;
-
+    */
    
 
     //
