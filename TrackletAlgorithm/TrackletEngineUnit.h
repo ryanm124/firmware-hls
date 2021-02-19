@@ -129,8 +129,6 @@ void write(STUBID stubs) {
  RZFINE rzbinfirst__, rzbinfirst___;
  RZFINE rzbindiffmax__, rzbindiffmax___;
 
- //NSTUBS nstubs;
- MEMINDEX memindex;
  MEMINDEX lastmemindex;
 
  AllStubInner<BARRELPS> innerstub__, innerstub___;
