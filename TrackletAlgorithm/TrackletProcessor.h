@@ -763,10 +763,9 @@ TrackletProcessor(
       TrackletEngineUnit<BARRELPS>::MEMMASK memmask_init = tedatatmp.getStubMask();
       TrackletEngineUnit<BARRELPS>::MEMINDEX memindex_init = __builtin_ctz(tedatatmp.getStubMask());
       TrackletEngineUnit<BARRELPS>::MEMINDEX memindexlast_init = __builtin_clz(tedatatmp.getStubMask());
+      memindexlast_init = ~memindexlast_init;
       TrackletEngineUnit<BARRELPS>::MEMSTUBS memstubs_init = vmstubsentries[tedatatmp.getStart()];
       TrackletEngineUnit<BARRELPS>::NSTUBS nstubs_init(teunits[k].calcNStubs(memstubs_init,memmask_init));
-      TrackletEngineUnit<BARRELPS>::NSTUBS istub_tmp_init(0);
-      TrackletEngineUnit<BARRELPS>::NSTUBS istubnext_init(1);
       TrackletEngineUnit<BARRELPS>::PHIBIN rzbin_init=tedatatmp.getStart();
       ap_uint<1> next_init;
       TrackletEngineUnit<BARRELPS>::PHIBIN ireg_init;
@@ -774,10 +773,9 @@ TrackletProcessor(
       TrackletEngineUnit<BARRELPS>::RZBIN ibin_init(rzbin_init+next_init);
       ap_uint<1> good_init = !teunearfull[k];
       ap_uint<1> notallstubs_init = nstubs_init!=1;
-            memmask_init[memindex_init] = good_init ? notallstubs_init : ap_uint<1>(1);
-      TrackletEngineUnit<BARRELPS>::NSTUBS istub_init = 
-	good_init?(notallstubs_init?istubnext_init:TrackletEngineUnit<BARRELPS>::NSTUBS(0)):istub_tmp_init;
-      ap_uint<1> idle_init = good_init && (!notallstubs_init) && (memindex_init+memindexlast_init==15);
+      memmask_init[memindex_init] = good_init ? notallstubs_init : ap_uint<1>(1);
+      TrackletEngineUnit<BARRELPS>::NSTUBS istub_init(good_init&&notallstubs_init); 
+      ap_uint<1> idle_init = good_init && (!notallstubs_init) && (memindex_init==memindexlast_init);
 
       //Do 'regular' processing here
       TrackletEngineUnit<BARRELPS>::MEMMASK memmask_reg = teunits[k].memmask_;
@@ -797,13 +795,14 @@ TrackletProcessor(
       TrackletEngineUnit<BARRELPS>::NSTUBS istub_reg = 
 	good_reg?(notallstubs_reg?istubnext_reg:TrackletEngineUnit<BARRELPS>::NSTUBS(0)):istub_tmp_reg;
       memmask_reg[memindex_reg] = good_reg ? notallstubs_reg : ap_uint<1>(1);
-      ap_uint<1> idle_reg = teuidle[k] || (good_reg && (!notallstubs_reg) && (memindex_reg+memindexlast_reg==15));
+      ap_uint<1> idle_reg = teuidle[k] || (good_reg && (!notallstubs_reg) && (memindex_reg==memindexlast_reg));
       
 
       //Fill the result
 
-      teunits[k].outervmstub__ = outerVMStubs.read_mem(k, bx, 
-						       init?(ibin_init, ireg_init, istub_tmp_init):(ibin_reg, ireg_reg, istub_tmp_reg));
+      teunits[k].outervmstub__ = outerVMStubs.read_mem(k, bx, init?
+						       (ibin_init, ireg_init,TrackletEngineUnit<BARRELPS>::NSTUBS(0)):
+						       (ibin_reg, ireg_reg, istub_tmp_reg));
       teunits[k].next__ = init?next_init:next_reg;
       teunits[k].ireg__ = init?ireg_init:ireg_reg;
       teunits[k].good__ = init?good_init:good_reg;
@@ -865,7 +864,6 @@ TrackletProcessor(
      //
      // Read LUTs and find valid regions in r/z and phi
      //
-
 
      //Get z-position and top bits for LUT
      auto z = stub__.getZ();
