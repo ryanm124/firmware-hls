@@ -620,48 +620,39 @@ TrackletProcessor(
     TEBuffer::TEBUFFERINDEX readptrnext = readptr+1;
     bool tebufferempty = (writeptr==readptr);
     bool tebufferfull = nearFullTEBuff(writeptr,readptr);
-    ap_uint <1> TEBufferData= !tebufferempty;
+    ap_uint<1> TEBufferData= !tebufferempty;
     
     TrackletEngineUnit<BARRELPS>::INDEX teuwriteindex[NTEUnits];
 #pragma HLS array_partition variable=teuwriteindex complete dim=1
+
     TrackletEngineUnit<BARRELPS>::INDEX teureadindex[NTEUnits];
 #pragma HLS array_partition variable=teureadindex complete dim=1
+
     TrackletEngineUnit<BARRELPS>::STUBID teudata[NTEUnits];
 #pragma HLS array_partition variable=teudata complete dim=1
-    bool teunearfull[NTEUnits];
-#pragma HLS array_partition variable=teunearfull complete dim=1
-    bool nearfulloridle[NTEUnits];
-#pragma HLS array_partition variable=nearfulloridle complete dim=1
-    bool teuempty[NTEUnits];
-#pragma HLS array_partition variable=teuempty complete dim=1
-    ap_uint<NTEUnits> teuidle;
-    //#pragma HLS array_partition variable=teuidle complete dim=1
-    bool teuidlebefore[NTEUnits];
-#pragma HLS array_partition variable=teuidlebefore complete dim=1
 
+    ap_uint<NTEUnits> teunearfull, nearfulloridle, teunotempty, teuidle;
 
-    ap_uint<1> HaveTEData=0;
-    int iTE=0;
-    ap_uint<1> idlete=0;
-
+    constexpr int NTEUBits=3; //ceil(log2(NTEUnits));
 
   prefetchteudata: for (unsigned k = 0; k < NTEUnits; k++){
 #pragma HLS unroll
       teuwriteindex[k]=teunits[k].writeindex_;
       teureadindex[k]=teunits[k].readindex_;
       teunearfull[k]=TENearFullUINT[ (teureadindex[k], teuwriteindex[k]) ];
-      teuempty[k]=teuwriteindex[k]==teureadindex[k];
+      teunotempty[k]=teuwriteindex[k]!=teureadindex[k];
       teudata[k]=teunits[k].stubids_[teureadindex[k]];
       teuidle[k]=teunits[k].idle_;
-      teuidlebefore[k]=(k==0)?false:(teuidlebefore[k-1]||teuidle[k-1]);
-      //idlete=idlete||teuidle[k];
-      HaveTEData=HaveTEData||(!teuempty[k]);
-      iTE=teuempty[k]?iTE:k;
       nearfulloridle[k]=teunearfull[k]||teuidle[k];
     }
 
-    idlete = teuidle.or_reduce();
+    ap_uint<NTEUBits> iTEfirstidle = __builtin_ctz(teuidle);
+    ap_uint<NTEUBits> iTE = (((1<<NTEUBits)-1)&__builtin_clz(teunotempty));
+    iTE=~iTE;
+    ap_uint<1> HaveTEData = teunotempty.or_reduce();    
+    ap_uint<1> idlete = teuidle.or_reduce();
     tebuffer.readptr_ = (idlete*TEBufferData)?readptrnext:readptr;
+
 
     //
     // Step 1 - In this first step we check if there are stubs to be sent to the TC
@@ -672,18 +663,17 @@ TrackletProcessor(
 
       
     AllStub<BARRELPS>::AllStubData innerStub;
-    TEBuffer::NSTUBS innerIndex;
-    TEBuffer::NSTUBS outerIndex;
+    TEBuffer::NSTUBS innerIndex, outerIndex;
     (outerIndex, innerStub, innerIndex)=teudata[iTE];
     teunits[iTE].readindex_=teureadindex[iTE]+HaveTEData;
 
-    const TrackletProjection<BARRELPS>::TProjTCID TCID(3);
+    const TrackletProjection<BARRELPS>::TProjTCID TCId(iTC);
       
     const auto &outerStub = outerStubs->read_mem(bx, outerIndex);
 
     
     if (HaveTEData) {
-      TC::processStubPair<Seed, InnerRegion, OuterRegion, TPROJMaskBarrel<Seed, iTC>(), TPROJMaskDisk<Seed, iTC>()>(bx, innerIndex, AllStub<BARRELPS>(innerStub), outerIndex, outerStub, TCID, trackletIndex, trackletParameters, projout_barrel_ps, projout_barrel_2s, projout_disk, npar, nproj_barrel_ps, nproj_barrel_2s, nproj_disk);
+      TC::processStubPair<Seed, InnerRegion, OuterRegion, TPROJMaskBarrel<Seed, iTC>(), TPROJMaskDisk<Seed, iTC>()>(bx, innerIndex, AllStub<BARRELPS>(innerStub), outerIndex, outerStub, TCId, trackletIndex, trackletParameters, projout_barrel_ps, projout_barrel_2s, projout_disk, npar, nproj_barrel_ps, nproj_barrel_2s, nproj_disk);
     }
     
 
@@ -696,8 +686,7 @@ TrackletProcessor(
     //initialized if there is data in TE Buffer from above
   step_teunits: for (unsigned int k = 0 ; k < NTEUnits; k++){
 #pragma HLS unroll
-      ap_uint<1> init=teuidle[k]&&TEBufferData&&(!teuidlebefore[k]);
-
+      ap_uint<1> init=teuidle[k]&&TEBufferData&&(k==iTEfirstidle);
       //second step
 
       TrackletEngineUnit<BARRELPS>::INDEX writeindexnext=teuwriteindex[k]+1;
@@ -749,8 +738,6 @@ TrackletProcessor(
       teunits[k].rzbindiffmax___=teunits[k].rzbindiffmax__;
       teunits[k].innerstub___=teunits[k].innerstub__;
       teunits[k].good___=teunits[k].good__;
-
-      
 
       //first step
       TEData tedatatmp = tebuffer.buffer_[readptr];
