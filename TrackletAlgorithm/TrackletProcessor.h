@@ -618,6 +618,7 @@ TrackletProcessor(
     TEBuffer::TEBUFFERINDEX writeptr = tebuffer.writeptr_;
     TEBuffer::TEBUFFERINDEX readptr = tebuffer.readptr_;
     TEBuffer::TEBUFFERINDEX readptrnext = readptr+1;
+    TEBuffer::TEBUFFERINDEX writeptrnext = writeptr+1;
     bool tebufferempty = (writeptr==readptr);
     bool tebufferfull = nearFullTEBuff(writeptr,readptr);
     ap_uint<1> TEBufferData= !tebufferempty;
@@ -846,7 +847,7 @@ TrackletProcessor(
      //Create TEData and save in buffer - but only increment point if data good
      TEData tedatatmp(stubmask, rzfinebinfirst,start, rzdiffmax,stub___.raw());
      tebuffer.buffer_[tebuffer.writeptr_] = tedatatmp.raw();
-     tebuffer.writeptr_ = tebuffer.writeptr_+addtedata;
+     tebuffer.writeptr_ = addtedata?writeptrnext:tebuffer.writeptr_;
 
      //
      // Read LUTs and find valid regions in r/z and phi
