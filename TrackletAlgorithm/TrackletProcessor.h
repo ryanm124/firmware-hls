@@ -619,9 +619,8 @@ TrackletProcessor(
     TEBuffer::TEBUFFERINDEX readptr = tebuffer.readptr_;
     TEBuffer::TEBUFFERINDEX readptrnext = readptr+1;
     TEBuffer::TEBUFFERINDEX writeptrnext = writeptr+1;
-    bool tebufferempty = (writeptr==readptr);
     bool tebufferfull = nearFullTEBuff(writeptr,readptr);
-    ap_uint<1> TEBufferData= !tebufferempty;
+    ap_uint<1> TEBufferData = (writeptr!=readptr);
     
     TrackletEngineUnit<BARRELPS>::INDEX teuwriteindex[NTEUnits];
 #pragma HLS array_partition variable=teuwriteindex complete dim=1
@@ -629,10 +628,7 @@ TrackletProcessor(
     TrackletEngineUnit<BARRELPS>::INDEX teureadindex[NTEUnits];
 #pragma HLS array_partition variable=teureadindex complete dim=1
 
-    TrackletEngineUnit<BARRELPS>::STUBID teudata[NTEUnits];
-#pragma HLS array_partition variable=teudata complete dim=1
-
-    ap_uint<NTEUnits> teunearfull, nearfulloridle, teunotempty, teuidle;
+    ap_uint<NTEUnits> teunearfull, teunotempty, teuidle;
 
     constexpr int NTEUBits=3; //ceil(log2(NTEUnits));
 
@@ -642,9 +638,7 @@ TrackletProcessor(
       teureadindex[k]=teunits[k].readindex_;
       teunearfull[k]=TENearFullUINT[ (teureadindex[k], teuwriteindex[k]) ];
       teunotempty[k]=teuwriteindex[k]!=teureadindex[k];
-      teudata[k]=teunits[k].stubids_[teureadindex[k]];
       teuidle[k]=teunits[k].idle_;
-      nearfulloridle[k]=teunearfull[k]||teuidle[k];
     }
 
     ap_uint<NTEUBits> iTEfirstidle = __builtin_ctz(teuidle);
@@ -652,7 +646,7 @@ TrackletProcessor(
     iTE=~iTE;
     ap_uint<1> HaveTEData = teunotempty.or_reduce();    
     ap_uint<1> idlete = teuidle.or_reduce();
-    tebuffer.readptr_ = (idlete*TEBufferData)?readptrnext:readptr;
+    tebuffer.readptr_ = (idlete&&TEBufferData)?readptrnext:readptr;
 
 
     //
@@ -665,7 +659,7 @@ TrackletProcessor(
       
     AllStub<BARRELPS>::AllStubData innerStub;
     TEBuffer::NSTUBS innerIndex, outerIndex;
-    (outerIndex, innerStub, innerIndex)=teudata[iTE];
+    (outerIndex, innerStub, innerIndex)=teunits[iTE].stubids_[teureadindex[iTE]];
     teunits[iTE].readindex_=teureadindex[iTE]+HaveTEData;
 
     const TrackletProjection<BARRELPS>::TProjTCID TCId(iTC);
@@ -720,9 +714,7 @@ TrackletProcessor(
       ap_uint<1> lutinner = teunits[k].stubptinnerlutnew_[ptinnerindex];
       ap_uint<1> lutouter = teunits[k].stubptouterlutnew_[ptouterindex];
 
-      ap_uint<1> savestub = teunits[k].good___ && inrange && lutinner && lutouter && rzcut; //OK - meets timing
-      //ap_uint<1> savestub = teunits[k].good___ & inrange & lutinner & lutouter & rzcut;  //Not OK - don't meet timing
-      //ap_uint<1> savestub = ap_uint<5>( (teunits[k].good___, inrange, lutinner, lutouter, rzcut) ).and_reduce(); //OK - meets timing
+      ap_uint<1> savestub = teunits[k].good___ && inrange && lutinner && lutouter && rzcut;
    
       teunits[k].stubids_[teuwriteindex[k]] = (teunits[k].outervmstub___.getIndex(), 
 					       teunits[k].innerstub___.getAllStub(),
@@ -806,108 +798,108 @@ TrackletProcessor(
 
     }
 
-   //
-   // Third step - fill inner layer stubs in the TE buffer 
-   // Check if inner stub has matching stubs in next layer/disk if
-   // so put them in TE buffere to be picked up by a TE unit
-   //
+    //
+    // Third step - fill inner layer stubs in the TE buffer 
+    // Check if inner stub has matching stubs in next layer/disk if
+    // so put them in TE buffere to be picked up by a TE unit
+    //
 
-      //Implement as a manual pipeline ugh...
+    //Implement as a manual pipeline ugh...
 
+    
+    //
+    // Get stubmask and save in TE Buffer
+    //
+    
+    //LUT returns all 1's if not valid. (should change to returning zero.
+    bool valid=!lutval___.and_reduce();
+    
+    //quantities looked up in LUT
+    VMStubTEOuter<BARRELPS>::VMSTEOFINEZ rzfinebinfirst,rzdiffmax;
+    TrackletEngineUnit<BARRELPS>::RZBIN start;
+    ap_uint<1> usenext;
+    (rzdiffmax, start, usenext, rzfinebinfirst) = lutval___;
+    
+    //Get the mask of bins that has non-zero number of hits
+    TrackletEngineUnit<BARRELPS>::MEMMASK stubmask16 = vmstubsmask[start];
+    
+    //Calculate the stub mask for which bins have hits _and_ are consistent with the inner stub
+    TrackletEngineUnit<BARRELPS>::MEMMASK mask = ( (useregion___*usenext,useregion___) );
+    TrackletEngineUnit<BARRELPS>::MEMMASK stubmask = stubmask16&mask;
+    
+    //Find if there are _any_ bins with hits that needs to be tried. If so will store stub in buffer
+    bool havestubs=stubmask.or_reduce();
+    
+    //addtedata is the criteria for saving stub to TE buffer:
+    //valid means that r/z project is in valid range
+    //havestubs means that at least one memory bin has stubs
+    //goodstub means that we had a valid inner stub
+    ap_uint<1> addtedata=valid&&havestubs&&goodstub___;
+    
+    //Create TEData and save in buffer - but only increment point if data good
+    TEData tedatatmp(stubmask, rzfinebinfirst,start, rzdiffmax,stub___.raw());
+    tebuffer.buffer_[tebuffer.writeptr_] = tedatatmp.raw();
+    tebuffer.writeptr_ = addtedata?writeptrnext:tebuffer.writeptr_;
+    
+    //
+    // Read LUTs and find valid regions in r/z and phi
+    //
+    
+    //Get z-position and top bits for LUT
+    auto z = stub__.getZ();
+    auto indexz = z.range(z.length()-1,z.length()-kNbitszfinebintable);
+    
+    //Get r-position and top bits for LUT
+    auto r = stub__.getR();
+    auto indexr = r.range(r.length()-1,r.length()-kNbitsrfinebintable);
+    
+    //Get bend and fine phi for LUT
+    auto bend = stub__.getBend();
+    auto innerfinephi = stub__.getFinePhi();
+    
+    //This LUT tells us which range in r/z to look for stubs in the other layer/disk
+    lutval___ = lut[(indexz,indexr)];
+    
+    //This lut tells us which range in phi to loof for stubs the other layer/disk
+    useregion___ = regionlut[(innerfinephi,bend)];
+    
+    goodstub___ = goodstub__;
+    stub___ = stub__;
+    istub___ = istub__;
+    
 
-      //
-      // Get stubmask and save in TE Buffer
-      //
+    //
+    // Read stub
+    //
 
-     //LUT returns all 1's if not valid. (should change to returning zero.
-     bool valid=!lutval___.and_reduce();
-
-     //quantities looked up in LUT
-     VMStubTEOuter<BARRELPS>::VMSTEOFINEZ rzfinebinfirst,rzdiffmax;
-     TrackletEngineUnit<BARRELPS>::RZBIN start;
-     ap_uint<1> usenext;
-     (rzdiffmax, start, usenext, rzfinebinfirst) = lutval___;
-
-     //Get the mask of bins that has non-zero number of hits
-     TrackletEngineUnit<BARRELPS>::MEMMASK stubmask16 = vmstubsmask[start];
-
-     //Calculate the stub mask for which bins have hits _and_ are consistent with the inner stub
-     TrackletEngineUnit<BARRELPS>::MEMMASK mask = ( (useregion___*usenext,useregion___) );
-     TrackletEngineUnit<BARRELPS>::MEMMASK stubmask = stubmask16&mask;
-
-     //Find if there are _any_ bins with hits that needs to be tried. If so will store stub in buffer
-     bool havestubs=stubmask.or_reduce();
-
-     //addtedata is the criteria for saving stub to TE buffer:
-     //valid means that r/z project is in valid range
-     //havestubs means that at least one memory bin has stubs
-     //goodstub means that we had a valid inner stub
-     ap_uint<1> addtedata=valid&&havestubs&&goodstub___;
-
-     //Create TEData and save in buffer - but only increment point if data good
-     TEData tedatatmp(stubmask, rzfinebinfirst,start, rzdiffmax,stub___.raw());
-     tebuffer.buffer_[tebuffer.writeptr_] = tedatatmp.raw();
-     tebuffer.writeptr_ = addtedata?writeptrnext:tebuffer.writeptr_;
-
-     //
-     // Read LUTs and find valid regions in r/z and phi
-     //
-
-     //Get z-position and top bits for LUT
-     auto z = stub__.getZ();
-     auto indexz = z.range(z.length()-1,z.length()-kNbitszfinebintable);
-
-     //Get r-position and top bits for LUT
-     auto r = stub__.getR();
-     auto indexr = r.range(r.length()-1,r.length()-kNbitsrfinebintable);
-      
-     //Get bend and fine phi for LUT
-     auto bend = stub__.getBend();
-     auto innerfinephi = stub__.getFinePhi();
-      
-     //This LUT tells us which range in r/z to look for stubs in the other layer/disk
-     lutval___ = lut[(indexz,indexr)];
-
-     //This lut tells us which range in phi to loof for stubs the other layer/disk
-     useregion___ = regionlut[(innerfinephi,bend)];
-
-     goodstub___ = goodstub__;
-     stub___ = stub__;
-     istub___ = istub__;
-
-
-     //
-     // Read stub
-     //
-
-
-     //Extract the memory and range this TE buffer is processing
-     auto imem=tebuffer.getMem();
-     bool validmem=imem<tebuffer.getMemEnd();
-     
-     //compute the next memory
-     TEData::IMEM imemnext = imem+1;
-
-     //Extract the current stub - check if valid. Calculate next stub (counting down!) Chech if valid
-     istub__ = tebuffer.getIStub();
-     bool validstub = istub__ < innerStubs[imem].getEntries(bx);
-     ap_uint<kNBits_MemAddr> istubnext = istub__+1;
-     bool validstubnext=istubnext<innerStubs[imem].getEntries(bx);
-
-     //Calculate good stub - true if:
-     //validmem is true - meaning thart we have not exhausted all stub memories
-     //tebuffer not full - can not process stub if buffere is full and we can not store 
-     //validstub - should be redundant with validmem - FIXME
-     goodstub__ = validmem&&(!tebufferfull)&&validstub;
-
-     //Update istub if goodstub
-     tebuffer.getIStub()=goodstub__?(validstubnext?istubnext:ap_uint<kNBits_MemAddr>(0)):istub__; 
-     //Update imem if the next stub is not valid
-     tebuffer.getMem()=(goodstub__&&(!validstubnext))?imemnext:imem;
-
-     //Read stub from memory - BRAM with latency of one or two clks
-     stub__ = innerStubs[imem].read_mem(bx,istub__);
-
+    
+    //Extract the memory and range this TE buffer is processing
+    auto imem=tebuffer.getMem();
+    bool validmem=imem<tebuffer.getMemEnd();
+    
+    //compute the next memory
+    TEData::IMEM imemnext = imem+1;
+    
+    //Extract the current stub - check if valid. Calculate next stub. Check if valid
+    istub__ = tebuffer.getIStub();
+    bool validstub = istub__ < innerStubs[imem].getEntries(bx);
+    ap_uint<kNBits_MemAddr> istubnext = istub__+1;
+    bool validstubnext=istubnext<innerStubs[imem].getEntries(bx);
+    
+    //Calculate good stub - true if:
+    //validmem is true - meaning thart we have not exhausted all stub memories
+    //tebuffer not full - can not process stub if buffere is full and we can not store 
+    //validstub - should be redundant with validmem - FIXME
+    goodstub__ = validmem&&(!tebufferfull)&&validstub;
+    
+    //Update istub if goodstub
+    tebuffer.getIStub()=goodstub__?(validstubnext?istubnext:ap_uint<kNBits_MemAddr>(0)):istub__; 
+    //Update imem if the next stub is not valid
+    tebuffer.getMem()=(goodstub__&&(!validstubnext))?imemnext:imem;
+    
+    //Read stub from memory - BRAM with latency of one or two clks
+    stub__ = innerStubs[imem].read_mem(bx,istub__);
+    
   } //end of istep
   
 }
