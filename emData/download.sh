@@ -7,8 +7,10 @@
 tarball_url="https://www.dropbox.com/s/82ptvzg076o6cut/MemPrintsStandard.tgz?dl=0"
 luts_url="https://www.dropbox.com/s/3bsnivrz1pc4tw1/LUTsStandard.tgz?dl=0"
 # Combined modules - temporary
-tarball_url_cm="https://www.dropbox.com/s/h5fzg46vro127h0/MemPrintsCombined.tgz?dl=0"
-luts_url_cm="https://www.dropbox.com/s/dk5ftlbtjrqdr26/LUTsCombined.tgz?dl=0"
+#tarball_url_cm="https://www.dropbox.com/s/h5fzg46vro127h0/MemPrintsCombined.tgz?dl=0"
+#luts_url_cm="https://www.dropbox.com/s/dk5ftlbtjrqdr26/LUTsCombined.tgz?dl=0"
+tarball_url_cm="https://www.dropbox.com/s/kaj5gefkxxmrc8t/MemPrintsCombined_210224.tgz?dl=0"
+luts_url_cm="https://www.dropbox.com/s/w2ya02uvnqod01c/LUTsCombined_210224.tgz?dl=0"
 
 # The following modules will have dedicated directories of test-bench files
 # prepared for them.
@@ -186,7 +188,7 @@ do
 #      echo ${table_location}
       layer=`echo ${module} | sed "s/.*_\(L[1-9]\).*$/\1/g"`
 #      echo ${layer}
-      find ${table_location} -type f -name "TP_${layer}.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
+      find ${table_location} -type f -name "VMR_${layer}.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
 #      layer_pair=`echo ${module} | sed "s/\(.*\)./\1/g"`
 #      echo ${layer_pair}
       find ${table_location} -type f -name "${module}_*.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;

@@ -18,7 +18,7 @@ int main()
   int err = 0;
 
   ap_uint<10> innervmtable[2048] =
-#include "../emData/TP/tables/TP_L1.tab"
+#include "../emData/TP/tables/VMR_L1.tab"
 
   ap_uint<8> useregion[2048] =
 #include "../emData/TP/tables/TP_L1L2D_usereg.tab"
@@ -43,13 +43,13 @@ int main()
   const string dir = "TP_L1L2D";
 
   ifstream fin_innerStubs0;
-  if (not openDataFile(fin_innerStubs0, dir + "/AllStubs_AS_L1PHIBn4_04.dat")) return -1;
+  if (not openDataFile(fin_innerStubs0, dir + "/AllInnerStubs_AS_L1PHIB_BA_04.dat")) return -1;
 
   ifstream fin_innerStubs1;
-  if (not openDataFile(fin_innerStubs1, dir + "/AllStubs_AS_L1PHICn3_04.dat")) return -1;
+  if (not openDataFile(fin_innerStubs1, dir + "/AllInnerStubs_AS_L1PHIC_BF_04.dat")) return -1;
 
   ifstream fin_outerStubs;
-  if (not openDataFile(fin_outerStubs, dir + "/AllStubs_AS_L2PHIBn2_04.dat")) return -1;
+  if (not openDataFile(fin_outerStubs, dir + "/AllStubs_AS_L2PHIB_B_D_04.dat")) return -1;
 
   ifstream fin_outervmstubs;
   if (not openDataFile(fin_outervmstubs, dir + "/VMStubs_VMSTE_L2PHIBn1_04.dat")) return -1;
