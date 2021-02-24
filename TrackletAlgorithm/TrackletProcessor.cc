@@ -72,7 +72,7 @@ void TrackletProcessor_L1L2D(
 			     kNbitsrzbin,
 			     kNbitsphibin,
 			     2, //Number of inner AS memories
-			     105>(bx, 
+			     108>(bx, 
 				  lut, 
 				  regionlut, 
 				  innerStubs, 
