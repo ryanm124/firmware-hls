@@ -8,7 +8,7 @@
 #include "FileReadUtility.h"
 #include "Constants.h"
 
-const int nevents = 1;  //number of events to run
+const int nevents = 50;  //number of events to run
 
 using namespace std;
 
@@ -60,25 +60,28 @@ int main()
   if (not openDataFile(fin_stubPairs4, dir + "/StubPairs_SP_L1PHIE17_L2PHIC19_04.dat")) return -1;
 
   ifstream fin_stubPairs5;
-  if (not openDataFile(fin_stubPairs5, dir + "/StubPairs_SP_L1PHIE18_L2PHIC17_04.dat")) return -1;
+  if (not openDataFile(fin_stubPairs5, dir + "/StubPairs_SP_L1PHIE18_L2PHIB16_04.dat")) return -1;
 
   ifstream fin_stubPairs6;
-  if (not openDataFile(fin_stubPairs6, dir + "/StubPairs_SP_L1PHIE18_L2PHIC18_04.dat")) return -1;
+  if (not openDataFile(fin_stubPairs6, dir + "/StubPairs_SP_L1PHIE18_L2PHIC17_04.dat")) return -1;
 
   ifstream fin_stubPairs7;
-  if (not openDataFile(fin_stubPairs7, dir + "/StubPairs_SP_L1PHIE18_L2PHIC19_04.dat")) return -1;
+  if (not openDataFile(fin_stubPairs7, dir + "/StubPairs_SP_L1PHIE18_L2PHIC18_04.dat")) return -1;
 
   ifstream fin_stubPairs8;
-  if (not openDataFile(fin_stubPairs8, dir + "/StubPairs_SP_L1PHIE18_L2PHIC20_04.dat")) return -1;
+  if (not openDataFile(fin_stubPairs8, dir + "/StubPairs_SP_L1PHIE18_L2PHIC19_04.dat")) return -1;
 
   ifstream fin_stubPairs9;
-  if (not openDataFile(fin_stubPairs9, dir + "/StubPairs_SP_L1PHIE19_L2PHIC17_04.dat")) return -1;
+  if (not openDataFile(fin_stubPairs9, dir + "/StubPairs_SP_L1PHIE18_L2PHIC20_04.dat")) return -1;
 
   ifstream fin_stubPairs10;
-  if (not openDataFile(fin_stubPairs10, dir + "/StubPairs_SP_L1PHIE19_L2PHIC18_04.dat")) return -1;
+  if (not openDataFile(fin_stubPairs10, dir + "/StubPairs_SP_L1PHIE19_L2PHIC17_04.dat")) return -1;
 
   ifstream fin_stubPairs11;
-  if (not openDataFile(fin_stubPairs11, dir + "/StubPairs_SP_L1PHIE19_L2PHIC19_04.dat")) return -1;
+  if (not openDataFile(fin_stubPairs11, dir + "/StubPairs_SP_L1PHIE19_L2PHIC18_04.dat")) return -1;
+
+  ifstream fin_stubPairs12;
+  if (not openDataFile(fin_stubPairs12, dir + "/StubPairs_SP_L1PHIE19_L2PHIC19_04.dat")) return -1;
 
   ///////////////////////////
   // open output files
@@ -195,6 +198,7 @@ int main()
     writeMemFromFile<StubPairMemory>(stubPairs[9], fin_stubPairs9, ievt);
     writeMemFromFile<StubPairMemory>(stubPairs[10], fin_stubPairs10, ievt);
     writeMemFromFile<StubPairMemory>(stubPairs[11], fin_stubPairs11, ievt);
+    writeMemFromFile<StubPairMemory>(stubPairs[12], fin_stubPairs12, ievt);
 
     // bx
     BXType bx = ievt;

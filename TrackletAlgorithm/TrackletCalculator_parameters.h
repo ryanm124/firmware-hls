@@ -58,7 +58,7 @@ template<> constexpr uint16_t ASInnerMask<TF::L1L2, TC::G>() {
   return 0x0000;
 }
 template<> constexpr uint16_t ASOuterMask<TF::L1L2, TC::G>() {
-  return 0x1FFC;
+  return 0x1FDC;
 }
 template<> constexpr uint32_t TPROJMaskBarrel<TF::L1L2, TC::G>() {
   return 0xEE66000;
