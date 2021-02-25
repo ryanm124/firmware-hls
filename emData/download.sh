@@ -4,8 +4,11 @@
 #tarball_url="https://cernbox.cern.ch/index.php/s/y7IWeDG4x7Sg7Im/download"
 #luts_url="https://cernbox.cern.ch/index.php/s/DuhCjcykSHZLRhM/download"
 
-tarball_url="https://www.dropbox.com/s/82ptvzg076o6cut/MemPrintsStandard.tgz?dl=0"
-luts_url="https://www.dropbox.com/s/3bsnivrz1pc4tw1/LUTsStandard.tgz?dl=0"
+#tarball_url="https://www.dropbox.com/s/82ptvzg076o6cut/MemPrintsStandard.tgz?dl=0"
+#luts_url="https://www.dropbox.com/s/3bsnivrz1pc4tw1/LUTsStandard.tgz?dl=0"
+
+tarball_url="https://www.dropbox.com/s/vmtp83jh36zgdf9/MemPrintsStandard_210224.tgz?dl=0"
+luts_url="https://www.dropbox.com/s/hqn90g578xkavum/LUTsStandard_210224.tgz?dl=0"
 # Combined modules - temporary
 #tarball_url_cm="https://www.dropbox.com/s/h5fzg46vro127h0/MemPrintsCombined.tgz?dl=0"
 #luts_url_cm="https://www.dropbox.com/s/dk5ftlbtjrqdr26/LUTsCombined.tgz?dl=0"
