@@ -178,6 +178,11 @@ void ProjectionRouter(BXType bx,
         // from the 3 MSBs of zproj, which can happen because zbin1 is adjusted by zbins_adjust
         typename VMProjection<VMPTYPE>::VMPFINEZ finez = (1<<(MEBinsBits+(nfinebits-1)-1))+(izproj.range(izproj.length()-1,izproj.length()-MEBinsBits-(nfinebits-1)))-(zbin1,zeropad);
 
+	// vmproj fine phi 
+	// these are the bits following (less significant than) the bit that defines iphi
+	auto nfinephibits = VMProjection<VMPTYPE>::BitWidths::kVMProjFinePhiSize;
+        auto finephi = iphiproj.range(iphiproj.length()-nbits_all-nbits_vmme-1,iphiproj.length()-nbits_all-nbits_vmme-nfinephibits);
+
         // vmproj irinv
         // phider = -irinv/2
         // Note: auto does not work well here
@@ -200,7 +205,7 @@ void ProjectionRouter(BXType bx,
         bool psseed = not(iseed==TF::L3L4 or iseed==TF::L5L6); 
 
         // VM Projection
-        VMProjection<VMPTYPE> vmproj(index, zbin, finez, rinv, psseed);
+        VMProjection<VMPTYPE> vmproj(index, zbin, finez, finephi, rinv, psseed);
 
         // write outputs
         //assert(iphi>=0 and iphi<4);
