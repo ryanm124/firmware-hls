@@ -175,44 +175,49 @@ void ProjectionRouter(BXType bx,
       // N.B. We use (nfinebits-1) instead of nfinebits throughout the calculation because we need to keep 1 extra MSB in case zbin1 is different
       // from the 3 MSBs of zproj, which can happen because zbin1 is adjusted by zbins_adjust
       typename VMProjection<VMPTYPE>::VMPFINEZ finez = (1<<(MEBinsBits+(nfinebits-1)-1))+(izproj.range(izproj.length()-1,izproj.length()-MEBinsBits-(nfinebits-1)))-(zbin1,zeropad);
-
+      
+      // vmproj fine phi 
+      // these are the bits following (less significant than) the bit that defines iphi
+      auto nfinephibits = VMProjection<VMPTYPE>::BitWidths::kVMProjFinePhiSize;
+      auto finephi = iphiproj.range(iphiproj.length()-nbits_all-nbits_vmme-1,iphiproj.length()-nbits_all-nbits_vmme-nfinephibits);
+      
       // vmproj irinv
       // phider = -irinv/2
       // Note: auto does not work well here
       // auto infers 42 bits because -2 is treated as a 32-bit int
       ap_uint<TrackletProjection<PROJTYPE>::BitWidths::kTProjPhiDSize+1> irinv_tmp = iphider * (-2);
-
+      
       // rinv in VMProjection takes only the top 5 bits
       // and is shifted to be positive
       typename VMProjection<VMPTYPE>::VMPRINV rinv = (1<<(nbits_maxvm-1))+irinv_tmp.range(irinv_tmp.length()-1,irinv_tmp.length()-nbits_maxvm);
       //assert(rinv >=0 and rinv < 32);
-    
+      
       // PS seed
       // top 3 bits of tracklet index indicate the seeding pair
       ap_uint<nbits_seed> iseed = trackletid.range(trackletid.length()-1,trackletid.length()-nbits_seed);
       // Cf. https://github.com/cms-tracklet/fpga_emulation_longVM/blob/fw_synch/FPGATrackletCalculator.hh#L166
       // and here?
       // https://github.com/cms-tracklet/fpga_emulation_longVM/blob/fw_synch/FPGATracklet.hh#L1621
-
+      
       // All seeding pairs are PS modules except L3L4 and L5L6
       bool psseed = not(iseed==TF::L3L4 or iseed==TF::L5L6); 
-
+      
       // VM Projection
-      VMProjection<VMPTYPE> vmproj(index, zbin, finez, rinv, psseed);
-
+      VMProjection<VMPTYPE> vmproj(index, zbin, finez, finephi, rinv, psseed);
+      
       // write outputs
       //assert(iphi>=0 and iphi<4);
       vmprojout[iphi].write_mem(bx, vmproj, nvmprojout[iphi]);
       nvmprojout[iphi] ++;
-
+      
       /////////////////
       // AllProjection
       AllProjection<PROJTYPE> aproj(tproj.raw());
       // write output
       allprojout.write_mem(bx, aproj, nallproj);
       nallproj ++;
-      }
-
+    }
+    
   } // end of PROC_LOOP
 
   bx_o = bx;

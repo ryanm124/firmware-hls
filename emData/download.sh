@@ -7,8 +7,10 @@
 #tarball_url="https://www.dropbox.com/s/82ptvzg076o6cut/MemPrintsStandard.tgz?dl=0"
 #luts_url="https://www.dropbox.com/s/3bsnivrz1pc4tw1/LUTsStandard.tgz?dl=0"
 
-tarball_url="https://www.dropbox.com/s/vmtp83jh36zgdf9/MemPrintsStandard_210224.tgz?dl=0"
-luts_url="https://www.dropbox.com/s/hqn90g578xkavum/LUTsStandard_210224.tgz?dl=0"
+#tarball_url="https://www.dropbox.com/s/vmtp83jh36zgdf9/MemPrintsStandard_210224.tgz?dl=0"
+#luts_url="https://www.dropbox.com/s/hqn90g578xkavum/LUTsStandard_210224.tgz?dl=0"
+tarball_url="https://www.dropbox.com/s/kxhz7q2s6j7kvhr/MemPrintsStandard_210227.tgz?dl=0"
+luts_url="https://www.dropbox.com/s/izguolnds21wmdt/LUTsStandard_210227.tgz?dl=0"
 # Combined modules - temporary
 #tarball_url_cm="https://www.dropbox.com/s/h5fzg46vro127h0/MemPrintsCombined.tgz?dl=0"
 #luts_url_cm="https://www.dropbox.com/s/dk5ftlbtjrqdr26/LUTsCombined.tgz?dl=0"
@@ -167,9 +169,11 @@ do
 
   # Table linking logic specific to each module type
   table_location="LUTs/"
+  ln -sf ${table_location}wires.dat wires_hourglass.dat
   if [[ ${cm} == "true" ]]
   then
       table_location="LUTsCM/"
+      ln -sf ${table_location}wires.dat wires_hourglassCombinedModules.dat
   fi
 
   table_target_dir="${module_type}/tables"
