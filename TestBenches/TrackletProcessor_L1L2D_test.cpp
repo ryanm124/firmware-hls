@@ -18,7 +18,7 @@ int main()
   int err = 0;
 
   ap_uint<10> innervmtable[2048] =
-#include "../emData/TP/tables/VMR_L1.tab"
+#include "../emData/TP/tables/TP_L1.tab"
 
   ap_uint<8> useregion[2048] =
 #include "../emData/TP/tables/TP_L1L2D_usereg.tab"
