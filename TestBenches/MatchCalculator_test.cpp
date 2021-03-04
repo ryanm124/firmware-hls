@@ -60,8 +60,8 @@ int main() {
   ifstream fout_fm7;
   ifstream fout_fm8;
 
-  if (not openDataFile(fout_fm1,"MC/MC_L1PHIC/FullMatches_FM_L2L3_L1PHIC_04.dat")) return -1;
-  //if (not openDataFile(fout_fm2,"MC/MC_L1PHIC/FullMatches_FM_L2L1_L1PHIC_04.dat")) return -1;
+  //if (not openDataFile(fout_fm1,"MC/MC_L1PHIC/FullMatches_FM_L2L3_L1PHIC_04.dat")) return -1;
+  if (not openDataFile(fout_fm2,"MC/MC_L1PHIC/FullMatches_FM_L2L3_L1PHIC_04.dat")) return -1;
   //if (not openDataFile(fout_fm3,"MC/MC_L1PHIC/FullMatches_FM_L1L4_L1PHIC_04.dat")) return -1;
   if (not openDataFile(fout_fm4,"MC/MC_L1PHIC/FullMatches_FM_L5L6_L1PHIC_04.dat")) return -1;
   //if (not openDataFile(fout_fm4,"MC/MC_L1PHIC/FullMatches_FM_D1D2_L1PHIC_04.dat")) return -1;
@@ -105,12 +105,12 @@ int main() {
 
     // compare the computed outputs with the expected ones 
     //std::cout << "FM: L1L2 seeding" << std::endl;
-    err_count += compareMemWithFile<FullMatchMemory<BARREL> >(fullmatch[0], fout_fm1, ievt, "FullMatch", truncation);
-    //std::cout << "FM: L2L3 seeding" << std::endl;
-    //err_count += compareMemWithFile<FullMatchMemory<BARREL> >(fullmatch[1], fout_fm2, ievt, "FullMatch", truncation);
+    //err_count += compareMemWithFile<FullMatchMemory<BARREL> >(fullmatch[0], fout_fm1, ievt, "FullMatch", truncation);
+    std::cout << "FM: L2L3 seeding" << std::endl;
+    err_count += compareMemWithFile<FullMatchMemory<BARREL> >(fullmatch[1], fout_fm2, ievt, "FullMatch", truncation);
     //std::cout << "FM: L3L4 seeding" << std::endl;
     //err_count += compareMemWithFile<FullMatchMemory<BARREL> >(fullmatch[2], fout_fm3, ievt, "FullMatch", truncation);
-    //std::cout << "FM: L5L6 seeding" << std::endl;
+    std::cout << "FM: L5L6 seeding" << std::endl;
     err_count += compareMemWithFile<FullMatchMemory<BARREL> >(fullmatch[3], fout_fm4, ievt, "FullMatch", truncation);
     //std::cout << "FM: D1D2 seeding" << std::endl;
     //err_count += compareMemWithFile<FullMatchMemory<BARREL> >(fullmatch[4], fout_fm5, ievt, "FullMatch", truncation);
