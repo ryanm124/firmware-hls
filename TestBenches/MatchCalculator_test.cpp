@@ -43,16 +43,12 @@ int main() {
   ifstream fin_cm7;
   ifstream fin_cm8;
 
-  if (not openDataFile(fin_as,"MC/MC_L3PHIC/AllStubs_AS_L3PHICn6_04.dat")) return -1;
-  if (not openDataFile(fin_ap,"MC/MC_L3PHIC/AllProj_AP_L3PHIC_04.dat")) return -1;
-  if (not openDataFile(fin_cm1,"MC/MC_L3PHIC/CandidateMatches_CM_L3PHIC17_04.dat")) return -1;
-  if (not openDataFile(fin_cm2,"MC/MC_L3PHIC/CandidateMatches_CM_L3PHIC18_04.dat")) return -1;
-  if (not openDataFile(fin_cm3,"MC/MC_L3PHIC/CandidateMatches_CM_L3PHIC19_04.dat")) return -1;
-  if (not openDataFile(fin_cm4,"MC/MC_L3PHIC/CandidateMatches_CM_L3PHIC20_04.dat")) return -1;
-  if (not openDataFile(fin_cm5,"MC/MC_L3PHIC/CandidateMatches_CM_L3PHIC21_04.dat")) return -1;
-  if (not openDataFile(fin_cm6,"MC/MC_L3PHIC/CandidateMatches_CM_L3PHIC22_04.dat")) return -1;
-  if (not openDataFile(fin_cm7,"MC/MC_L3PHIC/CandidateMatches_CM_L3PHIC23_04.dat")) return -1;
-  if (not openDataFile(fin_cm8,"MC/MC_L3PHIC/CandidateMatches_CM_L3PHIC24_04.dat")) return -1;
+  if (not openDataFile(fin_as,"MC/MC_L1PHIC/AllStubs_AS_L1PHICn6_04.dat")) return -1;
+  if (not openDataFile(fin_ap,"MC/MC_L1PHIC/AllProj_AP_L1PHIC_04.dat")) return -1;
+  if (not openDataFile(fin_cm1,"MC/MC_L1PHIC/CandidateMatches_CM_L1PHIC9_04.dat")) return -1;
+  if (not openDataFile(fin_cm2,"MC/MC_L1PHIC/CandidateMatches_CM_L1PHIC10_04.dat")) return -1;
+  if (not openDataFile(fin_cm3,"MC/MC_L1PHIC/CandidateMatches_CM_L1PHIC11_04.dat")) return -1;
+  if (not openDataFile(fin_cm4,"MC/MC_L1PHIC/CandidateMatches_CM_L1PHIC12_04.dat")) return -1;
 
   // open file(s) with reference results
   ifstream fout_fm1;
@@ -64,10 +60,10 @@ int main() {
   ifstream fout_fm7;
   ifstream fout_fm8;
 
-  if (not openDataFile(fout_fm1,"MC/MC_L3PHIC/FullMatches_FM_L1L2_L3PHIC_04.dat")) return -1;
-  //if (not openDataFile(fout_fm2,"MC/MC_L1PHIC/FullMatches_FM_L2L3_L1PHIC_04.dat")) return -1;
-  //if (not openDataFile(fout_fm3,"MC/MC_L1PHIC/FullMatches_FM_L3L4_L1PHIC_04.dat")) return -1;
-  if (not openDataFile(fout_fm4,"MC/MC_L3PHIC/FullMatches_FM_L5L6_L3PHIC_04.dat")) return -1;
+  if (not openDataFile(fout_fm1,"MC/MC_L1PHIC/FullMatches_FM_L2L3_L1PHIC_04.dat")) return -1;
+  //if (not openDataFile(fout_fm2,"MC/MC_L1PHIC/FullMatches_FM_L2L1_L1PHIC_04.dat")) return -1;
+  //if (not openDataFile(fout_fm3,"MC/MC_L1PHIC/FullMatches_FM_L1L4_L1PHIC_04.dat")) return -1;
+  if (not openDataFile(fout_fm4,"MC/MC_L1PHIC/FullMatches_FM_L5L6_L1PHIC_04.dat")) return -1;
   //if (not openDataFile(fout_fm4,"MC/MC_L1PHIC/FullMatches_FM_D1D2_L1PHIC_04.dat")) return -1;
   //if (not openDataFile(fout_fm5,"MC/MC_L1PHIC/FullMatches_FM_D3D4_L1PHIC_04.dat")) return -1;
   //if (not openDataFile(fout_fm6,"")) return -1;
