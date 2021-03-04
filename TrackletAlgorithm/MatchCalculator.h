@@ -168,7 +168,7 @@ void readTable_Cuts(ap_uint<width> table[depth]){
 #include "../emData/MC/tables/MC_L4PHIC_phicut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];
     }
-    else if (L==TF::L4){
+    else if (L==TF::L5){
       ap_uint<width> tmp[depth] =
 #include "../emData/MC/tables/MC_L5PHIC_phicut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];

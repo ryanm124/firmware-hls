@@ -5,12 +5,13 @@
 
 // masking out all but L1L2 and L5L6 seeding
 template<TF::layer Layer, MC::imc PHI> constexpr uint16_t FMMask() {
-  return 0b00001001;
+  return 0b00001101;
 }
 
 // return mask bit AND mask
 template<TF::layer Layer, MC::imc PHI, TF::seed Seed> constexpr bool FMMask() {
-  return FMMask<Layer, PHI>() & (1<<Seed);
+  //return FMMask<Layer, PHI>() & (1<<Seed);
+  return true;
 }
 
 #endif

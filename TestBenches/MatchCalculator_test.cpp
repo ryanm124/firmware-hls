@@ -65,7 +65,7 @@ int main() {
   ifstream fout_fm8;
 
   if (not openDataFile(fout_fm1,"MC/MC_L4PHIC/FullMatches_FM_L1L2_L4PHIC_04.dat")) return -1;
-  //if (not openDataFile(fout_fm2,"MC/MC_L1PHIC/FullMatches_FM_L2L3_L1PHIC_04.dat")) return -1;
+  if (not openDataFile(fout_fm2,"MC/MC_L4PHIC/FullMatches_FM_L2L3_L4PHIC_04.dat")) return -1;
   //if (not openDataFile(fout_fm3,"MC/MC_L1PHIC/FullMatches_FM_L3L4_L1PHIC_04.dat")) return -1;
   if (not openDataFile(fout_fm4,"MC/MC_L4PHIC/FullMatches_FM_L5L6_L4PHIC_04.dat")) return -1;
   //if (not openDataFile(fout_fm4,"MC/MC_L1PHIC/FullMatches_FM_D1D2_L1PHIC_04.dat")) return -1;
@@ -79,7 +79,7 @@ int main() {
 
     fullmatch[0].clear();
 //    fullmatch[1].clear();
-//    fullmatch[2].clear();
+    fullmatch[2].clear();
     fullmatch[3].clear();
 //    fullmatch[4].clear();
 //    fullmatch[5].clear();
