@@ -136,35 +136,6 @@ void ProjectionRouter(BXType bx,
       // VMProjection
       static_assert(not DISK, "PR: Layer only for now.");
     
-      // vmproj index
-      typename VMProjection<VMPTYPE>::VMPID index = nallproj;
-
-      // vmproj z
-      // Separate the vm projections into zbins
-      // To determine which zbin in VMStubsME the ME should look in to match this VMProjection,
-      // the purpose of these lines is to take the top MEBinsBits (3) bits of zproj and shift it
-      // to make it positive, which gives the bin index. But there is a range of possible z values
-      // over which we want to look for matched stubs, and there is therefore possibly 2 bins that
-      // we will have to look in. So we first take the first MEBinsBits+zbins_nbitsextra (3+2=5)
-      // bits of zproj, adjust the value up and down by zbins_adjust (2), then truncate the
-      // zbins_adjust (2) LSBs to get the lower & upper bins that we need to look in.
-      auto zbinposfull = (1<<(izproj.length()-1))+izproj;
-      auto zbinpos5 = zbinposfull.range(izproj.length()-1,izproj.length()-MEBinsBits-zbins_nbitsextra);
-
-      // Lower Bound
-      auto zbinlower = zbinpos5<zbins_adjust ?
-                       ap_uint<MEBinsBits+zbins_nbitsextra>(0) :
-                       ap_uint<MEBinsBits+zbins_nbitsextra>(zbinpos5-zbins_adjust);
-      // Upper Bound
-      auto zbinupper = zbinpos5>((1<<(MEBinsBits+zbins_nbitsextra))-1-zbins_adjust) ? 
-                       ap_uint<MEBinsBits+zbins_nbitsextra>((1<<(MEBinsBits+zbins_nbitsextra))-1) :
-                       ap_uint<MEBinsBits+zbins_nbitsextra>(zbinpos5+zbins_adjust);
-
-      ap_uint<MEBinsBits> zbin1 = zbinlower >> zbins_nbitsextra;
-      ap_uint<MEBinsBits> zbin2 = zbinupper >> zbins_nbitsextra;
-      
-      typename VMProjection<VMPTYPE>::VMPZBIN zbin = (zbin1, zbin2!=zbin1);
-    
       //fine vm z bits. Use 4 bits for fine position. starting at zbin 1
       auto nfinebits = VMProjection<VMPTYPE>::BitWidths::kVMProjFineZSize;
       ap_uint<VMProjection<VMPTYPE>::BitWidths::kVMProjFineZSize-1> zeropad(0);
@@ -201,7 +172,7 @@ void ProjectionRouter(BXType bx,
       
       // All seeding pairs are PS modules except L3L4 and L5L6
       bool psseed = not(iseed==TF::L3L4 or iseed==TF::L5L6); 
-      
+
       // VM Projection
       VMProjection<VMPTYPE> vmproj(index, zbin, finez, finephi, rinv, psseed);
       
@@ -217,7 +188,6 @@ void ProjectionRouter(BXType bx,
       allprojout.write_mem(bx, aproj, nallproj);
       nallproj ++;
     }
-    
   } // end of PROC_LOOP
 
   bx_o = bx;
