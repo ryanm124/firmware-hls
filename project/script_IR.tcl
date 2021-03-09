@@ -25,9 +25,9 @@ create_clock -period 360MHz -name fast_clock
 
 set nProc [exec nproc]
 csim_design -compiler gcc -mflags "-j$nProc"
-csynth_design 
-# possible options -trace_level all -rtl verilog -verbose 
-cosim_design 
-# possible options  -flow syn, -flow impl
-#export_design -format ip_catalog 
+# csynth_design 
+# # possible options -trace_level all -rtl verilog -verbose 
+# cosim_design 
+# # possible options  -flow syn, -flow impl
+# #export_design -format ip_catalog 
 exit

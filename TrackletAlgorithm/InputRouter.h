@@ -9,6 +9,7 @@
 
 
 // link map
+static const int kNBitsLnkDsc = 4; 
 static const int kNBitsNLnks = 6; 
 static const int kLINKMAPwidth = 20;
 static const int kSizeLinkWord = 4; 
@@ -23,6 +24,9 @@ static const int kNMEMwidth = 5;
 
 // // maximum number of IR memories 
 // constexpr unsigned int kNIRMemories = 20;
+
+// mxm number of coarse phi bins 
+constexpr int kMaxPhiBnsPrLyr = 8; 
 
 // mxmium number of layers readout by a DTC 
 static const int kMaxLyrsPerDTC = 4; 
