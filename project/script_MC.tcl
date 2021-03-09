@@ -21,6 +21,7 @@ source settings_hls.tcl
 add_files -tb ../emData/MC/
 
 #csim_design -compiler gcc -mflags "-j8" # FIXME: activate when missing values are fixed
+csim_design -compiler gcc -mflags "-j8"
 csynth_design
 #cosim_design # FIXME: activate when missing values are fixed
 export_design -format ip_catalog
