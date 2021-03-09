@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # standard configurations - temporary
-tarball_url="https://www.dropbox.com/s/kxhz7q2s6j7kvhr/MemPrintsStandard_210227.tgz?dl=0"
-luts_url="https://www.dropbox.com/s/izguolnds21wmdt/LUTsStandard_210227.tgz?dl=0"
+tarball_url="https://www.dropbox.com/s/jtumh2dcy21uzu1/MemPrintsStandard_210309.tgz?dl=0"
+luts_url="https://www.dropbox.com/s/vbnvcbp7xkno892/LUTsStandard_210309.tgz?dl=0"
 
 # Combined modules - temporary
 tarball_url_cm="https://www.dropbox.com/s/ag7vtn33ux8q6xu/MemPrintsCombined_210301.tgz?dl=0"
