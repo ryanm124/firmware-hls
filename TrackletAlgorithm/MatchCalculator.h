@@ -168,7 +168,7 @@ void readTable_Cuts(ap_uint<width> table[depth]){
 #include "../emData/MC/tables/MC_L4PHIC_phicut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];
     }
-    else if (L==TF::L4){
+    else if (L==TF::L5){
       ap_uint<width> tmp[depth] =
 #include "../emData/MC/tables/MC_L5PHIC_phicut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];
@@ -257,15 +257,15 @@ void MatchCalculator(BXType bx,
   const ap_int<4>  kShift_PS_zderL = -7; // PS_zderL_shift in emulation (defined in constants)
   const ap_int<4>  kShift_2S_zderL = -7; // SS_zderL_shift in emulation (defined in constants)
 
-  const auto kFact               = (1 <= LAYER <= 3)? 1 : (1<<(kNbitszprojL123-kNbitszprojL456)); // fact_ in emulation defined in MC
-  const auto kPhi0_shift         = (1 <= LAYER <= 3)? 3 : 0;                                      // phi0shift_ in emulation defined in MC
+  const auto kFact               = (LAYER < TF::L4)? 1 : (1<<(kNbitszprojL123-kNbitszprojL456)); // fact_ in emulation defined in MC
+  const auto kPhi0_shift         = (LAYER < TF::L4)? 3 : 0;                                      // phi0shift_ in emulation defined in MC
   const auto kShift_phi0bit      = 1;                                                             // phi0bitshift in emulation defined in constants
   const ap_uint<10> kPhi_corr_shift_L123 = 7 + kNbitsdrinv + kShift_phi0bit - kShift_Rinv - kShift_Phider;                    // icorrshift for L123
-  const ap_uint<10> kPhi_corr_shift_L456 = kPhi_corr_shift_L123 - 10 - kNbitsrL456;                                           // icorrshift for L456
-  const auto kPhi_corr_shift     = (1 <= LAYER <= 3)? kPhi_corr_shift_L123 : kPhi_corr_shift_L456;                            // icorrshift_ in emulation
+  const ap_uint<10> kPhi_corr_shift_L456 = kPhi_corr_shift_L123 - 10 + kNbitsrL456;                                           // icorrshift for L456
+  const auto kPhi_corr_shift     = (LAYER < TF::L4)? kPhi_corr_shift_L123 : kPhi_corr_shift_L456;                            // icorrshift_ in emulation
   const ap_uint<10> kZ_corr_shiftL123 = (-1-kShift_PS_zderL);                                                                 // icorzshift for L123 (6 in L3)
   const ap_uint<10> kZ_corr_shiftL456 = (-1-kShift_2S_zderL + kNbitszprojL123 - kNbitszprojL456 + kNbitsrL456 - kNbitsrL123); // icorzshift for L456
-  const auto kZ_corr_shift       = (1 <= LAYER <= 3)? kZ_corr_shiftL123 : kZ_corr_shiftL456;                                  // icorzshift_ in emulation
+  const auto kZ_corr_shift       = (LAYER < TF::L4)? kZ_corr_shiftL123 : kZ_corr_shiftL456;                                  // icorzshift_ in emulation
 
   const auto LUT_matchcut_phi_width = 17;
   const auto LUT_matchcut_phi_depth = 12;
@@ -752,7 +752,8 @@ void MatchCalculator(BXType bx,
     ap_int<12> z_corr        = (full_z_corr + (1<<(kZ_corr_shift-1))) >> kZ_corr_shift; // only keep needed bits
      
     // Apply the corrections
-    ap_int<15> proj_phi_corr = proj_phi + phi_corr;  // original proj phi plus phi correction
+    const int kProj_phi_len = (APTYPE == BARRELPS) ? 15 : 18;
+    ap_int<kProj_phi_len> proj_phi_corr = proj_phi + phi_corr;  // original proj phi plus phi correction
     ap_int<13> proj_z_corr   = proj_z + z_corr;      // original proj z plus z correction
 
     // Get phi and z difference between the projection and stub
