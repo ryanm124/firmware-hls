@@ -1,6 +1,7 @@
 #include "InputRouterTop.h"
 
 void InputRouterTop( const BXType hBx
+  , const unsigned int hNmemories // number of memories 
   , const ap_uint<kLINKMAPwidth> hLinkWord // input link LUT 
   , const ap_uint<kBINMAPwidth> hPhBnWord  // n phi bins LUT 
   , const int kPhiCorrtable_L1[cNEntriesLUT] // corrections frst brl lyr  
@@ -12,7 +13,7 @@ void InputRouterTop( const BXType hBx
   #pragma HLS clock domain = slow_clock
   #pragma HLS stream variable = hInputStubs depth = 1
  
-  
+  // const unsigned int cNmems = hNmemories;
   InputRouter<cNMemories,cNEntriesLUT>( hBx
       , hLinkWord
       , hPhBnWord

@@ -83,8 +83,8 @@ static const int kMSBVldBt = kNBits_DTC-1;//0;
 static const int kLSBLyrBts = kNBits_DTC - 3;//1; 
 static const int kMSBLyrBts = kNBits_DTC - 2;//2; 
 
-
-#define IR_DEBUG false
+constexpr unsigned int kMaxNmemories = 16;  
+#define IR_DEBUG true
 
 // Get the corrected phi, i.e. phi at the average radius of the barrel
 // Corrected phi is used by ME and TE memories in the barrel
@@ -137,7 +137,7 @@ void InputRouter( const BXType hBx
 	, const int hPhiCorrtable_L2[nLUTEntries]
 	, const int hPhiCorrtable_L3[nLUTEntries]
 	, ap_uint<kNBits_DTC>* hInputStubs
-	, DTCStubMemory* hOutputStubs)
+	, DTCStubMemory hOutputStubs[nOMems])
 {
 	
 	#pragma HLS inline
@@ -146,23 +146,30 @@ void InputRouter( const BXType hBx
   	#pragma HLS interface ap_memory port = hPhiCorrtable_L3
   
   	ap_uint<1> hIs2S= hLinkWord.range(kLINKMAPwidth-4,kLINKMAPwidth-4);
+
+	// figure out what these are once 
+	// don't have to do it for every entry 
+	unsigned int nMems=0;
+	unsigned int nMemsPerLyr[kMaxLyrsPerDTC];
+	LOOP_CountOutputMemories:
+	for (int cLyr = 0; cLyr < kMaxLyrsPerDTC; cLyr++) 
+	{
+	   #pragma HLS unroll
+	   auto hBnWrd = hPhBnWord.range(kSizeBinWord * cLyr + (kSizeBinWord-1), kSizeBinWord * cLyr);
+	   nMemsPerLyr[cLyr] = (1+(int)(hBnWrd)); 
+	   nMems += (1+(int)(hBnWrd)); 
+	}
+
 	// clear stub counter
 	ap_uint<kNBits_MemAddr> hNStubs[nOMems];
 	#pragma HLS array_partition variable = hNStubs complete
 	LOOP_ClearOutputMemories:
-	for (unsigned int cMemIndx = 0; cMemIndx < nOMems ; cMemIndx++) 
+	for (unsigned int cMemIndx = 0; cMemIndx < nMems ; cMemIndx++) 
 	{
 	#pragma HLS unroll
 	hNStubs[cMemIndx] = 0;
-	 #ifndef __SYNTHESIS__
-	  if (IR_DEBUG) {
-	  std::cout << ".........."
-	    << +(&hOutputStubs[cMemIndx])->getEntries(hBx) 
-	    << " entries... "
-	    << "\n";
-	  }
-	#endif
 	}
+
 
 	LOOP_ProcessIR:
 	for (int cStubCounter = 0; cStubCounter < kMaxStubsFromLink; cStubCounter++) 
@@ -179,15 +186,6 @@ void InputRouter( const BXType hBx
 	  if( hVldBt == 0 ) continue;
 	  // encoded layer 
 	  auto hEncLyr = hStub.range(kMSBLyrBts, kLSBLyrBts);
-	  #ifndef __SYNTHESIS__
-	  if( IR_DEBUG)
-	  {
-	  	  std::cout << "\t.. Stub : " << std::bitset<kNBits_DTC>(hStub) 
-		            << " [ ValidBit " << std::bitset<1>(hVldBt) << " ] "
-					<< " [ EncLyrId " << std::bitset<2>(hEncLyr) << " ] "
-					<< "\n";
-	  }
-	  #endif
 	  // get memory word
 	  auto hStbWrd = ap_uint<kBRAMwidth>(hStub.range(kBRAMwidth - 1, 0));
 	  DTCStub hMemWord(hStbWrd);
@@ -208,15 +206,12 @@ void InputRouter( const BXType hBx
 	  	cLUT = hPhiCorrtable_L3;
 	  
 	  // update index
-	  // and add phi bin 
 	  int cIndx = 0;
 	  LOOP_UpdateMemIndx:
 	  for (int cLyr = 0; cLyr < kMaxLyrsPerDTC; cLyr++) 
 	  {
 	    #pragma HLS unroll
-	    // update index
-	    auto hBnWrd = hPhBnWord.range(kSizeBinWord * cLyr + (kSizeBinWord-1), kSizeBinWord * cLyr);
-	   	cIndx += (cLyr < hEncLyr) ? (1+(int)(hBnWrd)) : 0; 
+	    cIndx += (cLyr < hEncLyr) ? nMemsPerLyr[cLyr] : 0; 
 	  }
 	  
 	  // get phi bin
@@ -252,18 +247,27 @@ void InputRouter( const BXType hBx
 	  }
 	  // assign memory index
 	  auto cMemIndx = cIndx+cIndxThisBn;
-	  assert(cMemIndx < nOMems);
+	  assert(cMemIndx < nMems);
 	  auto hEntries = hNStubs[cMemIndx];
+	  //auto hEntries = hNStubs[0];
 	  #ifndef __SYNTHESIS__
 	  if( IR_DEBUG )
 	  {
+	  	if( hEncLyr == 0 && hIsBrl ==1 )
+	  	{
 		  std::cout << "\t.. Stub : " << std::hex << hStbWrd << std::dec
 		            << " [ EncLyrId " << hEncLyr << " ] "
-		            << "[ LyrId " << hLyrId << " ] IsBrl bit " << +hIsBrl
+		            << "[ LyrId " << hLyrId << " ] "
+		            << "[ IsBrl " << +hIsBrl << " ] "
+		            << "[ PhiBn " << (int)cIndxThisBn << " ] "
 		            << " Mem#" << cMemIndx
-		            << " Current number of entries " << +hEntries << "\n";
+		            << " [ nOMems " << +nOMems << " ] " 
+ 		            << " Current number of entries " << +hEntries << "\n";
+	  	}
 	  }
 	  #endif
+	  //(&hOutputStubs[0])->write_mem(hBx, hMemWord, hEntries);
+	  //hNStubs[0] = hEntries + 1;
 	  (&hOutputStubs[cMemIndx])->write_mem(hBx, hMemWord, hEntries);
 	  // update counter 
 	  hNStubs[cMemIndx] = hEntries + 1;

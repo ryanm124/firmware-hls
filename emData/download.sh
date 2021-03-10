@@ -1,21 +1,12 @@
 #!/usr/bin/env bash
 
-# fw_synch_201005
-#tarball_url="https://cernbox.cern.ch/index.php/s/y7IWeDG4x7Sg7Im/download"
-#luts_url="https://cernbox.cern.ch/index.php/s/DuhCjcykSHZLRhM/download"
+# standard configurations - temporary
+tarball_url="https://www.dropbox.com/s/jtumh2dcy21uzu1/MemPrintsStandard_210309.tgz?dl=0"
+luts_url="https://www.dropbox.com/s/vbnvcbp7xkno892/LUTsStandard_210309.tgz?dl=0"
 
-#tarball_url="https://www.dropbox.com/s/82ptvzg076o6cut/MemPrintsStandard.tgz?dl=0"
-#luts_url="https://www.dropbox.com/s/3bsnivrz1pc4tw1/LUTsStandard.tgz?dl=0"
-
-#tarball_url="https://www.dropbox.com/s/vmtp83jh36zgdf9/MemPrintsStandard_210224.tgz?dl=0"
-#luts_url="https://www.dropbox.com/s/hqn90g578xkavum/LUTsStandard_210224.tgz?dl=0"
-tarball_url="https://www.dropbox.com/s/kxhz7q2s6j7kvhr/MemPrintsStandard_210227.tgz?dl=0"
-luts_url="https://www.dropbox.com/s/izguolnds21wmdt/LUTsStandard_210227.tgz?dl=0"
 # Combined modules - temporary
-#tarball_url_cm="https://www.dropbox.com/s/h5fzg46vro127h0/MemPrintsCombined.tgz?dl=0"
-#luts_url_cm="https://www.dropbox.com/s/dk5ftlbtjrqdr26/LUTsCombined.tgz?dl=0"
-tarball_url_cm="https://www.dropbox.com/s/kaj5gefkxxmrc8t/MemPrintsCombined_210224.tgz?dl=0"
-luts_url_cm="https://www.dropbox.com/s/w2ya02uvnqod01c/LUTsCombined_210224.tgz?dl=0"
+tarball_url_cm="https://www.dropbox.com/s/ag7vtn33ux8q6xu/MemPrintsCombined_210301.tgz?dl=0"
+luts_url_cm="https://www.dropbox.com/s/wy9rbd07zlyz673/LUTsCombined_210301.tgz?dl=0"
 
 # The following modules will have dedicated directories of test-bench files
 # prepared for them.
@@ -192,12 +183,8 @@ do
       find ${table_location} -type f -name "METable_${layer}.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
   elif [[ ${module_type} == "TP" ]]
   then
-#      echo ${table_location}
       layer=`echo ${module} | sed "s/.*_\(L[1-9]\).*$/\1/g"`
-#      echo ${layer}
-      find ${table_location} -type f -name "VMR_${layer}.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
-#      layer_pair=`echo ${module} | sed "s/\(.*\)./\1/g"`
-#      echo ${layer_pair}
+      find ${table_location} -type f -name "TP_${layer}.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
       find ${table_location} -type f -name "${module}_*.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
   elif [[ ${module_type} == "MC" ]] || [[ ${module_type} == "TE" ]]
   then
