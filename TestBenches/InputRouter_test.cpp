@@ -76,9 +76,9 @@ const int kPhiCorrtable_L6[] =
 #include "../emData/LUTs/VMPhiCorrL6.tab"
 ;
 
-const int kIRNmemsLUT[] =
-#include "../emData/LUTs/IR_Nmems.tab"
-;
+// const int kIRNmemsLUT[] =
+// #include "../emData/LUTs/IR_Nmems.tab"
+// ;
 
 
 // map of detector regions read out [ per DTC ]

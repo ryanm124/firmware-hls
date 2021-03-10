@@ -1,5 +1,6 @@
 #include "InputRouterTop.h"
 
+
 void InputRouterTop( const BXType hBx
   , const unsigned int hNmemories // number of memories 
   , const ap_uint<kLINKMAPwidth> hLinkWord // input link LUT 
@@ -12,8 +13,14 @@ void InputRouterTop( const BXType hBx
 
   #pragma HLS clock domain = slow_clock
   #pragma HLS stream variable = hInputStubs depth = 1
- 
-  // const unsigned int cNmems = hNmemories;
+  
+  // unsigned int nMems=0;
+  // unsigned int nMemsPerLyr[kMaxLyrsPerDTC]; 
+  // CountMemories<kMaxLyrsPerDTC>(hPhBnWord, nMems, nMemsPerLyr);
+  // #ifndef __SYNTHESIS__
+  //   std::cout << "Numnber of memories is " << nMems << "\n";
+  // #endif
+  //DTCStubMemory *cLclCpy = new DTCStubMemory[nMems]; 
   InputRouter<cNMemories,cNEntriesLUT>( hBx
       , hLinkWord
       , hPhBnWord
@@ -22,4 +29,7 @@ void InputRouterTop( const BXType hBx
       , kPhiCorrtable_L3
       , hInputStubs
       , hOutputStubs);
+
+  //delete hOutputStubs;
+  //hOutputStubs = cLclCpy;
 }

@@ -76,14 +76,15 @@ static const int kScnd2SBrlLyr = 5;
 static const int kThrd2SBrlLyr = 6; 
 // valid bit in DTC stub 
 // these can change when tarball is modified 
-static const int kLSBVldBt = kNBits_DTC-1;//0;
-static const int kMSBVldBt = kNBits_DTC-1;//0; 
+static const int kLSBVldBt = 0;//kNBits_DTC-1;//0;
+static const int kMSBVldBt = 0;//kNBits_DTC-1;//0; 
 // lyr bit in DTC stub 
 // these can change when tarball is modified 
-static const int kLSBLyrBts = kNBits_DTC - 3;//1; 
-static const int kMSBLyrBts = kNBits_DTC - 2;//2; 
+static const int kLyBitsSize = 2; 
+static const int kLSBLyrBts = 1;//kNBits_DTC - 3;//1; 
+static const int kMSBLyrBts = 2;//kNBits_DTC - 2;//2; 
 
-constexpr unsigned int kMaxNmemories = 16;  
+constexpr unsigned int kMaxNmemories = 20;  
 #define IR_DEBUG true
 
 // Get the corrected phi, i.e. phi at the average radius of the barrel
@@ -103,7 +104,12 @@ inline typename AllStub<InType>::ASPHI getPhiCorr(
 	auto index = bend * rbins + rbin; // Index for where we find our correction value
 	auto corrval = phicorrtable[index]; // The amount we need to correct our phi
 
-	auto phicorr = phi - corrval; // the corrected phi
+	// make phi un-signed 
+	auto cPhi = phi + (1 << (AllStub<InType>::kASPhiSize- 1));//phi
+	#ifndef __SYNTHESIS__
+	  	std::cout << "\t\t.. phi is " << phi << " which when un-signed is " << cPhi << "\n";
+	#endif
+	auto phicorr = cPhi- corrval; // the corrected phi
 
 	// Check for overflow
 	if (phicorr < 0)
@@ -128,6 +134,57 @@ inline typename AllStub<InType>::ASPHI getPhiCorr(
 	// return phicorr;
 }
 
+template<unsigned int nEntriesSize>
+void ClearCounters(unsigned int nMemories
+	, ap_uint<kNBits_MemAddr> nEntries[nEntriesSize]) 
+{
+  #pragma HLS inline
+  #pragma HLS array_partition variable = nEntries complete
+  LOOP_ClearCounters:
+	for (int cIndx = 0; cIndx < nEntriesSize ; cIndx++) 
+  {
+    #pragma HLS unroll
+    nEntries[cIndx]=0; 
+  }
+}
+
+template<unsigned int nLyrs>
+void CountMemories(const ap_uint<kBINMAPwidth> hPhBnWord 
+	, unsigned int &nMems
+	, unsigned int nMemsPerLyr[nLyrs]) 
+{
+  #pragma HLS inline
+  #pragma HLS array_partition variable = nMemsPerLyr complete
+  int cPrevSize=0; 
+  LOOP_CountOutputMemories:
+  for (int cLyr = 0; cLyr < nLyrs ; cLyr++) 
+  {
+     #pragma HLS unroll
+     auto hBnWrd = hPhBnWord.range(kSizeBinWord * cLyr + (kSizeBinWord-1), kSizeBinWord * cLyr);
+     nMemsPerLyr[cLyr] = (1+(int)(hBnWrd)); 
+     nMems = cPrevSize +  (1+(int)(hBnWrd)); 
+     cPrevSize = nMems;
+  }
+}
+
+template<unsigned int nLyrs>
+void GetMemoryIndex(unsigned int nMemsPerLyr[nLyrs]
+	, ap_uint<kLyBitsSize> hEncLyr 
+	, unsigned int &hIndx ) 
+{
+  #pragma HLS inline
+  #pragma HLS array_partition variable = nMemsPerLyr complete
+	// update index
+	int cPrevIndx=0; 
+	LOOP_UpdateMemIndx:
+	for (int cLyr = 0; cLyr < nLyrs; cLyr++) 
+	{
+	#pragma HLS unroll
+		int cUpdate = (cLyr < hEncLyr) ? nMemsPerLyr[cLyr] : 0; 
+		hIndx = cPrevIndx + cUpdate; 
+		cPrevIndx = hIndx;
+	}
+}
 
 template<unsigned int nOMems, unsigned int nLUTEntries>
 void InputRouter( const BXType hBx
@@ -147,29 +204,13 @@ void InputRouter( const BXType hBx
   
   	ap_uint<1> hIs2S= hLinkWord.range(kLINKMAPwidth-4,kLINKMAPwidth-4);
 
-	// figure out what these are once 
-	// don't have to do it for every entry 
+	// count memories 
 	unsigned int nMems=0;
-	unsigned int nMemsPerLyr[kMaxLyrsPerDTC];
-	LOOP_CountOutputMemories:
-	for (int cLyr = 0; cLyr < kMaxLyrsPerDTC; cLyr++) 
-	{
-	   #pragma HLS unroll
-	   auto hBnWrd = hPhBnWord.range(kSizeBinWord * cLyr + (kSizeBinWord-1), kSizeBinWord * cLyr);
-	   nMemsPerLyr[cLyr] = (1+(int)(hBnWrd)); 
-	   nMems += (1+(int)(hBnWrd)); 
-	}
-
-	// clear stub counter
+	unsigned int nMemsPerLyr[kMaxLyrsPerDTC]; 
+	CountMemories<kMaxLyrsPerDTC>(hPhBnWord, nMems, nMemsPerLyr);
+	// clear stub counters
 	ap_uint<kNBits_MemAddr> hNStubs[nOMems];
-	#pragma HLS array_partition variable = hNStubs complete
-	LOOP_ClearOutputMemories:
-	for (unsigned int cMemIndx = 0; cMemIndx < nMems ; cMemIndx++) 
-	{
-	#pragma HLS unroll
-	hNStubs[cMemIndx] = 0;
-	}
-
+	ClearCounters<nOMems>(nMems,  hNStubs);
 
 	LOOP_ProcessIR:
 	for (int cStubCounter = 0; cStubCounter < kMaxStubsFromLink; cStubCounter++) 
@@ -206,14 +247,8 @@ void InputRouter( const BXType hBx
 	  	cLUT = hPhiCorrtable_L3;
 	  
 	  // update index
-	  int cIndx = 0;
-	  LOOP_UpdateMemIndx:
-	  for (int cLyr = 0; cLyr < kMaxLyrsPerDTC; cLyr++) 
-	  {
-	    #pragma HLS unroll
-	    cIndx += (cLyr < hEncLyr) ? nMemsPerLyr[cLyr] : 0; 
-	  }
-	  
+	  unsigned int cIndx = 0;
+	  GetMemoryIndex<kMaxLyrsPerDTC>( nMemsPerLyr, hEncLyr, cIndx);
 	  // get phi bin
 	  int cIndxThisBn = 0;
 	  if( hIsBrl == 1 && hIs2S == 0 )
@@ -231,7 +266,7 @@ void InputRouter( const BXType hBx
 	    auto  hPhiBn = hStub.range(hPhiMSB,hPhiLSB) ;
 		cIndxThisBn = hPhiBn;
 	  }
-	  else if(  hIsBrl == 1)
+	  else if( hIsBrl == 1)
 	  {
 	  	AllStub<BARREL2S> hAStub(hStub.range(kNBits_DTC-1,0));
 	  	auto hPhiCorrected = getPhiCorr<BARREL2S>(hAStub.getPhi(), hAStub.getR(), hAStub.getBend(), cLUT); 
@@ -247,30 +282,43 @@ void InputRouter( const BXType hBx
 	  }
 	  // assign memory index
 	  auto cMemIndx = cIndx+cIndxThisBn;
-	  assert(cMemIndx < nMems);
-	  auto hEntries = hNStubs[cMemIndx];
-	  //auto hEntries = hNStubs[0];
+	  //assert(cMemIndx < nMems);
 	  #ifndef __SYNTHESIS__
-	  if( IR_DEBUG )
-	  {
-	  	if( hEncLyr == 0 && hIsBrl ==1 )
-	  	{
-		  std::cout << "\t.. Stub : " << std::hex << hStbWrd << std::dec
+	   std::cout << "\t.. Stub : " << std::hex << hStbWrd << std::dec
 		            << " [ EncLyrId " << hEncLyr << " ] "
-		            << "[ LyrId " << hLyrId << " ] "
+					<< "[ LyrId " << hLyrId << " ] "
 		            << "[ IsBrl " << +hIsBrl << " ] "
-		            << "[ PhiBn " << (int)cIndxThisBn << " ] "
-		            << " Mem#" << cMemIndx
-		            << " [ nOMems " << +nOMems << " ] " 
- 		            << " Current number of entries " << +hEntries << "\n";
-	  	}
-	  }
+					<< " [ Nmemories " << nMems << " ] "
+		            << " [ IndxThisBn " << cIndxThisBn << " ] "
+		            << " [ Indx " << cIndx << " ] "
+		            << " [ memIndx " << cMemIndx << " ] "
+		            << "\n";
 	  #endif
-	  //(&hOutputStubs[0])->write_mem(hBx, hMemWord, hEntries);
-	  //hNStubs[0] = hEntries + 1;
-	  (&hOutputStubs[cMemIndx])->write_mem(hBx, hMemWord, hEntries);
-	  // update counter 
+	  
+	  // #ifndef __SYNTHESIS__
+	  // if( IR_DEBUG )
+	  // {
+	  // 	if( hEncLyr == 0 && hIsBrl ==1 )
+	  // 	{
+		 //  std::cout << "\t.. Stub : " << std::hex << hStbWrd << std::dec
+		 //            << " [ EncLyrId " << hEncLyr << " ] "
+		 //            << "[ LyrId " << hLyrId << " ] "
+		 //            << "[ IsBrl " << +hIsBrl << " ] "
+		 //            << "[ PhiBn " << (int)cIndxThisBn << " ] "
+		 //            << " Mem#" << cMemIndx
+		 //            << " [ nOMems " << +nOMems << " ] " 
+ 		//             << " Current number of entries " << +hEntries << "\n";
+	  // 	}
+	  // }
+	  // #endif
+	  // auto hEntries = hNStubs[0];
+	  // (&hOutputStubs[0])->write_mem(hBx, hMemWord, hEntries);
+	  // hNStubs[0] = hEntries + 1;
+	  // update  counters 
+	  auto hEntries = hNStubs[cMemIndx];
 	  hNStubs[cMemIndx] = hEntries + 1;
+	  // fill memory 
+	  (&hOutputStubs[cMemIndx])->write_mem(hBx, hMemWord, hEntries);
 	}
 }
 

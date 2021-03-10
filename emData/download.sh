@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
 # standard configurations - temporary
-tarball_url="https://www.dropbox.com/s/jtumh2dcy21uzu1/MemPrintsStandard_210309.tgz?dl=0"
-luts_url="https://www.dropbox.com/s/vbnvcbp7xkno892/LUTsStandard_210309.tgz?dl=0"
+tarball_url="https://www.dropbox.com/s/oxk5sx5zp7b8f71/MemPrintsStandard_210310.tgz?dl=0"
+luts_url="https://www.dropbox.com/s/3eqdvxn8443783v/LUTsStandard_210310.tgz?dl=0"
 
 # Combined modules - temporary
-tarball_url_cm="https://www.dropbox.com/s/ag7vtn33ux8q6xu/MemPrintsCombined_210301.tgz?dl=0"
-luts_url_cm="https://www.dropbox.com/s/wy9rbd07zlyz673/LUTsCombined_210301.tgz?dl=0"
+tarball_url_cm="https://www.dropbox.com/s/sgwyhiboxiy5wpm/MemPrintsCombined_210310.tgz?dl=0"
+luts_url_cm="https://www.dropbox.com/s/26f1799fjnkdnr8/LUTsCombined_210310.tgz?dl=0"
 
 # The following modules will have dedicated directories of test-bench files
 # prepared for them.
