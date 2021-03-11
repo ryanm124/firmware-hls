@@ -195,13 +195,14 @@ void GetMemoryIndex(unsigned int nMemsPerLyr[nLyrs]
 }
 
 template<unsigned int nOMems, unsigned int nLUTEntries>
-void InputRouter( const BXType hBx
+void InputRouter( const BXType bx
 	, const ap_uint<kLINKMAPwidth> hLinkWord
 	, const ap_uint<kBINMAPwidth> hPhBnWord 
 	, const int hPhiCorrtable_L1[nLUTEntries]
 	, const int hPhiCorrtable_L2[nLUTEntries]
 	, const int hPhiCorrtable_L3[nLUTEntries]
 	, ap_uint<kNBits_DTC>* hInputStubs
+	, BXType & bx_o // output bx 
 	, DTCStubMemory hOutputStubs[nOMems])
 {
 	
@@ -307,8 +308,10 @@ void InputRouter( const BXType hBx
 	  auto hEntries = hNStubs[cMemIndx];
 	  hNStubs[cMemIndx] = hEntries + 1;
 	  // fill memory 
-	  (&hOutputStubs[cMemIndx])->write_mem(hBx, hMemWord, hEntries);
+	  (&hOutputStubs[cMemIndx])->write_mem(bx, hMemWord, hEntries);
 	}
+	// update output bx port 
+	bx_o = bx;
 }
 
 

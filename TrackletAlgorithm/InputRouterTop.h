@@ -15,7 +15,7 @@ constexpr unsigned int cNMemories = 17;
 constexpr unsigned int cNEntriesLUT = kSizePhiCorrTablePS;
 
 
-void InputRouterTop( const BXType hBx
+void InputRouterTop( const BXType bx
 	, const unsigned int hNmemories // number of memories 
 	, const ap_uint<kLINKMAPwidth> kInputLink // input link LUT 
   	, const ap_uint<kBINMAPwidth> kNPhiBns  // n phi bins LUT 
@@ -23,6 +23,7 @@ void InputRouterTop( const BXType hBx
 	, const int kPhiCorrtable_L2[] // corrections scnd brl lyr  
 	, const int kPhiCorrtable_L3[] // corrections thrd brl lyr   
 	, ap_uint<kNBits_DTC> hInputStubs[kMaxStubsFromLink]//input stubs 
+	, BXType & bx_o // output bx 
     , DTCStubMemory hOutputStubs[cNMemories]);//output memories 
 
 

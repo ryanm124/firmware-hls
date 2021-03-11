@@ -625,6 +625,7 @@ int main(int argc, char * argv[])
     static const int* cLUT_L3 = (  hIs2S == 1 )  ? kPhiCorrtable_L6 : kPhiCorrtable_L3; 
 
     BXType hBx = cEvId&0x7;
+    BXType hBx_o; 
     InputRouterTop( hBx
       , cNmemories // number of memories 
       , hLinkWord // input link LUT 
@@ -633,6 +634,7 @@ int main(int argc, char * argv[])
       , cLUT_L2 // corrections scnd brl lyr  
       , cLUT_L3 // corrections thrd brl lyr  
       , hInputStubs // input stub stream 
+      , hBx_o // output bx 
       , hMemories); 
 
     // // compare memories 
