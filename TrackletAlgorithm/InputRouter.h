@@ -77,47 +77,18 @@ static const int kThrd2SBrlLyr = 6;
 // valid bit in DTC stub 
 // these can change when tarball is modified 
 static const int kVldBitSize = 1 ; 
-static const int kLSBVldBt = 0;//kNBits_DTC-1;//0;
-static const int kMSBVldBt = 0;//kNBits_DTC-1;//0; 
+static const int kLSBVldBt = 0;
+static const int kMSBVldBt = 0;
 // lyr bit in DTC stub 
 // these can change when tarball is modified 
 static const int kLyBitsSize = 2; 
-static const int kLSBLyrBts = 1;//kNBits_DTC - 3;//1; 
-static const int kMSBLyrBts = 2;//kNBits_DTC - 2;//2; 
+static const int kLSBLyrBts = 1;
+static const int kMSBLyrBts = 2;
 
 constexpr unsigned int kMaxNmemories = 20;  
 #define IR_DEBUG false
 
-// // Get the corrected phi, i.e. phi at the average radius of the barrel
-// // Corrected phi is used by ME and TE memories in the barrel
-// template<regionType InType>
-// inline typename AllStub<InType>::ASPHI getPhiCorr(
-// 		const typename AllStub<InType>::ASPHI phi,
-// 		const typename AllStub<InType>::ASR r,
-// 		const typename AllStub<InType>::ASBEND bend, const int phicorrtable[]) 
-// {
-	
-// 	#pragma HLS array_partition variable = phicorrtable complete
-// 	constexpr auto rbins = 1 << kNBitsPhiCorrTableR; // The number of bins for r
-
-// 	ap_uint<kNBitsPhiCorrTableR> rbin = (r + (1 << (r.length() - 1)))
-// 			>> (r.length() - kNBitsPhiCorrTableR); // Which bin r belongs to. Note r = 0 is mid radius
-// 	auto index = bend * rbins + rbin; // Index for where we find our correction value
-// 	auto corrval = phicorrtable[index]; // The amount we need to correct our phi
- 	
-//  	// internal storage of phi value 
-// 	auto cPhi = phi;
-// 	auto phicorr = cPhi - corrval; // the corrected phi
-// 	// Check for overflow
-// 	if (phicorr < 0)
-// 		phicorr = 0; // can't be less than 0
-// 	if (phicorr >= 1 << phi.length())
-// 		phicorr = (1 << phi.length()) - 1;  // can't be more than the max value
-
-// 	return phicorr;
-// }
-
-// // Get the corrected phi, bin
+// Get the corrected phi, bin
 // i.e. phi at the average radius of the barrel
 template<regionType InType>
 void getPhiBinWithCorrection(ap_uint<kBRAMwidth> hStbWrd
@@ -253,9 +224,8 @@ void InputRouter( const BXType hBx
 	for (int cStubCounter = 0; cStubCounter < kMaxStubsFromLink; cStubCounter++) 
 	{
 	#pragma HLS pipeline II = 1
-	//#pragma HLS PIPELINE rewind
+	#pragma HLS PIPELINE rewind
 	  // decode stub
-	  // check which memory
 	  auto hStub = hInputStubs[cStubCounter];
 	  // add check of valid bit here 
 	  if (hStub == 0)   continue;
@@ -269,6 +239,8 @@ void InputRouter( const BXType hBx
 	  	#endif
 	  	continue;
 	  }
+	  // check which memory
+	  // needs to be filled 
 	  // encoded layer 
 	  auto hEncLyr = hStub.range(kMSBLyrBts, kLSBLyrBts);
 	  // get memory word
@@ -312,40 +284,6 @@ void InputRouter( const BXType hBx
 	  	if( hIs2S == 0 ) getPhiBin<DISKPS>( hStbWrd , cOffsetDsk , cIndxThisBn ) ;
 	  	else getPhiBin<DISK2S>( hStbWrd , cOffsetDsk , cIndxThisBn ) ;
 	  }
-
-		//  if( hIsBrl == 1 && hIs2S == 0 )
-		//  {
-		//  	auto cOffset = (hLyrId == kFrstPSBrlLyr) ? kNbitsPhiBinsPSL1 : kNbitsPhiBinsTkr; 
-		//  	getPhiBinWithCorrection<BARRELPS>(hStbWrd, cLUT, cOffset, cIndxThisBn);
-		// //AllStub<BARRELPS> hAStub(hStbWrd);//hStub.range(kNBits_DTC-1,0));
-		// //auto hPhiCorrected = getPhiCorr<BARRELPS>(hAStub.getPhi(), hAStub.getR(), hAStub.getBend(), cLUT); 
-		// //auto hPhiBn = hPhiCorrected.range(hPhiCorrected.length()-1, hPhiCorrected.length()-cOffset);
-		//  	//cIndxThisBn =  hPhiBn;
-		//  }
-		//  else if( hIsBrl == 0 && hIs2S == 0 )
-		//  {
-		//  	getPhiBin<DISKPS>( hStbWrd , kNbitsPhiBinsTkr , cIndxThisBn ) ;
-		// //AllStub<DISKPS> hAStub(hStbWrd);
-		// //auto cPhi =  hAStub.getPhi();
-		// //auto  hPhiBn = cPhi.range(cPhi.length()-1, cPhi.length()-kNbitsPhiBinsTkr);
-		// 	//cIndxThisBn = hPhiBn;
-		//  }
-		//  else if( hIsBrl == 1)
-		//  {
-		//  	AllStub<BARREL2S> hAStub(hStbWrd);
-		//  	auto hPhiCorrected = getPhiCorr<BARREL2S>(hAStub.getPhi(), hAStub.getR(), hAStub.getBend(), cLUT); 
-		// auto hPhiBn = hPhiCorrected.range(hPhiCorrected.length()-1, hPhiCorrected.length()-kNbitsPhiBinsTkr);
-		//  	cIndxThisBn = hPhiBn;
-		//  }
-		//  else if(  hIsBrl == 0)
-		//  {
-		//  	getPhiBin<DISK2S>( hStbWrd , kNbitsPhiBinsTkr , cIndxThisBn ) ;
-		// //AllStub<DISK2S> hAStub(hStbWrd);
-		// // auto cPhi =  hAStub.getPhi();
-		// // auto  hPhiBn = cPhi.range(cPhi.length()-1, cPhi.length()-kNbitsPhiBinsTkr);
-		// // cIndxThisBn = hPhiBn;
-		//  }
-
 
 	  // assign memory index
 	  auto cMemIndx = cIndx+cIndxThisBn;
