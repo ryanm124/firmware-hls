@@ -85,34 +85,18 @@ template<int ASType>
 class AllStub : public AllStubBase<ASType>
 {
 public:
-  // old data format 
-  // not in sync with emu
-  // enum BitLocations {
-  //   // The location of the least significant bit (LSB) and most significant bit (MSB) in the AllStubMemory word for different fields
-  //   kASBendLSB = 0,
-  //   kASBendMSB = kASBendLSB + AllStubBase<ASType>::kASBendSize - 1,
-  //   kASAlphaLSB = kASBendMSB + 1,
-  //   kASAlphaMSB = kASAlphaLSB + AllStubBase<ASType>::kASAlphaSize - 1,
-  //   kASPhiLSB = kASAlphaMSB + 1,
-  //   kASPhiMSB = kASPhiLSB + AllStubBase<ASType>::kASPhiSize - 1,
-  //   kASZLSB = kASPhiMSB + 1,
-  //   kASZMSB = kASZLSB + AllStubBase<ASType>::kASZSize - 1,
-  //   kASRLSB = kASZMSB + 1,
-  //   kASRMSB = kASRLSB + AllStubBase<ASType>::kASRSize - 1
-  // };
-  
-   enum BitLocations {
+  enum BitLocations {
     // The location of the least significant bit (LSB) and most significant bit (MSB) in the AllStubMemory word for different fields
-    kASRLSB = 0,
-    kASRMSB = kASRLSB + AllStubBase<ASType>::kASRSize - 1,
-    kASZLSB = kASRMSB + 1,
-    kASZMSB = kASZLSB + AllStubBase<ASType>::kASZSize - 1,
-    kASPhiLSB = kASZMSB + 1,
-    kASPhiMSB = kASPhiLSB + AllStubBase<ASType>::kASPhiSize - 1,
-    kASAlphaLSB = kASPhiMSB + 1,
+    kASBendLSB = 0,
+    kASBendMSB = kASBendLSB + AllStubBase<ASType>::kASBendSize - 1,
+    kASAlphaLSB = kASBendMSB + 1,
     kASAlphaMSB = kASAlphaLSB + AllStubBase<ASType>::kASAlphaSize - 1,
-    kASBendLSB = kASAlphaMSB + 1 ,
-    kASBendMSB = kASBendLSB + AllStubBase<ASType>::kASBendSize - 1
+    kASPhiLSB = kASAlphaMSB + 1,
+    kASPhiMSB = kASPhiLSB + AllStubBase<ASType>::kASPhiSize - 1,
+    kASZLSB = kASPhiMSB + 1,
+    kASZMSB = kASZLSB + AllStubBase<ASType>::kASZSize - 1,
+    kASRLSB = kASZMSB + 1,
+    kASRMSB = kASRLSB + AllStubBase<ASType>::kASRSize - 1
   };
   
   typedef ap_int<AllStubBase<ASType>::kASRSize> ASR;

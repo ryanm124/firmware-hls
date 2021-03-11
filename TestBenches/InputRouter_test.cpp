@@ -586,7 +586,7 @@ int main(int argc, char * argv[])
     for( size_t cStubIndx=0; cStubIndx < kMaxStubsFromLink; cStubIndx++)
       hInputStubs[cStubIndx]=ap_uint<kNBits_DTC>(0);
     writeArrayFromFile<ap_uint<kNBits_DTC>>(hInputStubs , cLinkDataStream, cEvId);
-    // look at stubs 
+    // // look at stubs 
     // for( unsigned int cIndx=0; cIndx < (unsigned int)kMaxStubsFromLink ; cIndx++)
     // { 
     //    if( hInputStubs[cIndx] == 0 ) continue;
@@ -594,6 +594,7 @@ int main(int argc, char * argv[])
     //    auto hVldBt = hInputStubs[cIndx].range( kMSBVldBt ,  kLSBVldBt);
     //    auto hEncLyr = hInputStubs[cIndx].range(kMSBLyrBts, kLSBLyrBts);
     //    std::cout << "Stub " << std::bitset<kNBits_DTC>(hInputStubs[cIndx])
+    //     << " -- " << std::hex << hInputStubs[cIndx] << std::dec 
     //     << " valid bit " << (int)hVldBt 
     //     << " encoded layer " << (int)hEncLyr
     //     << "\n";
@@ -656,7 +657,7 @@ int main(int argc, char * argv[])
       //   if( cEntry== 0 ) continue;
       //   std::cout << "\t..#" << +cIndx 
       //     << " entry " << std::bitset<kBRAMwidth>(cEntry)
-      //     << " --- 0x" << std::hex << cEntry << std::dec 
+      //     << " --- " << std::hex << cEntry << std::dec 
       //     << " --- "
       //     << "\n";
       // }

@@ -76,6 +76,7 @@ static const int kScnd2SBrlLyr = 5;
 static const int kThrd2SBrlLyr = 6; 
 // valid bit in DTC stub 
 // these can change when tarball is modified 
+static const int kVldBitSize = 1 ; 
 static const int kLSBVldBt = 0;//kNBits_DTC-1;//0;
 static const int kMSBVldBt = 0;//kNBits_DTC-1;//0; 
 // lyr bit in DTC stub 
@@ -85,55 +86,88 @@ static const int kLSBLyrBts = 1;//kNBits_DTC - 3;//1;
 static const int kMSBLyrBts = 2;//kNBits_DTC - 2;//2; 
 
 constexpr unsigned int kMaxNmemories = 20;  
-#define IR_DEBUG true
+#define IR_DEBUG false
 
-// Get the corrected phi, i.e. phi at the average radius of the barrel
-// Corrected phi is used by ME and TE memories in the barrel
+// // Get the corrected phi, i.e. phi at the average radius of the barrel
+// // Corrected phi is used by ME and TE memories in the barrel
+// template<regionType InType>
+// inline typename AllStub<InType>::ASPHI getPhiCorr(
+// 		const typename AllStub<InType>::ASPHI phi,
+// 		const typename AllStub<InType>::ASR r,
+// 		const typename AllStub<InType>::ASBEND bend, const int phicorrtable[]) 
+// {
+	
+// 	#pragma HLS array_partition variable = phicorrtable complete
+// 	constexpr auto rbins = 1 << kNBitsPhiCorrTableR; // The number of bins for r
+
+// 	ap_uint<kNBitsPhiCorrTableR> rbin = (r + (1 << (r.length() - 1)))
+// 			>> (r.length() - kNBitsPhiCorrTableR); // Which bin r belongs to. Note r = 0 is mid radius
+// 	auto index = bend * rbins + rbin; // Index for where we find our correction value
+// 	auto corrval = phicorrtable[index]; // The amount we need to correct our phi
+ 	
+//  	// internal storage of phi value 
+// 	auto cPhi = phi;
+// 	auto phicorr = cPhi - corrval; // the corrected phi
+// 	// Check for overflow
+// 	if (phicorr < 0)
+// 		phicorr = 0; // can't be less than 0
+// 	if (phicorr >= 1 << phi.length())
+// 		phicorr = (1 << phi.length()) - 1;  // can't be more than the max value
+
+// 	return phicorr;
+// }
+
+// // Get the corrected phi, bin
+// i.e. phi at the average radius of the barrel
 template<regionType InType>
-inline typename AllStub<InType>::ASPHI getPhiCorr(
-		const typename AllStub<InType>::ASPHI phi,
-		const typename AllStub<InType>::ASR r,
-		const typename AllStub<InType>::ASBEND bend, const int phicorrtable[]) 
+void getPhiBinWithCorrection(ap_uint<kBRAMwidth> hStbWrd
+		, const int phicorrtable[]
+		, const int cNbits 
+		, int &phiBn ) 
 {
-	
-	#pragma HLS array_partition variable = phicorrtable complete
+	#pragma HLS inline
+  	#pragma HLS array_partition variable = phicorrtable complete
+
+  	AllStub<InType> hAStub(hStbWrd);
+  	auto hPhi = hAStub.getPhi();
+  	auto hR =  hAStub.getR();
+  	auto hBend = hAStub.getBend();
+
 	constexpr auto rbins = 1 << kNBitsPhiCorrTableR; // The number of bins for r
-
-	ap_uint<kNBitsPhiCorrTableR> rbin = (r + (1 << (r.length() - 1)))
-			>> (r.length() - kNBitsPhiCorrTableR); // Which bin r belongs to. Note r = 0 is mid radius
-	auto index = bend * rbins + rbin; // Index for where we find our correction value
+	ap_uint<kNBitsPhiCorrTableR> rbin = (hR + (1 << (AllStubBase<InType>::kASRSize - 1)))
+			>> (AllStubBase<InType>::kASRSize - kNBitsPhiCorrTableR); // Which bin r belongs to. Note r = 0 is mid radius
+	auto index = hBend * rbins + rbin; // Index for where we find our correction value
 	auto corrval = phicorrtable[index]; // The amount we need to correct our phi
-
-	// make phi un-signed 
-	auto cPhi = phi + (1 << (AllStub<InType>::kASPhiSize- 1));//phi
-	#ifndef __SYNTHESIS__
-	  	std::cout << "\t\t.. phi is " << phi << " which when un-signed is " << cPhi << "\n";
-	#endif
-	auto phicorr = cPhi- corrval; // the corrected phi
-
+ 	
+ 	// internal storage of phi value 
+	auto hPhiCorr = hPhi - corrval; // the corrected phi
 	// Check for overflow
-	if (phicorr < 0)
-		phicorr = 0; // can't be less than 0
-	if (phicorr >= 1 << phi.length())
-		phicorr = (1 << phi.length()) - 1;  // can't be more than the max value
+	if (hPhiCorr < 0)
+		hPhiCorr = 0; // can't be less than 0
+	if (hPhiCorr >= 1 << AllStubBase<InType>::kASPhiSize)
+		hPhiCorr = (1 << AllStubBase<InType>::kASPhiSize) - 1;  // can't be more than the max value
 
-	return phicorr;
-
-	// auto rbins = 1 << kNBitsPhiCorrTableR; // The number of bins for r
-	// auto rbin = (r + (1 << (r.length() - 1))) >> (r.length() - kNBitsPhiCorrTableR); // Which bin r belongs to. Note r = 0 is mid radius
-	// auto index = bend * rbins + rbin; // Index for where we find our correction value
-	// auto corrval = phicorrtable[index]; // The amount we need to correct our phi
-	// auto phicorr = ((phi) - corrval); // the corrected phi
-	
-	// // Check for overflow
-	// if (phicorr < 0)
-	// 	phicorr = 0; // can't be less than 0
-	// if (phicorr >= 1 << phi.length())
-	// 	phicorr = (1 << phi.length()) - 1;  // can't be more than the max value
-
-	// return phicorr;
+	auto cBn = hPhiCorr.range(AllStubBase<InType>::kASPhiSize-1, AllStubBase<InType>::kASPhiSize-cNbits);
+	phiBn = cBn;
 }
 
+// Get the phi bin
+// no correction needed [i.e. for diskPS/disk2S]
+template<regionType InType>
+void getPhiBin( ap_uint<kBRAMwidth> hStbWrd
+		, const int cNbits 
+		, int &phiBn ) 
+{
+	#pragma HLS inline
+  	
+	AllStub<InType> hAStub(hStbWrd);
+	//typename AllStub<InType>::ASPHI
+	auto cPhi =  hAStub.getPhi();
+	auto cBn = cPhi.range(AllStubBase<InType>::kASPhiSize-1, AllStubBase<InType>::kASPhiSize-cNbits);
+	phiBn = cBn;
+}
+
+// clear internal counters 
 template<unsigned int nEntriesSize>
 void ClearCounters(unsigned int nMemories
 	, ap_uint<kNBits_MemAddr> nEntries[nEntriesSize]) 
@@ -148,6 +182,7 @@ void ClearCounters(unsigned int nMemories
   }
 }
 
+// internal memory counter
 template<unsigned int nLyrs>
 void CountMemories(const ap_uint<kBINMAPwidth> hPhBnWord 
 	, unsigned int &nMems
@@ -157,16 +192,18 @@ void CountMemories(const ap_uint<kBINMAPwidth> hPhBnWord
   #pragma HLS array_partition variable = nMemsPerLyr complete
   int cPrevSize=0; 
   LOOP_CountOutputMemories:
-  for (int cLyr = 0; cLyr < nLyrs ; cLyr++) 
+  for (int cLyr = 0; cLyr < kMaxLyrsPerDTC ; cLyr++) 
   {
      #pragma HLS unroll
-     auto hBnWrd = hPhBnWord.range(kSizeBinWord * cLyr + (kSizeBinWord-1), kSizeBinWord * cLyr);
-     nMemsPerLyr[cLyr] = (1+(int)(hBnWrd)); 
-     nMems = cPrevSize +  (1+(int)(hBnWrd)); 
+  	 auto hBnWrd = hPhBnWord.range(kSizeBinWord * cLyr + (kSizeBinWord-1), kSizeBinWord * cLyr);
+     nMemsPerLyr[cLyr] = (cLyr < nLyrs) ?  (1+(int)(hBnWrd)) : 0 ; 
+     nMems = (cLyr < nLyrs) ? (cPrevSize +  (1+(int)(hBnWrd))) : cPrevSize; 
      cPrevSize = nMems;
   }
 }
 
+// internal calculation 
+// of memory index 
 template<unsigned int nLyrs>
 void GetMemoryIndex(unsigned int nMemsPerLyr[nLyrs]
 	, ap_uint<kLyBitsSize> hEncLyr 
@@ -179,7 +216,7 @@ void GetMemoryIndex(unsigned int nMemsPerLyr[nLyrs]
 	LOOP_UpdateMemIndx:
 	for (int cLyr = 0; cLyr < nLyrs; cLyr++) 
 	{
-	#pragma HLS unroll
+		#pragma HLS unroll
 		int cUpdate = (cLyr < hEncLyr) ? nMemsPerLyr[cLyr] : 0; 
 		hIndx = cPrevIndx + cUpdate; 
 		cPrevIndx = hIndx;
@@ -224,11 +261,22 @@ void InputRouter( const BXType hBx
 	  if (hStub == 0)   continue;
 	  // check valid bit
 	  auto hVldBt = hStub.range( kMSBVldBt ,  kLSBVldBt);
-	  if( hVldBt == 0 ) continue;
+	  if( hVldBt == 0 ){ 
+	  	#ifndef __SYNTHESIS__
+	  		#if IR_DEBUG
+	  			std::cout << "\t.. Invalid Stub : " << std::hex << hStub << std::dec << "\n";
+	  		#endif
+	  	#endif
+	  	continue;
+	  }
 	  // encoded layer 
 	  auto hEncLyr = hStub.range(kMSBLyrBts, kLSBLyrBts);
 	  // get memory word
-	  auto hStbWrd = ap_uint<kBRAMwidth>(hStub.range(kBRAMwidth - 1, 0));
+	  // discard LSBs
+	  auto hStbWrd = ap_uint<kBRAMwidth>(hStub.range(kNBits_DTC - 1, kLyBitsSize + kVldBitSize));	
+	  // old data format 
+	  // discard MSBs
+	  //auto hStbWrd = ap_uint<kBRAMwidth>(hStub.range(kBRAMwidth - 1, 0));
 	  DTCStub hMemWord(hStbWrd);
 	    
 	  // decode link wrd for this layer
@@ -251,69 +299,72 @@ void InputRouter( const BXType hBx
 	  GetMemoryIndex<kMaxLyrsPerDTC>( nMemsPerLyr, hEncLyr, cIndx);
 	  // get phi bin
 	  int cIndxThisBn = 0;
-	  if( hIsBrl == 1 && hIs2S == 0 )
+	  // for the barrel need to correct 
+	  if( hIsBrl == 1 )
 	  {
-	  	auto cOffset = (hLyrId == kFrstPSBrlLyr) ? kNbitsPhiBinsPSL1 : kNbitsPhiBinsTkr; 
-	  	AllStub<BARRELPS> hAStub(hStub.range(kNBits_DTC-1,0));
-		auto hPhiCorrected = getPhiCorr<BARRELPS>(hAStub.getPhi(), hAStub.getR(), hAStub.getBend(), cLUT); 
-		auto hPhiBn = hPhiCorrected.range(hPhiCorrected.length()-1, hPhiCorrected.length()-cOffset);
-	  	cIndxThisBn =  hPhiBn;
+	  	int cOffsetBrl = (hLyrId == kFrstPSBrlLyr) ? kNbitsPhiBinsPSL1 : kNbitsPhiBinsTkr;  
+	  	if( hIs2S == 0 ) getPhiBinWithCorrection<BARRELPS>(hStbWrd, cLUT, cOffsetBrl, cIndxThisBn);
+	  	else getPhiBinWithCorrection<BARREL2S>(hStbWrd, cLUT, cOffsetBrl, cIndxThisBn);
 	  }
-	  else if( hIsBrl == 0 && hIs2S == 0 )
+	  else
 	  {
-	  	auto hPhiMSB = AllStub<DISKPS>::kASPhiMSB;
-		auto hPhiLSB = AllStub<DISKPS>::kASPhiMSB-(kNbitsPhiBinsTkr-1);
-	    auto  hPhiBn = hStub.range(hPhiMSB,hPhiLSB) ;
-		cIndxThisBn = hPhiBn;
+	  	int cOffsetDsk = kNbitsPhiBinsTkr;
+	  	if( hIs2S == 0 ) getPhiBin<DISKPS>( hStbWrd , cOffsetDsk , cIndxThisBn ) ;
+	  	else getPhiBin<DISK2S>( hStbWrd , cOffsetDsk , cIndxThisBn ) ;
 	  }
-	  else if( hIsBrl == 1)
-	  {
-	  	AllStub<BARREL2S> hAStub(hStub.range(kNBits_DTC-1,0));
-	  	auto hPhiCorrected = getPhiCorr<BARREL2S>(hAStub.getPhi(), hAStub.getR(), hAStub.getBend(), cLUT); 
-		auto hPhiBn = hPhiCorrected.range(hPhiCorrected.length()-1, hPhiCorrected.length()-kNbitsPhiBinsTkr);
-	  	cIndxThisBn = hPhiBn;
-	  }
-	  else if(  hIsBrl == 0)
-	  {
-	  	auto hPhiMSB = AllStub<DISK2S>::kASPhiMSB;
-		auto hPhiLSB = AllStub<DISK2S>::kASPhiMSB-(kNbitsPhiBinsTkr-1);
-	    auto hPhiBn = hStub.range(hPhiMSB,hPhiLSB);
-	    cIndxThisBn =  hPhiBn;
-	  }
+
+		//  if( hIsBrl == 1 && hIs2S == 0 )
+		//  {
+		//  	auto cOffset = (hLyrId == kFrstPSBrlLyr) ? kNbitsPhiBinsPSL1 : kNbitsPhiBinsTkr; 
+		//  	getPhiBinWithCorrection<BARRELPS>(hStbWrd, cLUT, cOffset, cIndxThisBn);
+		// //AllStub<BARRELPS> hAStub(hStbWrd);//hStub.range(kNBits_DTC-1,0));
+		// //auto hPhiCorrected = getPhiCorr<BARRELPS>(hAStub.getPhi(), hAStub.getR(), hAStub.getBend(), cLUT); 
+		// //auto hPhiBn = hPhiCorrected.range(hPhiCorrected.length()-1, hPhiCorrected.length()-cOffset);
+		//  	//cIndxThisBn =  hPhiBn;
+		//  }
+		//  else if( hIsBrl == 0 && hIs2S == 0 )
+		//  {
+		//  	getPhiBin<DISKPS>( hStbWrd , kNbitsPhiBinsTkr , cIndxThisBn ) ;
+		// //AllStub<DISKPS> hAStub(hStbWrd);
+		// //auto cPhi =  hAStub.getPhi();
+		// //auto  hPhiBn = cPhi.range(cPhi.length()-1, cPhi.length()-kNbitsPhiBinsTkr);
+		// 	//cIndxThisBn = hPhiBn;
+		//  }
+		//  else if( hIsBrl == 1)
+		//  {
+		//  	AllStub<BARREL2S> hAStub(hStbWrd);
+		//  	auto hPhiCorrected = getPhiCorr<BARREL2S>(hAStub.getPhi(), hAStub.getR(), hAStub.getBend(), cLUT); 
+		// auto hPhiBn = hPhiCorrected.range(hPhiCorrected.length()-1, hPhiCorrected.length()-kNbitsPhiBinsTkr);
+		//  	cIndxThisBn = hPhiBn;
+		//  }
+		//  else if(  hIsBrl == 0)
+		//  {
+		//  	getPhiBin<DISK2S>( hStbWrd , kNbitsPhiBinsTkr , cIndxThisBn ) ;
+		// //AllStub<DISK2S> hAStub(hStbWrd);
+		// // auto cPhi =  hAStub.getPhi();
+		// // auto  hPhiBn = cPhi.range(cPhi.length()-1, cPhi.length()-kNbitsPhiBinsTkr);
+		// // cIndxThisBn = hPhiBn;
+		//  }
+
+
 	  // assign memory index
 	  auto cMemIndx = cIndx+cIndxThisBn;
-	  //assert(cMemIndx < nMems);
+	  assert(cMemIndx < nMems);
 	  #ifndef __SYNTHESIS__
-	   std::cout << "\t.. Stub : " << std::hex << hStbWrd << std::dec
-		            << " [ EncLyrId " << hEncLyr << " ] "
-					<< "[ LyrId " << hLyrId << " ] "
-		            << "[ IsBrl " << +hIsBrl << " ] "
-					<< " [ Nmemories " << nMems << " ] "
-		            << " [ IndxThisBn " << cIndxThisBn << " ] "
-		            << " [ Indx " << cIndx << " ] "
-		            << " [ memIndx " << cMemIndx << " ] "
-		            << "\n";
-	  #endif
+	  	#if IR_DEBUG
+		   std::cout << "\t.. Stub : " << std::hex << hStub << std::dec 
+		   				<< " rel. parts : " << std::hex << hStbWrd << std::dec
+			            << " [ EncLyrId " << hEncLyr << " ] "
+						<< "[ LyrId " << hLyrId << " ] "
+			            << "[ IsBrl " << +hIsBrl << " ] "
+						<< " [ Nmemories " << nMems << " ] "
+			            << " [ IndxThisBn " << cIndxThisBn << " ] "
+			            << " [ Indx " << cIndx << " ] "
+			            << " [ memIndx " << cMemIndx << " ] "
+			            << "\n";
+		#endif
+	#endif
 	  
-	  // #ifndef __SYNTHESIS__
-	  // if( IR_DEBUG )
-	  // {
-	  // 	if( hEncLyr == 0 && hIsBrl ==1 )
-	  // 	{
-		 //  std::cout << "\t.. Stub : " << std::hex << hStbWrd << std::dec
-		 //            << " [ EncLyrId " << hEncLyr << " ] "
-		 //            << "[ LyrId " << hLyrId << " ] "
-		 //            << "[ IsBrl " << +hIsBrl << " ] "
-		 //            << "[ PhiBn " << (int)cIndxThisBn << " ] "
-		 //            << " Mem#" << cMemIndx
-		 //            << " [ nOMems " << +nOMems << " ] " 
- 		//             << " Current number of entries " << +hEntries << "\n";
-	  // 	}
-	  // }
-	  // #endif
-	  // auto hEntries = hNStubs[0];
-	  // (&hOutputStubs[0])->write_mem(hBx, hMemWord, hEntries);
-	  // hNStubs[0] = hEntries + 1;
 	  // update  counters 
 	  auto hEntries = hNStubs[cMemIndx];
 	  hNStubs[cMemIndx] = hEntries + 1;
