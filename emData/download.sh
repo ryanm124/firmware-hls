@@ -15,6 +15,10 @@ luts_url_cm="https://www.dropbox.com/s/legrvm3gyu5hrth/LUTsCombined_210319.tgz?d
 #memprints_url="https://cernbox.cern.ch/index.php/s/QvV86Qcc8n9R4sg/download"
 #luts_url="https://cernbox.cern.ch/index.php/s/YSER9ne7WVxiKXI/download"
 
+# Combined modules - temporary
+tarball_url_cm="https://www.dropbox.com/s/ahmcn0o1aepvjpx/MemPrintsCombined_210314.tgz?dl=0"
+luts_url_cm="https://www.dropbox.com/s/znk3ueolj3j58ep/LUTsCombined_210314.tgz?dl=0"
+
 # The following modules will have dedicated directories of test-bench files
 # prepared for them.
 declare -a processing_modules=(
@@ -183,13 +187,13 @@ do
   table_target_dir="${module_type}/tables"
   if [[ ! -d "${table_target_dir}" ]]
   then
-          mkdir -p ${table_target_dir}
+      mkdir -p ${table_target_dir}
   fi
 
   if [[ ${module_type} == "TC" ]]
   then
-          layer_pair=`echo ${module} | sed "s/\(.*\)./\1/g"`
-          find ${table_location} -type f -name "${layer_pair}_*.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
+      layer_pair=`echo ${module} | sed "s/\(.*\)./\1/g"`
+      find ${table_location} -type f -name "${layer_pair}_*.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
   elif [[ ${module_type} == "ME" ]]
   then
           layer=`echo ${module} | sed "s/.*_\(L[1-9]\).*$/\1/g"`
@@ -201,7 +205,7 @@ do
           find ${table_location} -type f -name "${module}_*.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
   elif [[ ${module_type} == "MC" ]] || [[ ${module_type} == "TE" ]]
   then
-          find ${table_location} -type f -name "${module}_*.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
+      find ${table_location} -type f -name "${module}_*.tab" -exec ln -sf ../../{} ${table_target_dir}/ \;
   elif [[ ${module_type} == "VMR" ]]
   then
           layer=`echo ${module} | sed "s/VMR_\(..\).*/\1/g"`

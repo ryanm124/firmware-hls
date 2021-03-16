@@ -326,6 +326,12 @@ inline VMStubME<OutType> createStubME(const InputStub<InType> stub,
 
 	assert(rzfine >= 0);
 
+	int nFinePhiBits = stubME.getFinePhi().length(); // Number of bits used for fine phi
+
+	// Set finephi, i.e. the phi bits within a vme region region
+	auto finephi = iphivmFineBins<InType>(phiCorr,  nbitsvmlayer[Layer-1], nFinePhiBits);
+	stubME.setFinePhi(finephi);
+	  
 	return stubME;
 };
 
@@ -666,7 +672,7 @@ void VMRouter(const BXType bx, BXType& bx_o, const int fineBinTable[], const int
 		clear3DArray(nvmTE, addrCountTEO);
 	}
 
-
+	
 	/////////////////////////////////////
 	// Main Loop
 	constexpr int maxLoop = kMaxProc;
