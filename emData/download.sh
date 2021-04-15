@@ -67,6 +67,9 @@ declare -a processing_modules=(
   "MC_L5PHIC"
   "MC_L6PHIC"
 
+  # Match Processor
+  "MP_L3PHIC"
+
   # TrackBuilder (aka FitTrack)
   "FT_L1L2"
 
@@ -167,6 +170,11 @@ do
   memprint_location="MemPrints"
   table_location="LUTs"
   if [[ ${module_type} == "TP" ]]
+  then
+    memprint_location="MemPrintsCM"
+    table_location="LUTsCM"
+  fi
+  if [[ ${module_type} == "MP" ]]
   then
     memprint_location="MemPrintsCM"
     table_location="LUTsCM"
