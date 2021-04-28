@@ -297,7 +297,7 @@ inline MATCH read() {
    }
 
    //Read stub memory and extract data fields
-   ap_uint<10> stubadd=(zbin,iphiSave,istubtmp);
+   ap_uint<10> stubadd=(iphiSave,ap_uint<3>(zbin),istubtmp);
    stubdata_ = stubmem[bx&1][stubadd];
    projfinephi__ = projfinephi_;
    projfinezadj_ = projfinezadj;
