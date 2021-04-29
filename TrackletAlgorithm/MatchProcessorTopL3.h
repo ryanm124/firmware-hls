@@ -7,6 +7,17 @@ constexpr int maxTrackletProjections(10);
 constexpr int maxInCopies(8);
 constexpr int maxFullMatchCopies(8);
 
+constexpr regionType projTYPE(BARRELPS);
+constexpr regionType vmstubmeTYPE(BARRELPS);
+constexpr regionType vmprojTYPE(BARREL);
+constexpr regionType allstubTYPE(BARRELPS);
+constexpr regionType allprojTYPE(BARRELPS);
+constexpr regionType fullmatchTYPE(BARREL);
+
+constexpr TF::layer MPLayer(TF::L3);
+constexpr TF::disk MPDisk(TF::D1);
+constexpr int MPPhi(2);
+
 void MatchProcessorTopL3(BXType bx,
                          const TrackletProjectionMemory<BARRELPS>* const proj1in,
                          const TrackletProjectionMemory<BARRELPS>* const proj2in,

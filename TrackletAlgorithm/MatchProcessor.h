@@ -195,7 +195,7 @@ namespace PR
 template<int L>
 void readTable(bool table[256]){
 
-  if (L==1) {
+  if (L==TF::L1) {
     bool tmp[256]=
 #include "../emData/ME/tables/METable_L1.tab"
     for (int i=0;i<256;++i){
@@ -205,7 +205,7 @@ void readTable(bool table[256]){
   }
 
 /*
-  if (L==2) {
+  if (L==TF::L2) {
     bool tmp[256]=
 #include "../emData/ME/tables/METable_L2.tab"
     for (int i=0;i<256;++i){
@@ -215,7 +215,7 @@ void readTable(bool table[256]){
   }
 */
 
-  if (L==3) {
+  if (L==TF::L3) {
     bool tmp[256]=
 #include "../emData/MP/tables/METable_L3.tab"
     for (int i=0;i<256;++i){
@@ -224,7 +224,7 @@ void readTable(bool table[256]){
     }
   }
 
-  if (L==4) {
+  if (L==TF::L4) {
     bool tmp[512]=
 #include "../emData/ME/tables/METable_L4.tab"
     for (int i=0;i<512;++i){
@@ -234,7 +234,7 @@ void readTable(bool table[256]){
   }
 
 /*
-  if (L==5) {
+  if (L==TF::L5) {
     bool tmp[512]=
 #include "../emData/ME/tables/METable_L5.tab"
 #pragma HLS unroll
@@ -243,7 +243,7 @@ void readTable(bool table[256]){
     }
   }
 
-  if (L==6) {
+  if (L==TF::L6) {
     bool tmp[512]=
 #include "../emData/ME/tables/METable_L6.tab"
 #pragma HLS unroll
@@ -278,32 +278,32 @@ ap_uint<width> iabs( ap_int<width> value )
 template<bool phi, int L, int width, int depth>
 void readTable_Cuts(ap_uint<width> table[depth]){
   if (phi){ // phi cuts
-    if (L==1){
+    if (L==TF::L1){
       ap_uint<width> tmp[depth] =
 #include "../emData/MC/tables/MC_L1PHIC_phicut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];
     }
-    else if (L==2){
+    else if (L==TF::L2){
       ap_uint<width> tmp[depth] =
 #include "../emData/MC/tables/MC_L2PHIC_phicut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];
     }
-    else if (L==3){
+    else if (L==TF::L3){
       ap_uint<width> tmp[depth] =
 #include "../emData/MP/tables/MP_L3PHIC_phicut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];
     }
-    else if (L==4){
+    else if (L==TF::L4){
       ap_uint<width> tmp[depth] =
 #include "../emData/MC/tables/MC_L4PHIC_phicut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];
     }
-    else if (L==5){
+    else if (L==TF::L5){
       ap_uint<width> tmp[depth] =
 #include "../emData/MC/tables/MC_L5PHIC_phicut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];
     }
-    else if (L==6){
+    else if (L==TF::L6){
       ap_uint<width> tmp[depth] =
 #include "../emData/MC/tables/MC_L6PHIC_phicut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];
@@ -313,32 +313,32 @@ void readTable_Cuts(ap_uint<width> table[depth]){
     }
   } // end phi cuts
   else { // z cuts
-    if (L==1){
+    if (L==TF::L1){
       ap_uint<width> tmp[depth] =
 #include "../emData/MC/tables/MC_L1PHIC_zcut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];
     }
-    else if (L==2){
+    else if (L==TF::L2){
       ap_uint<width> tmp[depth] =
 #include "../emData/MC/tables/MC_L2PHIC_zcut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];
     }
-    else if (L==3){
+    else if (L==TF::L3){
       ap_uint<width> tmp[depth] =
 #include "../emData/MP/tables/MP_L3PHIC_zcut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];
     }
-    else if (L==4){
+    else if (L==TF::L4){
       ap_uint<width> tmp[depth] =
 #include "../emData/MC/tables/MC_L4PHIC_zcut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];
     }
-    else if (L==5){
+    else if (L==TF::L5){
       ap_uint<width> tmp[depth] =
 #include "../emData/MC/tables/MC_L5PHIC_zcut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];
     }
-    else if (L==6){
+    else if (L==TF::L6){
       ap_uint<width> tmp[depth] =
 #include "../emData/MC/tables/MC_L6PHIC_zcut.tab"
       for (int i = 0; i < depth; i++) table[i] = tmp[i];
@@ -393,15 +393,15 @@ void MatchCalculator(BXType bx,
   const ap_int<4>  kShift_PS_zderL = -7; // PS_zderL_shift in emulation (defined in constants)
   const ap_int<4>  kShift_2S_zderL = -7; // SS_zderL_shift in emulation (defined in constants)
 
-  const auto kFact               = (1 <= LAYER <= 3)? 1 : (1<<(kNbitszprojL123-kNbitszprojL456)); // fact_ in emulation defined in MC
-  constexpr int kPhi0_shift         = (1 <= LAYER <= 3)? 3 : 0;                                      // phi0shift_ in emulation defined in MC
+  const auto kFact               = (LAYER < TF::L4)? 1 : (1<<(kNbitszprojL123-kNbitszprojL456)); // fact_ in emulation defined in MC
+  const auto kPhi0_shift         = (LAYER < TF::L4)? 3 : 0;                                      // phi0shift_ in emulation defined in MC
   constexpr int  kShift_phi0bit      = 1;                                                             // phi0bitshift in emulation defined in constants
   const ap_uint<10> kPhi_corr_shift_L123 = 7 + kNbitsdrinv + kShift_phi0bit - kShift_Rinv - kShift_Phider;                    // icorrshift for L123
   const ap_uint<10> kPhi_corr_shift_L456 = kPhi_corr_shift_L123 - 10 - kNbitsrL456;                                           // icorrshift for L456
-  const auto kPhi_corr_shift     = (1 <= LAYER <= 3)? kPhi_corr_shift_L123 : kPhi_corr_shift_L456;                            // icorrshift_ in emulation
+  const auto kPhi_corr_shift     = (LAYER < TF::L4)? kPhi_corr_shift_L123 : kPhi_corr_shift_L456;                            // icorrshift_ in emulation
   const ap_uint<10> kZ_corr_shiftL123 = (-1-kShift_PS_zderL);                                                                 // icorzshift for L123 (6 in L3)
   const ap_uint<10> kZ_corr_shiftL456 = (-1-kShift_2S_zderL + kNbitszprojL123 - kNbitszprojL456 + kNbitsrL456 - kNbitsrL123); // icorzshift for L456
-  const auto kZ_corr_shift       = (1 <= LAYER <= 3)? kZ_corr_shiftL123 : kZ_corr_shiftL456;                                  // icorzshift_ in emulation
+  const auto kZ_corr_shift       = (LAYER < TF::L4)? kZ_corr_shiftL123 : kZ_corr_shiftL456;                                  // icorzshift_ in emulation
 
   const auto LUT_matchcut_phi_width = 17;
   const auto LUT_matchcut_phi_depth = 12;
@@ -586,7 +586,7 @@ void MatchProcessor(BXType bx,
   using namespace PR;
   
   //Initialize table for bend-rinv consistency
-  bool table[kNMatchEngines][(LAYER<4)?256:512]; //FIXME Need to figure out how to replace 256 with meaningful const.
+  bool table[kNMatchEngines][(LAYER<TF::L4)?256:512]; //FIXME Need to figure out how to replace 256 with meaningful const.
 #pragma HLS ARRAY_PARTITION variable=table complete
   readtable: for(int iMEU = 0; iMEU < kNMatchEngines; ++iMEU) {
 #pragma HLS unroll
@@ -858,10 +858,10 @@ void MatchProcessor(BXType bx,
       //memory the projection points to
       
       // number of bits used to distinguish the different modules in each layer/disk
-      auto nbits_all = LAYER!=0 ? nbits_allstubslayers[LAYER-1] : nbits_allstubsdisks[DISK-1];
+      auto nbits_all = LAYER!=0 ? nbits_allstubslayers[LAYER] : nbits_allstubsdisks[DISK];
       
       // number of bits used to distinguish between VMs within a module
-      auto nbits_vmme = LAYER!=0 ? nbits_vmmelayers[LAYER-1] : nbits_vmmedisks[DISK-1];
+      auto nbits_vmme = LAYER!=0 ? nbits_vmmelayers[LAYER] : nbits_vmmedisks[DISK];
       
       // bits used for routing
       iphi = iphiproj.range(iphiproj.length()-nbits_all-1,iphiproj.length()-nbits_all-nbits_vmme);
