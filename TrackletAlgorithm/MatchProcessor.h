@@ -355,7 +355,7 @@ void readTable_Cuts(ap_uint<width> table[depth]){
 //-------------------------------------- MATCH CALCULATION STEPS --------------------------------------------
 //-----------------------------------------------------------------------------------------------------------
 
-template<regionType ASTYPE, regionType APTYPE, regionType VMSMEType, regionType FMTYPE, int maxFullMatchCopies,int LAYER=0, int PHISEC=0>
+template<regionType ASTYPE, regionType APTYPE, regionType VMSMEType, regionType FMTYPE, int maxFullMatchCopies, TF::layer LAYER>
 void MatchCalculator(BXType bx,
                      ap_uint<1> newtracklet,
                      ap_uint<1>& savedMatch,
@@ -546,7 +546,7 @@ void MatchCalculator(BXType bx,
 //////////////////////////////
 // MatchProcessor
 template<regionType PROJTYPE, regionType VMSMEType, regionType VMPTYPE, regionType ASTYPE, regionType APTYPE, regionType FMTYPE, int maxInCopies, int maxFullMatchCopies, int maxTrackletProjections, unsigned int nINMEM,
-         int LAYER=0, int DISK=0, int PHISEC=0>
+         TF::layer LAYER, TF::disk DISK>
 void MatchProcessor(BXType bx,
                       // because Vivado HLS cannot synthesize an array of
                       // pointers that point to stuff other than scalar or
@@ -772,7 +772,7 @@ void MatchProcessor(BXType bx,
       
       lastTrkID = trkindex;
 
-      MatchCalculator<ASTYPE, APTYPE, VMSMEType, FMTYPE, maxFullMatchCopies, LAYER, PHISEC>
+      MatchCalculator<ASTYPE, APTYPE, VMSMEType, FMTYPE, maxFullMatchCopies, LAYER>
 	(bx, newtracklet, savedMatch, best_delta_phi, allstub, allproj, projindex, stubindex, bx_o,
 	 nmcout1, nmcout2, nmcout3, nmcout4, nmcout5, nmcout6, nmcout7, nmcout8,
 	 fullmatch);

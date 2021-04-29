@@ -39,7 +39,7 @@ void MatchProcessorTopL3(BXType bx,
  #pragma HLS resource variable=fullmatch[7].get_mem() latency=2
 
 
- MatchProcessor<projTYPE, vmstubmeTYPE, vmprojTYPE, allstubTYPE, allprojTYPE, fullmatchTYPE, maxInCopies, maxFullMatchCopies, maxTrackletProjections, maxTrackletProjections, MPLayer, MPDisk, MPPhi>
+ MatchProcessor<projTYPE, vmstubmeTYPE, vmprojTYPE, allstubTYPE, allprojTYPE, fullmatchTYPE, maxInCopies, maxFullMatchCopies, maxTrackletProjections, maxTrackletProjections, MPLayer, MPDisk>
                      (bx,
                       proj1in, proj2in, proj3in, proj4in, proj5in, proj6in, proj7in, proj8in,
                       proj9in, proj10in, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,

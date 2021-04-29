@@ -16,7 +16,6 @@ constexpr regionType fullmatchTYPE(BARREL);
 
 constexpr TF::layer MPLayer(TF::L3);
 constexpr TF::disk MPDisk(TF::D1);
-constexpr int MPPhi(2);
 
 void MatchProcessorTopL3(BXType bx,
                          const TrackletProjectionMemory<BARRELPS>* const proj1in,
