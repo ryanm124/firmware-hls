@@ -189,11 +189,13 @@ inline MATCH read() {
      //int phidiff = projfinephi___ - stubfinephi;
 
      //bool passphi =  phidiff < 3 && phidiff > -3;
-     bool passphi = isLessThanSize<5,3,false,5,3>()[(projfinephi___,stubfinephi)];
+     static constexpr int nphibits = projFinePhiSize > stubFinePhiSize ? projFinePhiSize : stubFinePhiSize;
+     bool passphi = isLessThanSize<nphibits,3,false,projFinePhiSize,stubFinePhiSize>()[(projfinephi___,stubfinephi)];
 
      //Check if stub z position consistent
      //ap_int<5> idz=stubfinez-projfinezadj__;
-     bool pass = isPSseed__ ? isLessThanSize<5,1,true,3,5>()[(stubfinez,projfinezadj__)] : isLessThanSize<5,5,true,3,5>()[(stubfinez,projfinezadj__)];
+     static constexpr int nzbits = projFineZSize > stubFineZSize ? projFineZSize : stubFineZSize;
+     bool pass = isPSseed__ ? isLessThanSize<nzbits,1,true,stubFineZSize,projFineZSize>()[(stubfinez,projfinezadj__)] : isLessThanSize<nzbits,5,true,stubFineZSize,projFineZSize>()[(stubfinez,projfinezadj__)];
      /*
      if (isPSseed__) {
        pass=idz>=-1&&idz<=1;
@@ -326,15 +328,20 @@ inline MATCH read() {
  NSTUBS istub_=0;
  VMStubMECM<VMSMEType> stubdata_, stubdata__; 
  bool good_, good__;
- ap_int<5> projfinephi__, projfinephi___;
- ap_int<5> projfinezadj_, projfinezadj__;
  bool isPSseed_, isPSseed__;
  VMProjection<BARREL>::VMPRINV projrinv_, projrinv__;
  ProjectionRouterBuffer<BARREL, AllProjectionType> projbuffer__, projbuffer___;
 
  MATCH matches_[1<<MatchEngineUnitBase<VMProjType>::kNBitsBuffer];
- ap_int<5> projfinezadj; //FIXME Need replace 5 with const
- ap_int<5> projfinephi_; //FIXME Need replace 5 with const
+
+ //extra bits to account for adjustments
+ static constexpr int projFinePhiSize = VMProjectionBase<VMProjType>::kVMProjFinePhiSize+2;
+ static constexpr int projFineZSize = VMProjectionBase<VMProjType>::kVMProjFineZSize+1;
+ static constexpr int stubFinePhiSize = VMStubMECMBase<VMSMEType>::kVMSMEFinePhiSize;
+ static constexpr int stubFineZSize = VMStubMECMBase<VMSMEType>::kVMSMEFineZSize;
+
+ ap_int<projFinePhiSize> projfinephi_, projfinephi__, projfinephi___;
+ ap_int<projFineZSize> projfinezadj, projfinezadj_, projfinezadj__;
  typename ProjectionRouterBuffer<BARREL, AllProjectionType>::TCID tcid;
  bool isPSseed;
  typename ProjectionRouterBuffer<BARREL, AllProjectionType>::VMPZBIN zbin;
