@@ -78,7 +78,7 @@ public:
   typedef ap_uint<VMProjectionBase<VMProjType>::kVMProjectionSize> VMProjData;
   typedef ap_uint<ProjectionRouterBufferBase<VMProjType, AllProjectionType>::kPRBufferNStubsSize> PRNSTUB;
   typedef ap_uint<ProjectionRouterBufferBase<VMProjType, AllProjectionType>::kPRBufferZBinSize> VMPZBIN;
-  //zbin high bit is a flag (indicates if we should look at zbin+1)
+  //zbin LSB bit is a flag (indicates if we should look at zbin+1)
   typedef ap_uint<ProjectionRouterBufferBase<VMProjType, AllProjectionType>::kPRBufferZBinSize-1> VMPZBINNOFLAG;
   typedef ap_uint<ProjectionRouterBufferBase<VMProjType, AllProjectionType>::kProjectionRouterBufferSize> ProjBuffer;
   typedef ap_uint<ProjectionRouterBufferBase<VMProjType, AllProjectionType>::kPRBufferTCIDSize> TCID;
@@ -94,15 +94,15 @@ public:
   {}
   
   // This constructor is only used for projections in BARREL
- ProjectionRouterBuffer(const ALLPROJ allproj, const PRPHI phi, const SHIFT shift, const TCID tcid, const PRNSTUB nstub, const VMPZBIN zbin, const VMProjection<BARREL> projdata, const bool ps):
-  data_( (allproj, phi, tcid, shift, projdata.getIndex(), nstub, projdata.raw(), zbin, ap_uint<1>(ps)) )
+ ProjectionRouterBuffer(const ALLPROJ allproj, const PRPHI phi, const SHIFT shift, const TCID tcid, const PRNSTUB nstub, const VMProjection<BARREL> projdata, const bool ps):
+  data_( (allproj, phi, tcid, shift, projdata.getIndex(), nstub, projdata.raw(), projdata.getZBin(), ap_uint<1>(ps)) )
   {
     static_assert(VMProjType == BARREL, "Constructor should only be used for BARREL projections");
   }
 
   // This constructor is only used for projections in DISK
-  ProjectionRouterBuffer(const SHIFT shift, const VMPID index, const PRNSTUB nstub, const VMPZBIN zbin, const VMProjData projdata):
-    data_( ((((shift,index),nstub),projdata),zbin) )
+  ProjectionRouterBuffer(const SHIFT shift, const VMPID index, const PRNSTUB nstub, const VMProjData projdata):
+    data_( (shift, index, nstub, projdata, projdata.getZBin()) )
   {
     static_assert(VMProjType == DISK, "Constructor should only be used for DISK projections");
   }
@@ -142,6 +142,10 @@ public:
 
   VMPZBIN getZBin() const {
     return data_.range(kPRBufferZBinMSB,kPRBufferZBinLSB);
+  }
+
+  VMPZBINNOFLAG getZBinNoFlag() const {
+    return data_.range(kPRBufferZBinMSB,kPRBufferZBinLSB+1);
   }
 
   VMProjData getProjection() const {

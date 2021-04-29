@@ -924,7 +924,7 @@ void MatchProcessor(BXType bx,
       */
 
       if (nstubs!=0) { 
-	ProjectionRouterBuffer<BARREL, APTYPE> projbuffertmp(allproj.raw(), ivmMinus, shift, trackletid, nstubs, zfirst, vmproj, psseed);
+	ProjectionRouterBuffer<BARREL, APTYPE> projbuffertmp(allproj.raw(), ivmMinus, shift, trackletid, nstubs, vmproj, psseed);
 	projbufferarray.addProjection(projbuffertmp);
       }
       

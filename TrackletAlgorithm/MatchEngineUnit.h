@@ -250,7 +250,7 @@ inline MATCH read() {
      //auto nstub = qdata.getNStubs();
      //nstubs=qdata.getNStubs();
      VMProjection<BARREL> data(qdata.getProjection());
-     zbin=data.getZBin().range(3,1); //FIXME is this valid? Only using range(3,1) instead of full range, zfirst in MatchProcessor.h
+     zbin=qdata.getZBinNoFlag();
      
      projindex=data.getIndex();
      auto projfinez=data.getFineZ();
@@ -299,8 +299,7 @@ inline MATCH read() {
    }
 
    //Read stub memory and extract data fields
-   typename ProjectionRouterBuffer<BARREL, AllProjectionType>::VMPZBINNOFLAG zbinNoNextFlag(zbin);
-   ap_uint<10> stubadd=(iphiSave,zbinNoNextFlag,istubtmp);
+   ap_uint<10> stubadd=(iphiSave,zbin,istubtmp);
    stubdata_ = stubmem[bx&1][stubadd];
    projfinephi__ = projfinephi_;
    projfinezadj_ = projfinezadj;
@@ -344,7 +343,7 @@ inline MATCH read() {
  ap_int<projFineZSize> projfinezadj, projfinezadj_, projfinezadj__;
  typename ProjectionRouterBuffer<BARREL, AllProjectionType>::TCID tcid;
  bool isPSseed;
- typename ProjectionRouterBuffer<BARREL, AllProjectionType>::VMPZBIN zbin;
+ typename ProjectionRouterBuffer<BARREL, AllProjectionType>::VMPZBINNOFLAG zbin;
  VMProjection<BARREL>::VMPRINV projrinv;
  VMProjection<BARREL>::VMPID projindex;
  ProjectionRouterBuffer<BARREL, AllProjectionType> projbuffer_;
