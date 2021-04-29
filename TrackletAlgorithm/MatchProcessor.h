@@ -394,7 +394,7 @@ void MatchCalculator(BXType bx,
   const ap_int<4>  kShift_2S_zderL = -7; // SS_zderL_shift in emulation (defined in constants)
 
   const auto kFact               = (LAYER < TF::L4)? 1 : (1<<(kNbitszprojL123-kNbitszprojL456)); // fact_ in emulation defined in MC
-  const auto kPhi0_shift         = (LAYER < TF::L4)? 3 : 0;                                      // phi0shift_ in emulation defined in MC
+  constexpr int kPhi0_shift         = (LAYER < TF::L4)? 3 : 0;                                      // phi0shift_ in emulation defined in MC
   constexpr int  kShift_phi0bit      = 1;                                                             // phi0bitshift in emulation defined in constants
   const ap_uint<10> kPhi_corr_shift_L123 = 7 + kNbitsdrinv + kShift_phi0bit - kShift_Rinv - kShift_Phider;                    // icorrshift for L123
   const ap_uint<10> kPhi_corr_shift_L456 = kPhi_corr_shift_L123 - 10 - kNbitsrL456;                                           // icorrshift for L456
