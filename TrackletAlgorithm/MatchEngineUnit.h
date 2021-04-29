@@ -34,7 +34,7 @@ class MatchEngineUnitBase<BARREL> {
   };
 };
 
-template<int VMSMEType, int VMProjType, int VMPTYPE, int AllProjectionType>
+template<int VMSMEType, int VMProjType, int AllProjectionType>
 class MatchEngineUnit : public MatchEngineUnitBase<VMProjType> {
 
  public:
