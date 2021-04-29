@@ -112,4 +112,6 @@ static const ap_uint<1 << 2*nbits> isLessThanSize() {
   return tab;
 }
 
+constexpr int MEtableSizePS = 256;
+
 #endif

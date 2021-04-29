@@ -192,13 +192,13 @@ namespace PR
 } // namesapce PR
 
 
-template<int L>
-void readTable(bool table[256]){
+template<TF::layer L, int WIDTH>
+void readTable(bool table[]){
 
   if (L==TF::L1) {
-    bool tmp[256]=
+    bool tmp[]=
 #include "../emData/ME/tables/METable_L1.tab"
-    for (int i=0;i<256;++i){
+    for (int i=0;i<WIDTH;++i){
 #pragma HLS unroll
       table[i]=tmp[i];
     }
@@ -206,9 +206,9 @@ void readTable(bool table[256]){
 
 /*
   if (L==TF::L2) {
-    bool tmp[256]=
+    bool tmp[]=
 #include "../emData/ME/tables/METable_L2.tab"
-    for (int i=0;i<256;++i){
+    for (int i=0;i<WIDTH;++i){
 #pragma HLS unroll
       table[i]=tmp[i];
     }
@@ -216,18 +216,18 @@ void readTable(bool table[256]){
 */
 
   if (L==TF::L3) {
-    bool tmp[256]=
+    bool tmp[]=
 #include "../emData/MP/tables/METable_L3.tab"
-    for (int i=0;i<256;++i){
+    for (int i=0;i<WIDTH;++i){
 #pragma HLS unroll
       table[i]=tmp[i];
     }
   }
 
   if (L==TF::L4) {
-    bool tmp[512]=
+    bool tmp[]=
 #include "../emData/ME/tables/METable_L4.tab"
-    for (int i=0;i<512;++i){
+    for (int i=0;i<WIDTH;++i){
 #pragma HLS unroll
       table[i]=tmp[i];
     }
@@ -235,19 +235,19 @@ void readTable(bool table[256]){
 
 /*
   if (L==TF::L5) {
-    bool tmp[512]=
+    bool tmp[]=
 #include "../emData/ME/tables/METable_L5.tab"
 #pragma HLS unroll
-    for (int i=0;i<512;++i){
+    for (int i=0;i<WIDTH;++i){
       table[i]=tmp[i];
     }
   }
 
   if (L==TF::L6) {
-    bool tmp[512]=
+    bool tmp[]=
 #include "../emData/ME/tables/METable_L6.tab"
 #pragma HLS unroll
-    for (int i=0;i<512;++i){
+    for (int i=0;i<WIDTH;++i){
       table[i]=tmp[i];
     }
   }
@@ -355,14 +355,14 @@ void readTable_Cuts(ap_uint<width> table[depth]){
 //-------------------------------------- MATCH CALCULATION STEPS --------------------------------------------
 //-----------------------------------------------------------------------------------------------------------
 
-template<regionType ASTYPE, regionType APTYPE, regionType VMSMEType, regionType FMTYPE, int maxFullMatchCopies, TF::layer LAYER>
+template<regionType ASTYPE, regionType APTYPE, regionType VMPTYPE, regionType VMSMEType, regionType FMTYPE, int maxFullMatchCopies, TF::layer LAYER>
 void MatchCalculator(BXType bx,
                      ap_uint<1> newtracklet,
                      ap_uint<1>& savedMatch,
                      ap_uint<17>& best_delta_phi,
                      const AllStubMemory<ASTYPE>* allstub,
                      const AllProjection<APTYPE>& proj,
-                     ap_uint<VMProjectionBase<BARREL>::kVMProjIndexSize> projid,
+                     ap_uint<VMProjectionBase<VMPTYPE>::kVMProjIndexSize> projid,
                      ap_uint<VMStubMECMBase<VMSMEType>::kVMSMEIDSize> stubid,
                      BXType& bx_o,
                      int &nmcout1,
@@ -373,7 +373,7 @@ void MatchCalculator(BXType bx,
                      int &nmcout6,
                      int &nmcout7,
                      int &nmcout8,
-                     FullMatchMemory<BARREL> fullmatch[maxFullMatchCopies]
+                     FullMatchMemory<FMTYPE> fullmatch[maxFullMatchCopies]
 ){
 
 #pragma HLS inline
@@ -578,7 +578,7 @@ void MatchProcessor(BXType bx,
                       const VMStubMEMemoryCM<VMSMEType, 3, 3, kNMatchEngines>& instubdata,
                       const AllStubMemory<ASTYPE>* allstub,
                       BXType& bx_o,
-                      FullMatchMemory<BARREL> fullmatch[maxFullMatchCopies]
+                      FullMatchMemory<FMTYPE> fullmatch[maxFullMatchCopies]
 ){
 #pragma HLS inline
 
@@ -586,11 +586,12 @@ void MatchProcessor(BXType bx,
   using namespace PR;
   
   //Initialize table for bend-rinv consistency
-  bool table[kNMatchEngines][(LAYER<TF::L4)?256:512]; //FIXME Need to figure out how to replace 256 with meaningful const.
+  constexpr int WIDTH=(LAYER<TF::L4)?MEtableSizePS:2*MEtableSizePS;
+  bool table[kNMatchEngines][WIDTH];
 #pragma HLS ARRAY_PARTITION variable=table complete
   readtable: for(int iMEU = 0; iMEU < kNMatchEngines; ++iMEU) {
 #pragma HLS unroll
-    readTable<LAYER>(table[iMEU]); 
+    readTable<LAYER, WIDTH>(table[iMEU]); 
   } 
 
   // initialization:
@@ -631,9 +632,8 @@ void MatchProcessor(BXType bx,
   //Some ME stuff
   ////////////////////////////////////////////
   ap_uint<TEBinsBits> zbin=0;
-  VMProjection<BARREL>::VMPFINEZ projfinez;
-  ap_int<5> projfinezadj; //FIXME Need replace 5 with const
-  VMProjection<BARREL>::VMPRINV projrinv;
+  typename VMProjection<VMPTYPE>::VMPFINEZ projfinez;
+  typename VMProjection<VMPTYPE>::VMPRINV projrinv;
   bool isPSseed;
   bool second;
   ap_uint<kNBits_MemAddrBinned> istub=0;
@@ -646,7 +646,7 @@ void MatchProcessor(BXType bx,
 
   ProjectionRouterBufferArray<3,APTYPE> projbufferarray;
 
-  MatchEngineUnit<VMSMEType, BARREL, VMPTYPE, APTYPE> matchengine[kNMatchEngines];
+  MatchEngineUnit<VMSMEType, VMPTYPE, APTYPE> matchengine[kNMatchEngines];
   /*
     MEU_start: for(int iMEU = 0; iMEU < kNMatchEngines; ++iMEU) {
       #pragma HLS unroll
@@ -664,7 +664,7 @@ void MatchProcessor(BXType bx,
   //These are used inside the MatchCalculator method and needs to be retained between iterations
   ap_uint<1> savedMatch;
   ap_uint<17> best_delta_phi;
-  typename ProjectionRouterBuffer<BARREL, APTYPE>::TRKID lastTrkID(-1);
+  typename ProjectionRouterBuffer<VMPTYPE, APTYPE>::TRKID lastTrkID(-1);
 
   TrackletProjection<PROJTYPE> projdata, projdata_;
   bool validin = false; 
@@ -699,7 +699,7 @@ void MatchProcessor(BXType bx,
     
     ap_uint<kNMatchEngines> idles;
     ap_uint<kNMatchEngines> emptys;
-    typename ProjectionRouterBuffer<BARREL, ASTYPE>::TRKID trkids[kNMatchEngines];
+    typename ProjectionRouterBuffer<VMPTYPE, ASTYPE>::TRKID trkids[kNMatchEngines];
 #pragma HLS ARRAY_PARTITION variable=trkids complete dim=0
 
 
@@ -735,7 +735,7 @@ void MatchProcessor(BXType bx,
     ap_uint<3> bestiMEU = __builtin_ctz(smallest);
 
 
-    ProjectionRouterBuffer<BARREL,APTYPE> tmpprojbuff;
+    ProjectionRouterBuffer<VMPTYPE,APTYPE> tmpprojbuff;
     if (anyidle && !empty) {
       tmpprojbuff = projbufferarray.read();
     }
@@ -761,7 +761,7 @@ void MatchProcessor(BXType bx,
 
       auto trkindex=matchengine[bestiMEU].getTrkID();
       
-      typename VMProjection<BARREL>::VMPID projindex;
+      typename VMProjection<VMPTYPE>::VMPID projindex;
       
       ap_uint<VMStubMECMBase<VMSMEType>::kVMSMEIDSize> stubindex;
       ap_uint<AllProjection<APTYPE>::kAllProjectionSize> allproj;
@@ -772,7 +772,7 @@ void MatchProcessor(BXType bx,
       
       lastTrkID = trkindex;
 
-      MatchCalculator<ASTYPE, APTYPE, VMSMEType, FMTYPE, maxFullMatchCopies, LAYER>
+      MatchCalculator<ASTYPE, APTYPE, VMPTYPE, VMSMEType, FMTYPE, maxFullMatchCopies, LAYER>
 	(bx, newtracklet, savedMatch, best_delta_phi, allstub, allproj, projindex, stubindex, bx_o,
 	 nmcout1, nmcout2, nmcout3, nmcout4, nmcout5, nmcout6, nmcout7, nmcout8,
 	 fullmatch);
@@ -908,7 +908,7 @@ void MatchProcessor(BXType bx,
       
       ap_uint<16> nstubs=(nstublastPlus, nstubfirstPlus, nstublastMinus, nstubfirstMinus);
       
-      VMProjection<BARREL> vmproj(index, zbin, finez, finephi, rinv, psseed);
+      VMProjection<VMPTYPE> vmproj(index, zbin, finez, finephi, rinv, psseed);
       
       AllProjection<APTYPE> allproj(projdata_.getTCID(), projdata_.getTrackletIndex(), projdata_.getPhi(),
 				    projdata_.getRZ(), projdata_.getPhiDer(), projdata_.getRZDer());
@@ -924,7 +924,7 @@ void MatchProcessor(BXType bx,
       */
 
       if (nstubs!=0) { 
-	ProjectionRouterBuffer<BARREL, APTYPE> projbuffertmp(allproj.raw(), ivmMinus, shift, trackletid, nstubs, vmproj, psseed);
+	ProjectionRouterBuffer<VMPTYPE, APTYPE> projbuffertmp(allproj.raw(), ivmMinus, shift, trackletid, nstubs, vmproj, psseed);
 	projbufferarray.addProjection(projbuffertmp);
       }
       
