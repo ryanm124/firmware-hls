@@ -545,7 +545,7 @@ void MatchCalculator(BXType bx,
 
 //////////////////////////////
 // MatchProcessor
-template<int L, regionType PROJTYPE, regionType VMSMEType, regionType VMPTYPE, regionType ASTYPE, regionType APTYPE, regionType FMTYPE, int maxInCopies, int maxFullMatchCopies, int maxTrackletProjections, unsigned int nINMEM,
+template<regionType PROJTYPE, regionType VMSMEType, regionType VMPTYPE, regionType ASTYPE, regionType APTYPE, regionType FMTYPE, int maxInCopies, int maxFullMatchCopies, int maxTrackletProjections, unsigned int nINMEM,
          int LAYER=0, int DISK=0, int PHISEC=0>
 void MatchProcessor(BXType bx,
                       // because Vivado HLS cannot synthesize an array of
@@ -586,11 +586,11 @@ void MatchProcessor(BXType bx,
   using namespace PR;
   
   //Initialize table for bend-rinv consistency
-  bool table[kNMatchEngines][(L<4)?256:512]; //FIXME Need to figure out how to replace 256 with meaningful const.
+  bool table[kNMatchEngines][(LAYER<4)?256:512]; //FIXME Need to figure out how to replace 256 with meaningful const.
 #pragma HLS ARRAY_PARTITION variable=table complete
   readtable: for(int iMEU = 0; iMEU < kNMatchEngines; ++iMEU) {
 #pragma HLS unroll
-    readTable<L>(table[iMEU]); 
+    readTable<LAYER>(table[iMEU]); 
   } 
 
   // initialization:
