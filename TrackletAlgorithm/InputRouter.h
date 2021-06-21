@@ -225,7 +225,7 @@ void InputRouter( const BXType bx
 	for (int cStubCounter = 0; cStubCounter < kMaxStubsFromLink; cStubCounter++) 
 	{
 	#pragma HLS pipeline II = 1
-	#pragma HLS PIPELINE rewind
+	//#pragma HLS PIPELINE rewind
 	  // decode stub
 	  auto hStub = hInputStubs[cStubCounter];
 	  // add check of valid bit here 

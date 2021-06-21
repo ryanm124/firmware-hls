@@ -13,7 +13,8 @@ void InputRouterTop( const BXType bx
   , DTCStubMemory hOutputStubs[cNMemories]) {
 
   #pragma HLS clock domain = slow_clock
-  #pragma HLS stream variable = hInputStubs depth = 1
+  //#pragma HLS stream variable = hInputStubs depth = 1
+  #pragma HLS interface ap_fifo port = hInputStubs 
   
   // unsigned int nMems=0;
   // unsigned int nMemsPerLyr[kMaxLyrsPerDTC]; 

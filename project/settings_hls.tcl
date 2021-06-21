@@ -22,6 +22,8 @@ config_interface -trim_dangling_port
 # Prevent HLS relaxing pipeline interval to meet timing.
 config_schedule -relax_ii_for_timing=0 -verbose
 
+# message confg 
+#set_msg_config -id {[Route 35-198]} -limit 1000 
 # Encourage HLS to make more effort to find best solution.
 # (Worth trying, but increases CPU use, so not enabled by default)
 #config_bind -effort high
