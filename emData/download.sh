@@ -27,6 +27,8 @@ luts_url_cm="https://cernbox.cern.ch/index.php/s/kqZu8R7Ftu0YPoO/download"
 # The following modules will have dedicated directories of test-bench files
 # prepared for them.
 declare -a processing_modules=(
+  # InputRouter
+  "IR_PS_1_A"
   # VMRouter
   "VMR_L1PHIE"
   "VMR_L1PHID"
