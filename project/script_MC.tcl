@@ -11,7 +11,6 @@ open_project -reset match_calc
 
 # source files
 set CFLAGS {-std=c++11 -I../TrackletAlgorithm}
-set_top MatchCalculator_L3PHIC
 add_files ../TrackletAlgorithm/MatchCalculatorTop.cc -cflags "$CFLAGS"
 add_files -tb ../TestBenches/MatchCalculator_test.cpp -cflags "$CFLAGS"
 
@@ -23,11 +22,20 @@ source settings_hls.tcl
 # data files
 add_files -tb ../emData/MC/
 
-csim_design -mflags "-j8"
+set_top MatchCalculator_L3PHIC
 csynth_design
-cosim_design 
 export_design -format ip_catalog
-# Adding "-flow impl" runs full Vivado implementation, providing accurate resource use numbers (very slow).
-#export_design -format ip_catalog -flow impl
+
+set_top MatchCalculator_L4PHIC
+csynth_design
+export_design -format ip_catalog
+
+set_top MatchCalculator_L5PHIC
+csynth_design
+export_design -format ip_catalog
+
+set_top MatchCalculator_L6PHIC
+csynth_design
+export_design -format ip_catalog
 
 exit
