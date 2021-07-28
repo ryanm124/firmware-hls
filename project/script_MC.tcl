@@ -14,26 +14,29 @@ set CFLAGS {-std=c++11 -I../TrackletAlgorithm}
 add_files ../TrackletAlgorithm/MatchCalculatorTop.cc -cflags "$CFLAGS"
 add_files -tb ../TestBenches/MatchCalculator_test.cpp -cflags "$CFLAGS"
 
-open_solution "solution1"
-
-# Define FPGA, clock frequency & common HLS settings.
-source settings_hls.tcl
-
 # data files
 add_files -tb ../emData/MC/
 
+open_solution "solution_L3PHIB"
+source settings_hls.tcl
 set_top MatchCalculator_L3PHIB
 csynth_design
 export_design -format ip_catalog
 
+open_solution "solution_L4PHIB"
+source settings_hls.tcl
 set_top MatchCalculator_L4PHIB
 csynth_design
 export_design -format ip_catalog
 
+open_solution "solution_L5PHIB"
+source settings_hls.tcl
 set_top MatchCalculator_L5PHIB
 csynth_design
 export_design -format ip_catalog
 
+open_solution "solution_L6PHIB"
+source settings_hls.tcl
 set_top MatchCalculator_L6PHIB
 csynth_design
 export_design -format ip_catalog
