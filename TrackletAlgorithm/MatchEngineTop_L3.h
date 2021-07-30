@@ -1,6 +1,7 @@
 #ifndef TrackletAlgorithm_MatchEngineTop_h
 #define TrackletAlgorithm_MatchEngineTop_h
 
+#define LAYER 3
 #include "MatchEngine.h"
 
 void MatchEngineTop(const BXType bx, BXType& bx_o,

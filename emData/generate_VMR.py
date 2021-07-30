@@ -17,7 +17,7 @@ num_layers = 6
 num_disks = 5
 
 # The VMRs specified in download.sh
-default_vmr_list = ["VMR_L1PHID", "VMR_L2PHIA", "VMR_L2PHIB", "VMR_L3PHIA" ,"VMR_L4PHIA", "VMR_L5PHIA", "VMR_L6PHIA", "VMR_D1PHIA", "VMR_D2PHIA", "VMR_D3PHIA", "VMR_D4PHIA", "VMR_D5PHIA"]
+default_vmr_list = ["VMR_L1PHID", "VMR_L2PHIB", "VMR_L3PHIB", "VMR_L4PHIB", "VMR_L5PHIB", "VMR_L6PHIB"]
 
 # Lists of which layer/disk has VMSTE memories
 has_vmste_inner = [True, True, True, False, True, False, True, False, True, False, False]

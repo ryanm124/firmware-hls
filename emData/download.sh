@@ -3,6 +3,87 @@
 # The following modules will have dedicated directories of test-bench files
 # prepared for them.
 declare -a processing_modules=(
+  # InputRouter
+  "IR_PS10G_1_A"
+  "IR_PS10G_2_A"
+  "IR_PS10G_2_B"
+  "IR_PS10G_3_A"
+  "IR_PS10G_3_B"
+  "IR_PS_1_A"
+  "IR_PS_1_B"
+  "IR_PS_2_A"
+  "IR_PS_2_B"
+  "IR_2S_1_A"
+  "IR_2S_1_B"
+  "IR_2S_2_A"
+  "IR_2S_2_B"
+  "IR_2S_3_A"
+  "IR_2S_3_B"
+  "IR_2S_4_A"
+  "IR_2S_4_B"
+
+  # VMRouter
+  "VMR_L1PHID"
+  "VMR_L2PHIB"
+  "VMR_L3PHIB"
+  "VMR_L4PHIB"
+  "VMR_L5PHIB"
+  "VMR_L6PHIB"
+
+  # TrackletEngine
+  "TE_L1PHID14_L2PHIB15"
+  "TE_L1PHID14_L2PHIB16"
+  "TE_L1PHID15_L2PHIB13"
+  "TE_L1PHID15_L2PHIB14"
+  "TE_L1PHID15_L2PHIB15"
+  "TE_L1PHID15_L2PHIB16"
+  "TE_L1PHID16_L2PHIB14"
+  "TE_L1PHID16_L2PHIB15"
+  "TE_L1PHID16_L2PHIB16"
+
+  # TrackletCalculator
+  "TC_L1L2F"
+
+  # ProjectionRouter
+  "PR_L3PHIB"
+  "PR_L4PHIB"
+  "PR_L5PHIB"
+  "PR_L6PHIB"
+
+  # MatchEngine
+  "ME_L3PHIB9"
+  "ME_L3PHIB10"
+  "ME_L3PHIB11"
+  "ME_L3PHIB12"
+  "ME_L3PHIB13"
+  "ME_L3PHIB14"
+  "ME_L3PHIB15"
+  "ME_L3PHIB16"
+  "ME_L4PHIB9"
+  "ME_L4PHIB10"
+  "ME_L4PHIB11"
+  "ME_L4PHIB12"
+  "ME_L4PHIB13"
+  "ME_L4PHIB14"
+  "ME_L4PHIB15"
+  "ME_L4PHIB16"
+  "ME_L5PHIB9"
+  "ME_L5PHIB10"
+  "ME_L5PHIB11"
+  "ME_L5PHIB12"
+  "ME_L5PHIB13"
+  "ME_L5PHIB14"
+  "ME_L5PHIB15"
+  "ME_L5PHIB16"
+  "ME_L6PHIB9"
+  "ME_L6PHIB10"
+  "ME_L6PHIB11"
+  "ME_L6PHIB12"
+  "ME_L6PHIB13"
+  "ME_L6PHIB14"
+  "ME_L6PHIB15"
+  "ME_L6PHIB16"
+
   # MatchCalculator
   "MC_L3PHIB"
   "MC_L4PHIB"
@@ -51,6 +132,10 @@ then
 fi
 
 # Run scripts to generate top functions in TrackletAlgorithm/
+./generate_IR.py
+./generate_VMR.py -a -w LUTs/wires.dat
+./generate_TC.py LUTs/wires.dat
+./generate_PR.py LUTs/wires.dat
 ./generate_MC.py LUTs/wires.dat
 ./generate_TB.py LUTs/wires.dat
 
