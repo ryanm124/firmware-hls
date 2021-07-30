@@ -105,6 +105,7 @@ download:
     name: "$CI_JOB_NAME-$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
     paths:
       - ./emData/
+      - ./TrackletAlgorithm/
     expire_in: 1 week
 # Quality checks ------------
 IR-quality-check:
@@ -146,7 +147,7 @@ ME-quality-check:
   <<: *template_quality-check
   variables:
     VIVADO_VERSION: "2019.2"
-    CLANG_TIDY_FILES: '../TestBenches/MatchEngine_test.cpp ../TrackletAlgorithm/MatchEngine.cc'
+    CLANG_TIDY_FILES: '../TestBenches/MatchEngine_test.cpp ../TrackletAlgorithm/MatchEngineTop.cc'
 MC-quality-check:
   <<: *template_quality-check
   variables:
