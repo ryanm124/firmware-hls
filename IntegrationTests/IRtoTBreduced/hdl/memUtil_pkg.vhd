@@ -8,7 +8,7 @@ package memUtil_pkg is
 
   -- ########################### Types ###########################
 
-  type enum_DL_39 is (PS10G_1_A,PS10G_2_A,PS10G_2_B,PS10G_3_A,PS10G_3_B,PS_1_A,PS_1_B,PS_2_A,PS_2_B,SS_1_A,SS_1_B,SS_2_A,SS_2_B,SS_3_A,SS_3_B,SS_4_A,SS_4_B);
+  type enum_DL_39 is (PS10G_1_A,PS10G_2_A,PS10G_2_B,PS10G_3_A,PS10G_3_B,PS_1_A,PS_1_B,PS_2_A,PS_2_B,twoS_1_A,twoS_1_B,twoS_2_A,twoS_2_B,twoS_3_A,twoS_3_B,twoS_4_A,twoS_4_B);
 
   type enum_IL_36 is (L1PHID_PS10G_1_A,L1PHID_PS10G_2_A,L1PHID_PS10G_2_B,L2PHIB_PS10G_3_A,L2PHIB_PS10G_3_B,L3PHIB_PS_1_A,L3PHIB_PS_1_B,L3PHIB_PS_2_A,L3PHIB_PS_2_B,L4PHIB_2S_1_A,L4PHIB_2S_1_B,L5PHIB_2S_1_A,L5PHIB_2S_2_A,L5PHIB_2S_2_B,L6PHIB_2S_3_A,L6PHIB_2S_3_B,L6PHIB_2S_4_A,L6PHIB_2S_4_B);
 
@@ -151,14 +151,14 @@ package body memUtil_pkg is
        when PS_1_B => return "PS_1_B";
        when PS_2_A => return "PS_2_A";
        when PS_2_B => return "PS_2_B";
-       when SS_1_A => return "2S_1_A";
-       when SS_1_B => return "2S_1_B";
-       when SS_2_A => return "2S_2_A";
-       when SS_2_B => return "2S_2_B";
-       when SS_3_A => return "2S_3_A";
-       when SS_3_B => return "2S_3_B";
-       when SS_4_A => return "2S_4_A";
-       when SS_4_B => return "2S_4_B";
+       when twoS_1_A => return "2S_1_A";
+       when twoS_1_B => return "2S_1_B";
+       when twoS_2_A => return "2S_2_A";
+       when twoS_2_B => return "2S_2_B";
+       when twoS_3_A => return "2S_3_A";
+       when twoS_3_B => return "2S_3_B";
+       when twoS_4_A => return "2S_4_A";
+       when twoS_4_B => return "2S_4_B";
     end case;
     return "No conversion found.";
   end memory_enum_to_string;
