@@ -83,12 +83,12 @@ entity SectorProcessorFull is
     FM_52_mem_A_wea        : out t_arr_FM_52_1b;
     FM_52_mem_AV_writeaddr : out t_arr_FM_52_ADDR;
     FM_52_mem_AV_din       : out t_arr_FM_52_DATA;
-    BW_46_stream_AV_din       : out t_arr_BW_46_DATA;
-    BW_46_stream_A_full_neg   : in t_arr_BW_46_1b;
-    BW_46_stream_A_write      : out t_arr_BW_46_1b;
     TW_84_stream_AV_din       : out t_arr_TW_84_DATA;
     TW_84_stream_A_full_neg   : in t_arr_TW_84_1b;
-    TW_84_stream_A_write      : out t_arr_TW_84_1b
+    TW_84_stream_A_write      : out t_arr_TW_84_1b;
+    BW_46_stream_AV_din       : out t_arr_BW_46_DATA;
+    BW_46_stream_A_full_neg   : in t_arr_BW_46_1b;
+    BW_46_stream_A_write      : out t_arr_BW_46_1b
   );
 end SectorProcessorFull;
 
@@ -842,9 +842,9 @@ begin
       ap_ready => open,
       ap_done  => open,
       bx_V          => IR_bx_in,
-      hInputStubs_V_dout     => DL_39_link_AV_dout(2S_1_A),
-      hInputStubs_V_empty_n  => DL_39_link_empty_neg(2S_1_A),
-      hInputStubs_V_read     => DL_39_link_read(2S_1_A),
+      hInputStubs_V_dout     => DL_39_link_AV_dout(SS_1_A),
+      hInputStubs_V_empty_n  => DL_39_link_empty_neg(SS_1_A),
+      hInputStubs_V_read     => DL_39_link_read(SS_1_A),
       hOutputStubs_0_dataarray_data_V_ce0       => open,
       hOutputStubs_0_dataarray_data_V_we0       => IL_36_mem_A_wea(L4PHIB_2S_1_A),
       hOutputStubs_0_dataarray_data_V_address0  => IL_36_mem_AV_writeaddr(L4PHIB_2S_1_A),
@@ -866,9 +866,9 @@ begin
       ap_ready => open,
       ap_done  => open,
       bx_V          => IR_bx_in,
-      hInputStubs_V_dout     => DL_39_link_AV_dout(2S_1_B),
-      hInputStubs_V_empty_n  => DL_39_link_empty_neg(2S_1_B),
-      hInputStubs_V_read     => DL_39_link_read(2S_1_B),
+      hInputStubs_V_dout     => DL_39_link_AV_dout(SS_1_B),
+      hInputStubs_V_empty_n  => DL_39_link_empty_neg(SS_1_B),
+      hInputStubs_V_read     => DL_39_link_read(SS_1_B),
       hOutputStubs_0_dataarray_data_V_ce0       => open,
       hOutputStubs_0_dataarray_data_V_we0       => IL_36_mem_A_wea(L4PHIB_2S_1_B),
       hOutputStubs_0_dataarray_data_V_address0  => IL_36_mem_AV_writeaddr(L4PHIB_2S_1_B),
@@ -886,9 +886,9 @@ begin
       ap_ready => open,
       ap_done  => open,
       bx_V          => IR_bx_in,
-      hInputStubs_V_dout     => DL_39_link_AV_dout(2S_2_A),
-      hInputStubs_V_empty_n  => DL_39_link_empty_neg(2S_2_A),
-      hInputStubs_V_read     => DL_39_link_read(2S_2_A),
+      hInputStubs_V_dout     => DL_39_link_AV_dout(SS_2_A),
+      hInputStubs_V_empty_n  => DL_39_link_empty_neg(SS_2_A),
+      hInputStubs_V_read     => DL_39_link_read(SS_2_A),
       hOutputStubs_0_dataarray_data_V_ce0       => open,
       hOutputStubs_0_dataarray_data_V_we0       => IL_36_mem_A_wea(L5PHIB_2S_2_A),
       hOutputStubs_0_dataarray_data_V_address0  => IL_36_mem_AV_writeaddr(L5PHIB_2S_2_A),
@@ -906,9 +906,9 @@ begin
       ap_ready => open,
       ap_done  => open,
       bx_V          => IR_bx_in,
-      hInputStubs_V_dout     => DL_39_link_AV_dout(2S_2_B),
-      hInputStubs_V_empty_n  => DL_39_link_empty_neg(2S_2_B),
-      hInputStubs_V_read     => DL_39_link_read(2S_2_B),
+      hInputStubs_V_dout     => DL_39_link_AV_dout(SS_2_B),
+      hInputStubs_V_empty_n  => DL_39_link_empty_neg(SS_2_B),
+      hInputStubs_V_read     => DL_39_link_read(SS_2_B),
       hOutputStubs_0_dataarray_data_V_ce0       => open,
       hOutputStubs_0_dataarray_data_V_we0       => IL_36_mem_A_wea(L5PHIB_2S_2_B),
       hOutputStubs_0_dataarray_data_V_address0  => IL_36_mem_AV_writeaddr(L5PHIB_2S_2_B),
@@ -926,9 +926,9 @@ begin
       ap_ready => open,
       ap_done  => open,
       bx_V          => IR_bx_in,
-      hInputStubs_V_dout     => DL_39_link_AV_dout(2S_3_A),
-      hInputStubs_V_empty_n  => DL_39_link_empty_neg(2S_3_A),
-      hInputStubs_V_read     => DL_39_link_read(2S_3_A),
+      hInputStubs_V_dout     => DL_39_link_AV_dout(SS_3_A),
+      hInputStubs_V_empty_n  => DL_39_link_empty_neg(SS_3_A),
+      hInputStubs_V_read     => DL_39_link_read(SS_3_A),
       hOutputStubs_0_dataarray_data_V_ce0       => open,
       hOutputStubs_0_dataarray_data_V_we0       => IL_36_mem_A_wea(L6PHIB_2S_3_A),
       hOutputStubs_0_dataarray_data_V_address0  => IL_36_mem_AV_writeaddr(L6PHIB_2S_3_A),
@@ -946,9 +946,9 @@ begin
       ap_ready => open,
       ap_done  => open,
       bx_V          => IR_bx_in,
-      hInputStubs_V_dout     => DL_39_link_AV_dout(2S_3_B),
-      hInputStubs_V_empty_n  => DL_39_link_empty_neg(2S_3_B),
-      hInputStubs_V_read     => DL_39_link_read(2S_3_B),
+      hInputStubs_V_dout     => DL_39_link_AV_dout(SS_3_B),
+      hInputStubs_V_empty_n  => DL_39_link_empty_neg(SS_3_B),
+      hInputStubs_V_read     => DL_39_link_read(SS_3_B),
       hOutputStubs_0_dataarray_data_V_ce0       => open,
       hOutputStubs_0_dataarray_data_V_we0       => IL_36_mem_A_wea(L6PHIB_2S_3_B),
       hOutputStubs_0_dataarray_data_V_address0  => IL_36_mem_AV_writeaddr(L6PHIB_2S_3_B),
@@ -966,9 +966,9 @@ begin
       ap_ready => open,
       ap_done  => open,
       bx_V          => IR_bx_in,
-      hInputStubs_V_dout     => DL_39_link_AV_dout(2S_4_A),
-      hInputStubs_V_empty_n  => DL_39_link_empty_neg(2S_4_A),
-      hInputStubs_V_read     => DL_39_link_read(2S_4_A),
+      hInputStubs_V_dout     => DL_39_link_AV_dout(SS_4_A),
+      hInputStubs_V_empty_n  => DL_39_link_empty_neg(SS_4_A),
+      hInputStubs_V_read     => DL_39_link_read(SS_4_A),
       hOutputStubs_0_dataarray_data_V_ce0       => open,
       hOutputStubs_0_dataarray_data_V_we0       => IL_36_mem_A_wea(L6PHIB_2S_4_A),
       hOutputStubs_0_dataarray_data_V_address0  => IL_36_mem_AV_writeaddr(L6PHIB_2S_4_A),
@@ -986,9 +986,9 @@ begin
       ap_ready => open,
       ap_done  => open,
       bx_V          => IR_bx_in,
-      hInputStubs_V_dout     => DL_39_link_AV_dout(2S_4_B),
-      hInputStubs_V_empty_n  => DL_39_link_empty_neg(2S_4_B),
-      hInputStubs_V_read     => DL_39_link_read(2S_4_B),
+      hInputStubs_V_dout     => DL_39_link_AV_dout(SS_4_B),
+      hInputStubs_V_empty_n  => DL_39_link_empty_neg(SS_4_B),
+      hInputStubs_V_read     => DL_39_link_read(SS_4_B),
       hOutputStubs_0_dataarray_data_V_ce0       => open,
       hOutputStubs_0_dataarray_data_V_we0       => IL_36_mem_A_wea(L6PHIB_2S_4_B),
       hOutputStubs_0_dataarray_data_V_address0  => IL_36_mem_AV_writeaddr(L6PHIB_2S_4_B),
