@@ -91,22 +91,6 @@ switch (Seed) {
       drinv = LUT_drinv[addr_drinv];
       break;
     }
-  case TF::L3L4:
-    {
-      static const ap_int<18> LUT_drinv[512] = {
-#include "../emData/TC/tables/TC_L3L4_drinv.tab"
-      };
-      drinv = LUT_drinv[addr_drinv];
-      break;
-    }
-  case TF::L5L6:
-    {
-      static const ap_int<18> LUT_drinv[512] = {
-#include "../emData/TC/tables/TC_L5L6_drinv.tab"
-      };
-      drinv = LUT_drinv[addr_drinv];
-      break;
-    }
 }
 //
 // STEP 3
@@ -1105,22 +1089,6 @@ switch (Seed) {
     {
       static const ap_int<18> LUT_invt[4096] = {
 #include "../emData/TC/tables/TC_L1L2_invt.tab"
-      };
-      invt = LUT_invt[addr_invt];
-      break;
-    }
-  case TF::L3L4:
-    {
-      static const ap_int<18> LUT_invt[4096] = {
-#include "../emData/TC/tables/TC_L3L4_invt.tab"
-      };
-      invt = LUT_invt[addr_invt];
-      break;
-    }
-  case TF::L5L6:
-    {
-      static const ap_int<18> LUT_invt[4096] = {
-#include "../emData/TC/tables/TC_L5L6_invt.tab"
       };
       invt = LUT_invt[addr_invt];
       break;

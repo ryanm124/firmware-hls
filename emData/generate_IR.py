@@ -32,8 +32,8 @@ def createDefinitionsTemplate() :
   f.write("\n"
         "void InputRouterTop_IR_{LinkName}(\n"
         "    const BXType bx\n"
-        "    , const ap_uint<kLINKMAPwidth> kInputLink // input link LUT \n"
-        "    , const ap_uint<kBINMAPwidth> kNPhiBns  // n phi bins LUT \n"
+        "    , const ap_uint<kLINKMAPwidth> hLinkWord // input link LUT \n"
+        "    , const ap_uint<kBINMAPwidth> hPhBnWord  // n phi bins LUT \n"
         "    , ap_uint<kNBits_DTC> hInputStubs[kMaxStubsFromLink]//input stubs \n"
         "    , BXType & bx_o // output bx  \n"
         "    , DTCStubMemory hOutputStubs[cNMemories_IR_{LinkName}])"
@@ -59,8 +59,8 @@ def createDeclarationTemplate() :
   f.write("\n"
         "void InputRouterTop_IR_{LinkName}(\n"
         "    const BXType bx\n"
-        "    , const ap_uint<kLINKMAPwidth> kInputLink // input link LUT \n"
-        "    , const ap_uint<kBINMAPwidth> kNPhiBns  // n phi bins LUT \n"
+        "    , const ap_uint<kLINKMAPwidth> hLinkWord // input link LUT \n"
+        "    , const ap_uint<kBINMAPwidth> hPhBnWord  // n phi bins LUT \n"
         "    , ap_uint<kNBits_DTC> hInputStubs[kMaxStubsFromLink]//input stubs \n"
         "    , BXType & bx_o // output bx  \n"
         "    , DTCStubMemory hOutputStubs[cNMemories_IR_{LinkName}]"
@@ -127,7 +127,6 @@ def createDefinitions(wiresFiles='./LUTs/wires.dat') :
     with open(templateName, 'r') as ftemp:
       templateString = ftemp.read()
     file.write(templateString.format(**d))
-  file.write('#endif\n')
   file.close()
   os.remove(templateName)
 
