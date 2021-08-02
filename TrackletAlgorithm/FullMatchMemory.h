@@ -215,6 +215,10 @@ public:
   }
 
   // Setter
+  void setData(const FullMatchData &data) {
+    data_.range(kFMTCIDMSB,kFMZResLSB) = data;
+  }
+
   void setTCID(const FMTCID tcid) {
     data_.range(kFMTCIDMSB,kFMTCIDLSB) = tcid;
   }
