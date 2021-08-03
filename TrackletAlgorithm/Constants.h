@@ -4,7 +4,7 @@
 #include "ap_int.h"
 
 #ifdef CMSSW_GIT_HASH
-  #include "Settings.h"
+  #include "L1Trigger/TrackFindingTracklet/interface/Settings.h"
   using namespace trklet;
 #endif
 
@@ -108,12 +108,13 @@ constexpr double ptcut = 1.91; // GeV
 constexpr double rinvcut = 0.01 * c * bfield / ptcut; // 0.01 to convert to 1/cm
 constexpr double z0cut = 15.0; // cm
 
+#ifndef CMSSW_GIT_HASH
 // cut constants for combined modules
 constexpr double VMROUTERCUTZL2 = 50.0;      //Min L2 z for inner allstub in cm
 constexpr double VMROUTERCUTZL1L3L5 = 95.0;  //Max z for inner barrel layers in cm
 constexpr double VMROUTERCUTZL1 = 70.0;      //Max z for L1 barrel seeding in cm
 constexpr double VMROUTERCUTRD1D3 = 55.0;    //Max r for disk seeds in cm
-
+#endif
 // various bit widths
 constexpr unsigned nbitsallstubs[N_LAYER + N_DISK] = {3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
 constexpr unsigned int nbits_maxvm = 5; // number of bits needed for max number of VMs per layer/disk (max number is 32)
