@@ -6,11 +6,20 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#ifdef CMSSW_GIT_HASH
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#else
+#include "DummyMessageLogger.h"
+#endif
 #endif
 
+#ifdef CMSSW_GIT_HASH
+#define NBIT_BX 0
+template<class DataType, unsigned int DUMMY, unsigned int NBIT_ADDR, unsigned int NBIT_BIN>
+#else
+template<class DataType, unsigned int NBIT_BX, unsigned int NBIT_ADDR, unsigned int NBIT_BIN>
+#endif
 
-template<class DataType, unsigned int NBIT_BX, unsigned int NBIT_ADDR,
-		 unsigned int NBIT_BIN>
 // DataType: type of data object stored in the array
 // NBIT_BX: number of bits for BX;
 // (1<<NBIT_BX): number of BXs the memory is keeping track of
@@ -50,6 +59,7 @@ public:
   DataType read_mem(BunchXingT ibx, ap_uint<NBIT_ADDR> index) const
   {
     // TODO: check if valid
+    if(!NBIT_BX) ibx = 0;
     return dataarray_[ibx][index];
   }
   
@@ -57,6 +67,7 @@ public:
 		    ap_uint<NBIT_ADDR> index) const
   {
     // TODO: check if valid
+    if(!NBIT_BX) ibx = 0;
     return dataarray_[ibx][(1<<(kNBitDataAddr))*slot+index];
   }
 
@@ -65,6 +76,7 @@ public:
 #pragma HLS inline
 	if (nentry_ibx < ((1<<kNBitDataAddr)-1)) { // Temporary "-1" to only allow 15 (7 for VMSME DISK) stubs per bin instead of 16 (8) to match emulation
 	  // write address for slot: 1<<(kNBitDataAddr) * slot + nentry_ibx
+	  if(!NBIT_BX) ibx = 0;
 	  dataarray_[ibx][(1<<(kNBitDataAddr))*slot+nentry_ibx] = data;
 	  #ifdef CMSSW_GIT_HASH
 	  nentries_[ibx][slot]++;
@@ -73,7 +85,7 @@ public:
 	}
 	else {
 #ifndef __SYNTHESIS__
-	  std::cout << "Warning out of range: adress within bin " << nentry_ibx << ", stub " << data.raw() << std::endl;
+edm::LogWarning("L1trackHLS") << "Warning out of range: adress within bin " << nentry_ibx << ", stub " << data.raw() << " (" << data.raw().to_string(2) << ")" << std::endl;
 #endif
 	  return false;
 	}
@@ -120,6 +132,7 @@ public:
   bool write_mem(BunchXingT bx, const std::string& line, int base=16)
   {
 
+    if(!NBIT_BX) bx = 0;
     std::string datastr = split(line, ' ').back();
 
     int slot = (int)strtol(split(line, ' ').front().c_str(), nullptr, base); // Convert string (in hexadecimal) to int
@@ -138,7 +151,7 @@ public:
   // print memory contents
   void print_data(const DataType data) const
   {
-	std::cout << std::hex << data.raw() << std::endl;
+    edm::LogVerbatim("L1trackHLS") << std::hex << data.raw() << std::endl;
 	// TODO: overload '<<' in data class
   }
 
@@ -151,8 +164,8 @@ public:
   {
 	for(unsigned int slot=0;slot<(kNSlots);slot++) {
 	  for (unsigned int i = 0; i < nentries_[bx][slot]; ++i) {
-		std::cout << bx << " " << i << " ";
-		print_entry(bx, i + slot*(1<<(kNBitDataAddr)) );
+	    edm::LogVerbatim("L1trackHLS") << bx << " " << i << " ";
+	    print_entry(bx, i + slot*(1<<(kNBitDataAddr)) );
  	  }
 	}
   }
@@ -161,8 +174,8 @@ public:
   {
 	for (unsigned int ibx = 0; ibx < (kNBxBins); ++ibx) {
 	  for (unsigned int i = 0; i < nentries_[ibx]; ++i) {
-		std::cout << ibx << " " << i << " ";
-		print_entry(ibx,i);
+	    edm::LogVerbatim("L1trackHLS") << ibx << " " << i << " ";
+	    print_entry(ibx,i);
 	  }
 	}
   }

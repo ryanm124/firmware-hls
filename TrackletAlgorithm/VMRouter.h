@@ -25,8 +25,13 @@
 #include "VMStubMEMemory.h"
 #include "VMStubTEInnerMemory.h"
 #include "VMStubTEOuterMemory.h"
-
-
+#ifndef __SYNTHESIS__
+#ifdef CMSSW_GIT_HASH
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#else
+#include "DummyMessageLogger.h"
+#endif
+#endif
 /////////////////////////////////////////
 // Constants
 
@@ -567,8 +572,9 @@ inline VMStubTEInner<BARRELOL> createStubTEOverlap(const InputStub<InType> stub,
 // 		According to wiring script, there's two DISK2S and half the inputs are for negative disks.
 // Layer Disk - Specifies the layer or disk number
 // MAXCopies - The maximum number of copies of a memory type
+// NBitsMemAddr number of bits used to address the stubs
 // NBitsBin number of bits used for the bins in MEMemories
-template<regionType InType, regionType OutType, int Layer, int Disk, int nInputMems, int nInputDisk2SMems, int MaxAllCopies, int MaxTEICopies, int MaxOLCopies, int MaxTEOCopies, int NBitsBin, int BendCutTableSize>
+template<regionType InType, regionType OutType, int Layer, int Disk, int nInputMems, int nInputDisk2SMems, int MaxAllCopies, int MaxTEICopies, int MaxOLCopies, int MaxTEOCopies, int NBitsMemAddr, int NBitsBin, int BendCutTableSize>
 void VMRouter(const BXType bx, BXType& bx_o, const int fineBinTable[], const int phiCorrTable[],
 		// rzbitstables, aka binlookup in emulation
 		const int rzbitsInnerTable[], const int rzbitsOverlapTable[], const int rzbitsOuterTable[],
@@ -580,7 +586,7 @@ void VMRouter(const BXType bx, BXType& bx_o, const int fineBinTable[], const int
 		// AllStub memory
 		AllStubMemory<OutType> memoriesAS[],
 		// ME memories
-		const ap_uint<maskMEsize>& maskME, VMStubMEMemory<OutType, NBitsBin> memoriesME[],
+		const ap_uint<maskMEsize>& maskME, VMStubMEMemory<OutType, NBitsMemAddr, NBitsBin> memoriesME[],
 		// Inner TE memories, non-overlap
 		const ap_uint<maskTEIsize>& maskTEI, VMStubTEInnerMemory<OutType> memoriesTEI[][MaxTEICopies],
 		// TE Inner memories, overlap
@@ -716,7 +722,7 @@ void VMRouter(const BXType bx, BXType& bx_o, const int fineBinTable[], const int
 
 // For debugging
 #ifndef __SYNTHESIS__
-			std::cout << std::endl << "Stub index no. " << i << std::endl << "Out put stub: " << std::hex << allstub.raw() << std::dec
+			edm::LogVerbatim("L1trackHLS") << std::endl << "Stub index no. " << i << std::endl << "Out put stub: " << std::hex << allstub.raw() << std::dec
 					<< std::endl;
 #endif // DEBUG
 
@@ -739,8 +745,8 @@ void VMRouter(const BXType bx, BXType& bx_o, const int fineBinTable[], const int
 
 // For debugging
 #ifndef __SYNTHESIS__
-			std::cout << "ME stub " << std::hex << stubME.raw() << std::endl;
-			std::cout << "ivm Minus,Plus = " << std::dec << ivmMinus << " " << ivmPlus << " " << "\t0x"
+			edm::LogVerbatim("L1trackHLS") << "ME stub " << std::hex << stubME.raw() << std::endl;
+			edm::LogVerbatim("L1trackHLS") << "ivm Minus,Plus = " << std::dec << ivmMinus << " " << ivmPlus << " " << "\t0x"
 					<< std::setfill('0') << std::setw(4) << std::hex
 					<< stubME.raw().to_int() << std::dec << ", to bin " << bin << std::endl;
 			if (!maskME[ivmPlus]) {
@@ -788,9 +794,9 @@ void VMRouter(const BXType bx, BXType& bx_o, const int fineBinTable[], const int
 
 // For debugging
 #ifndef __SYNTHESIS__
-			std::cout << "TEInner stub " << std::hex << stubTEI.raw()
+			edm::LogVerbatim("L1trackHLS") << "TEInner stub " << std::hex << stubTEI.raw()
 					<< std::endl;
-			std::cout << "ivm: " << std::dec << ivm <<std::endl
+			edm::LogVerbatim("L1trackHLS") << "ivm: " << std::dec << ivm <<std::endl
 					<< std::endl;
 #endif // DEBUG
 
@@ -828,9 +834,9 @@ void VMRouter(const BXType bx, BXType& bx_o, const int fineBinTable[], const int
 
 // For debugging
 #ifndef __SYNTHESIS__
-			std::cout << "TEOuter stub " << std::hex << stubTEO.raw()
+			edm::LogVerbatim("L1trackHLS") << "TEOuter stub " << std::hex << stubTEO.raw()
 					<< std::endl;
-			std::cout << "    ivm: " << std::dec << ivm << "       to bin " << bin << std::endl;
+			edm::LogVerbatim("L1trackHLS") << "    ivm: " << std::dec << ivm << "       to bin " << bin << std::endl;
 #endif // DEBUG
 
 			// Write the TE Outer stub to the correct memory
@@ -872,9 +878,9 @@ void VMRouter(const BXType bx, BXType& bx_o, const int fineBinTable[], const int
 
 // For debugging
 #ifndef __SYNTHESIS__
-			std::cout << "Overlap stub " << " " << std::hex
+			edm::LogVerbatim("L1trackHLS") << "Overlap stub " << " " << std::hex
 					<< stubOL.raw() << std::endl;
-			std::cout << "ivm: " << std::dec << ivm << std::endl
+			edm::LogVerbatim("L1trackHLS") << "ivm: " << std::dec << ivm << std::endl
 					<< std::endl;
 #endif // DEBUG
 
@@ -897,7 +903,7 @@ void VMRouter(const BXType bx, BXType& bx_o, const int fineBinTable[], const int
 // For debugging
 #ifndef __SYNTHESIS__
 			else {
-				std::cout << "NO OVERLAP" << std::endl << std::endl;
+			  edm::LogVerbatim("L1trackHLS") << "NO OVERLAP" << std::endl << std::endl;
 			}
 #endif // DEBUG
 

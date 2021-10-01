@@ -6,7 +6,21 @@
 
 template<int> class AllStub;
 
+#ifndef __SYNTHESIS__
+#ifdef CMSSW_GIT_HASH
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#else
+#include "DummyMessageLogger.h"
+#endif
+#endif
+
+#ifdef CMSSW_GIT_HASH
+#define NBIT_BX 0
+template<class DataType, unsigned int DUMMY, unsigned int NBIT_ADDR>
+#else
 template<class DataType, unsigned int NBIT_BX, unsigned int NBIT_ADDR>
+#endif
+
 // DataType: type of data object stored in the array
 // NBIT_BX: number of bits for BX;
 // (1<<NBIT_BIN): number of BXs the memory is keeping track of
@@ -39,6 +53,7 @@ public:
   DataType read_mem(BunchXingT ibx, ap_uint<NBIT_ADDR> index) const
   {
 	// TODO: check if valid
+	if(!NBIT_BX) ibx = 0;
 	return dataarray_[ibx][index];
   }
 
@@ -46,6 +61,7 @@ public:
   bool write_mem(BunchXingT ibx, SpecType data, int addr_index)
   {
 #pragma HLS inline
+    if(!NBIT_BX) ibx = 0;
     static_assert(
       std::is_same<DataType, SpecType>::value
       || (std::is_same<DataType, AllStub<DISK> >::value && std::is_same<SpecType, AllStub<DISKPS> >::value)
@@ -58,6 +74,7 @@ public:
   bool write_mem(BunchXingT ibx, DataType data, int addr_index)
   {
 #pragma HLS inline
+    if(!NBIT_BX) ibx = 0;
     if (addr_index < (1<<NBIT_ADDR)) {
       dataarray_[ibx][addr_index] = data;
       
@@ -93,7 +110,8 @@ public:
 
   // write memory from text file
   bool write_mem(BunchXingT ibx, const char* datastr, int base=16)
-  {
+  { 
+        if(!NBIT_BX) ibx = 0;
 	DataType data(datastr, base);
 	int nent = nentries_[ibx]; 
 	bool success = write_mem(ibx, data, nent);
@@ -106,6 +124,7 @@ public:
 
   bool write_mem(BunchXingT ibx, const std::string datastr, int base=16)
   {
+	if(!NBIT_BX) ibx = 0;
 	DataType data(datastr.c_str(), base);
 	int nent = nentries_[ibx];
 	bool success = write_mem(ibx, data, nent);
@@ -119,8 +138,8 @@ public:
   // print memory contents
   void print_data(const DataType data) const
   {
-	std::cout << std::hex << data.raw() << std::endl;
-	// TODO: overload '<<' in data class
+    edm::LogVerbatim("L1trackHLS") << std::hex << data.raw() << std::endl;
+        // TODO: overload '<<' in data class
   }
 
   void print_entry(BunchXingT bx, ap_uint<NBIT_ADDR> index) const
@@ -131,7 +150,7 @@ public:
   void print_mem(BunchXingT bx) const
   {
 	for (unsigned int i = 0; i <  nentries_[bx]; ++i) {
-	  std::cout << bx << " " << i << " ";
+	  edm::LogVerbatim("L1trackHLS") << bx << " " << i << " ";
 	  print_entry(bx,i);
 	}
   }
@@ -140,8 +159,8 @@ public:
   {
 	for (unsigned int ibx = 0; ibx < (1<<NBIT_BX); ++ibx) {
 	  for (unsigned int i = 0; i < nentries_[ibx]; ++i) {
-		std::cout << ibx << " " << i << " ";
-		print_entry(ibx,i);
+	    edm::LogVerbatim("L1trackHLS") << ibx << " " << i << " ";
+	    print_entry(ibx,i);
 	  }
 	}
   }
